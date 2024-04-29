@@ -25,7 +25,57 @@ class PetsController
 
     public function getAllPets()
     {
-        ResponseHelper::sendSuccessResponse([], "SIedyhfgauywerfhaer");
+        try {
+            $pets = $this->petsModel->getAllPets();
+
+            if (!$pets) {
+                ResponseHelper::sendSuccessResponse([], 'No pets found');
+                return;
+            }
+
+            ResponseHelper::sendSuccessResponse($pets, 'Pets found');
+        } catch (RuntimeException $e) {
+            ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function getAllPetTypes()
+    {
+        try {
+            $types = $this->petsModel->getAllPetTypes();
+
+            if (!$types) {
+                ResponseHelper::sendSuccessResponse([], 'No types found');
+                return;
+            }
+
+            ResponseHelper::sendSuccessResponse($types, 'Types found');
+        } catch (RuntimeException $e) {
+            ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function getAllPetBreedsByType($param)
+    {
+        try {
+            if (empty($param) || !isset($param['petType'])) {
+                ResponseHelper::sendErrorResponse("Invalid or missing pet type parameter", 400);
+                return;
+            }
+
+            $petType = $param['petType'];
+
+            $breeds = $this->petsModel->getAllPetBreedsByType($petType);
+
+            if (!$breeds) {
+                ResponseHelper::sendSuccessResponse([], 'No breeds found');
+                return;
+            }
+
+            ResponseHelper::sendSuccessResponse($breeds, 'Breeds found');
+        } catch (RuntimeException $e) {
+            ResponseHelper::sendErrorResponse($e->getMessage());
+        }
     }
 
     public function getPetByID($param)

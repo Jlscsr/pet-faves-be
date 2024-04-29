@@ -11,7 +11,7 @@ use RuntimeException;
 class PetsModel
 {
     private $pdo;
-    private const PRODUCTS_TABLE = 'pets_tb';
+    private const PETS_TABLE = 'pets_tb';
 
 
     public function __construct($pdo)
@@ -21,6 +21,51 @@ class PetsModel
 
     public function getAllPets()
     {
+        $query = "SELECT * FROM " . self::PETS_TABLE;
+        $statement = $this->pdo->prepare($query);
+
+        try {
+            $statement->execute();
+
+            return $statement->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function getAllPetTypes()
+    {
+        $query = "SELECT DISTINCT petType FROM " . self::PETS_TABLE;
+        $statement = $this->pdo->prepare($query);
+
+        try {
+            $statement->execute();
+
+            return $statement->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function getAllPetBreedsByType($petType)
+    {
+        if (!$petType) {
+            throw new InvalidArgumentException('Invalid or missing pet type parameter');
+            return;
+        }
+
+        $query = "SELECT DISTINCT petBreed FROM " . self::PETS_TABLE . " WHERE petType = :petType";
+        $statement = $this->pdo->prepare($query);
+        $statement->bindValue(':petType', $petType, PDO::PARAM_STR);
+
+
+        try {
+            $statement->execute();
+
+            return $statement->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
     }
 
     public function getPetByID($petID)
@@ -51,7 +96,7 @@ class PetsModel
         $petVacHistory = $payload['petVacHistory'];
         $petHistory = $payload['petHistory'];
 
-        $query = "INSERT INTO " . self::PRODUCTS_TABLE . " (userID, petName, age, gender, petType, petBreed, petVacHistory, petHistory, petPhotoURL) VALUES (:userID, :petName, :petAge, :petGender, :petType, :petBreed, :petVacHistory, :petHistory, :petPhotoURL)";
+        $query = "INSERT INTO " . self::PETS_TABLE . " (userID, petName, age, gender, petType, petBreed, petVacHistory, petHistory, petPhotoURL) VALUES (:userID, :petName, :petAge, :petGender, :petType, :petBreed, :petVacHistory, :petHistory, :petPhotoURL)";
         $statement = $this->pdo->prepare($query);
 
         $bindParams = [

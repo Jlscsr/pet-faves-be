@@ -7,12 +7,36 @@ class Route
     public function __construct()
     {
         $this->routes = [
+            "api/pet/breeds/:petType" => [
+                "handler" => "PetsController@getAllPetBreedsByType",
+                "middleware" => false
+            ],
+            "api/pet/types" => [
+                "handler" => "PetsController@getAllPetTypes",
+                "middleware" => false
+            ],
             "api/pet/add" => [
                 "handler" => "PetsController@addNewPet",
                 "middleware" => false
             ],
             "api/pet/all" => [
                 "handler" => "PetsController@getAllPets",
+                "middleware" => false
+            ],
+            "api/auth/validate" => [
+                "handler" => "AuthenticationController@validateToken",
+                "middleware" => false
+            ],
+            "api/auth/logout" => [
+                "handler" => "AuthenticationController@logout",
+                "middleware" => false
+            ],
+            "api/auth/register" => [
+                "handler" => "AuthenticationController@register",
+                "middleware" => false
+            ],
+            "api/auth/login" => [
+                "handler" => "AuthenticationController@login",
                 "middleware" => false
             ]
 
