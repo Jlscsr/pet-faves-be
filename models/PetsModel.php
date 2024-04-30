@@ -71,7 +71,19 @@ class PetsModel
     public function getPetByID($petID)
     {
         if (!$petID) {
-            throw new InvalidArgumentException('Invalid or missing product ID parameter');
+            throw new InvalidArgumentException('Invalid or missing pet ID parameter');
+        }
+
+        $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE id = :petID";
+        $statement = $this->pdo->prepare($query);
+        $statement->bindValue(':petID', $petID, PDO::PARAM_INT);
+
+        try {
+            $statement->execute();
+
+            return $statement->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
         }
     }
 

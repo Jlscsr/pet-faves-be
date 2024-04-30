@@ -11,6 +11,10 @@ class Route
                 "handler" => "PetsController@getAllPetBreedsByType",
                 "middleware" => false
             ],
+            "api/pet/:id" => [
+                "handler" => "PetsController@getPetByID",
+                "middleware" => false
+            ],
             "api/pet/types" => [
                 "handler" => "PetsController@getAllPetTypes",
                 "middleware" => false
@@ -19,8 +23,12 @@ class Route
                 "handler" => "PetsController@addNewPet",
                 "middleware" => false
             ],
-            "api/pet/all" => [
+            "api/pets" => [
                 "handler" => "PetsController@getAllPets",
+                "middleware" => false
+            ],
+            "api/user" => [
+                "handler" => "UsersController@getUserByEmail",
                 "middleware" => false
             ],
             "api/auth/validate" => [
