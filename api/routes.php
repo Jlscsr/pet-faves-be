@@ -7,6 +7,33 @@ class Route
     public function __construct()
     {
         $this->routes = [
+            "api/approvalQueue/id/:id" => [
+                "handler" => "ApprovalQueueController@getApprovalQueueByID",
+                "middleware" => false
+            ],
+            "api/approvalQueue/add" => [
+                "handler" => "ApprovalQueueController@addNewApprovalQueue",
+            ],
+            "api/request/adoption/status/update/:id" => [
+                "handler" => "AdoptionRequestsController@updateUserRequestStatus",
+                "middleware" => false
+            ],
+            "api/request/adoption/add" => [
+                "handler" => "AdoptionRequestsController@addNewUserRequest",
+                "middleware" => false
+            ],
+            "api/request/:id" => [
+                "handler" => "AdoptionRequestsController@getUserRequestByUserID",
+                "middleware" => false
+            ],
+            "api/requests/adoption/:status" => [
+                "handler" => "AdoptionRequestsController@getAllUserRequestsByStatus",
+                "middleware" => false
+            ],
+            "api/pets/label/:label" => [
+                "handler" => "PetsController@getAllPetsByLabel",
+                "middleware" => false
+            ],
             "api/pet/breeds/:petType" => [
                 "handler" => "PetsController@getAllPetBreedsByType",
                 "middleware" => false
@@ -15,7 +42,7 @@ class Route
                 "handler" => "PetsController@getPetByID",
                 "middleware" => false
             ],
-            "api/pet/types" => [
+            "api/pets/types" => [
                 "handler" => "PetsController@getAllPetTypes",
                 "middleware" => false
             ],
@@ -27,7 +54,11 @@ class Route
                 "handler" => "PetsController@getAllPets",
                 "middleware" => false
             ],
-            "api/user" => [
+            "api/user/id/:id" => [
+                "handler" => "UsersController@getUserByID",
+                "middleware" => false
+            ],
+            "api/user/email" => [
                 "handler" => "UsersController@getUserByEmail",
                 "middleware" => false
             ],

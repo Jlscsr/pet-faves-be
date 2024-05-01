@@ -39,6 +39,29 @@ class PetsController
         }
     }
 
+    public function getAllPetsByLabel($param)
+    {
+        try {
+            if (empty($param) || !isset($param['label'])) {
+                ResponseHelper::sendErrorResponse("Invalid or missing label parameter", 400);
+                return;
+            }
+
+            $label = $param['label'];
+
+            $pets = $this->petsModel->getAllPetsByLabel($label);
+
+            if (!$pets) {
+                ResponseHelper::sendSuccessResponse([], 'No pets found');
+                return;
+            }
+
+            ResponseHelper::sendSuccessResponse($pets, 'Pets found');
+        } catch (RuntimeException $e) {
+            ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
     public function getAllPetTypes()
     {
         try {

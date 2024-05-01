@@ -33,6 +33,30 @@ class PetsModel
         }
     }
 
+    public function getAllPetsByLabel($label)
+    {
+        if (!$label) {
+            throw new InvalidArgumentException('Invalid or missing label parameter');
+            return;
+        }
+
+        if ($label === 'fadoption') {
+            $label = 'adoption';
+        }
+
+        $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE label = :label";
+        $statement = $this->pdo->prepare($query);
+        $statement->bindValue(':label', $label, PDO::PARAM_STR);
+
+        try {
+            $statement->execute();
+
+            return $statement->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
     public function getAllPetTypes()
     {
         $query = "SELECT DISTINCT petType FROM " . self::PETS_TABLE;
@@ -99,7 +123,6 @@ class PetsModel
             $userID = $payload['user_id'];
         }
 
-        $petPhotoURL = $payload['petPhotoURL'];
         $petName = $payload['petName'];
         $petAge = $payload['petAge'];
         $petGender = $payload['petGender'];
@@ -107,8 +130,10 @@ class PetsModel
         $petBreed = $payload['petBreed'];
         $petVacHistory = $payload['petVacHistory'];
         $petHistory = $payload['petHistory'];
+        $petPhotoURL = $payload['petPhotoURL'];
+        $label = $payload['label'];
 
-        $query = "INSERT INTO " . self::PETS_TABLE . " (userID, petName, age, gender, petType, petBreed, petVacHistory, petHistory, petPhotoURL) VALUES (:userID, :petName, :petAge, :petGender, :petType, :petBreed, :petVacHistory, :petHistory, :petPhotoURL)";
+        $query = "INSERT INTO " . self::PETS_TABLE . " (userID, petName, age, gender, petType, petBreed, petVacHistory, petHistory, petPhotoURL, label) VALUES (:userID, :petName, :petAge, :petGender, :petType, :petBreed, :petVacHistory, :petHistory, :petPhotoURL, :label)";
         $statement = $this->pdo->prepare($query);
 
         $bindParams = [
@@ -120,7 +145,8 @@ class PetsModel
             ':petBreed' => $petBreed,
             ':petVacHistory' => $petVacHistory,
             ':petHistory' => $petHistory,
-            ':petPhotoURL' => $petPhotoURL
+            ':petPhotoURL' => $petPhotoURL,
+            ':label' => $label,
         ];
 
         foreach ($bindParams as $key => $value) {
@@ -130,7 +156,7 @@ class PetsModel
         try {
             $statement->execute();
 
-            return $this->pdo->rowCount() > 0;
+            return $statement->rowCount() > 0;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
