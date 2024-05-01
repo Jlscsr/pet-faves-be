@@ -102,9 +102,10 @@ class UsersModel
         $province = $userData['province'];
         $city = $userData['city'];
         $barangay = $userData['barangay'];
+        $role = 'customer';
 
 
-        $query = "INSERT INTO " . self::USERS_TABLE . " (firstName, middleName, lastName, email, phoneNumber, gender, password, address, region, province, city, barangay) VALUES (:firstName, :middleName, :lastName, :email, :phoneNumber, :gender, :password, :address, :region, , :province, :city, :barangay)";
+        $query = "INSERT INTO " . self::USERS_TABLE . " (firstName, middleName, lastName, email, phoneNumber, gender, password, address, region, province, city, barangay, role) VALUES (:firstName, :middleName, :lastName, :email, :phoneNumber, :gender, :password, :address, :region, :province, :city, :barangay, :role)";
 
         $statement = $this->pdo->prepare($query);
 
@@ -120,7 +121,8 @@ class UsersModel
             ':region' => $region,
             ':province' => $province,
             ':city' => $city,
-            ':barangay' => $barangay
+            ':barangay' => $barangay,
+            ':role' => $role
         ];
 
         foreach ($bind_params as $param => $value) {

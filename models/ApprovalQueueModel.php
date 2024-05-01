@@ -48,27 +48,48 @@ class ApprovalQueueModel
             throw new InvalidArgumentException("Invalid payload or payload is empty");
         }
 
-        $requiredFields = ['userID', 'petPhotoURL', 'petName', 'petAge', 'petGender', 'petType', 'petBreed', 'petVacHistory', 'petHistory', 'petLabel'];
-        foreach ($requiredFields as $field) {
-            if (!isset($payload[$field])) {
-                throw new InvalidArgumentException("Missing required field: $field");
-            }
-        }
+        $userID = $payload['userID'];
+        $petName = $payload['petName'];
+        $age = $payload['petAge'];
+        $gender = $payload['petGender'];
+        $petType = $payload['petType'];
+        $petBreed = $payload['petBreed'];
+        $petVacHistory = $payload['petVacHistory'];
+        $petHistory = $payload['petHistory'];
+        $petPhotoURL = $payload['petPhotoURL'];
+        $label = $payload['petLabel'];
 
         $query = "INSERT INTO " . self::APPROVAL_QUEUE_TABLE . " (userID, petName, age, gender, petType, petBreed, petVacHistory, petHistory, petPhotoURL, label) 
                 VALUES (:userID, :petName, :petAge, :petGender, :petType, :petBreed, :petVacHistory, :petHistory, :petPhotoURL, :label)";
         $statement = $this->pdo->prepare($query);
 
-        try {
-            $this->pdo->beginTransaction();
+        $bindParams = [
+            ':userID' => $userID,
+            ':petName' => $petName,
+            ':petAge' => $age,
+            ':petGender' => $gender,
+            ':petType' => $petType,
+            ':petBreed' => $petBreed,
+            ':petVacHistory' => $petVacHistory,
+            ':petHistory' => $petHistory,
+            ':petPhotoURL' => $petPhotoURL,
+            ':label' => $label
+        ];
 
-            $statement->execute($payload);
+        foreach ($bindParams as $key => $value) {
+            $statement->bindValue($key, $value);
+        }
+
+        try {
+
+            $statement->execute();
+
             $lastInsertedID = $this->pdo->lastInsertId();
 
             $newUserRequestData = [
                 'userID' => $payload['userID'],
                 'approvalQueueID' => $lastInsertedID,
-                'label' => $payload['petLabel'],
+                'label' => $label,
                 'status' => 'pending',
             ];
 
@@ -77,8 +98,6 @@ class ApprovalQueueModel
             if (!$response) {
                 throw new RuntimeException("Failed to add new user request");
             }
-
-            $this->pdo->commit();
 
             return $response;
         } catch (PDOException $e) {
