@@ -34,9 +34,12 @@ class ApprovalQueueModel
         }
 
         $query = "SELECT * FROM " . self::APPROVAL_QUEUE_TABLE . " WHERE id = ? LIMIT 1";
+        $statement = $this->pdo->prepare($query);
+        $statement->bindValue(1, $id, PDO::PARAM_INT);
 
         try {
-            return $this->pdo->query($query, [$id])->fetch(PDO::FETCH_ASSOC);
+            $statement->execute();
+            return $statement->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }

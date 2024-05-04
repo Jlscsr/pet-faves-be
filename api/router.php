@@ -6,8 +6,6 @@ use Helpers\ResponseHelper;
 require_once dirname(__DIR__) . '/config/db_connect.php';
 require_once dirname(__DIR__) . '/api/routes.php';
 
-json_encode(['method' => $_SERVER['REQUEST_METHOD']]);
-
 // This code sets the necessary headers for the response.
 HeaderHelper::SendPreflighthHeaders();
 HeaderHelper::setResponseHeaders();

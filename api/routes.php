@@ -7,6 +7,18 @@ class Route
     public function __construct()
     {
         $this->routes = [
+            "api/pet/pet-feeds/add" => [
+                "handler" => "PetFeedsController@addNewPetToPetFeeds",
+                "middleware" => false
+            ],
+            "api/pet/pet-feeds/status/:status" => [
+                "handler" => "PetFeedsController@getAllPetsFromPetFeedsByStatus",
+                "middleware" => false
+            ],
+            "api/pet/pet-feeds" => [
+                "handler" => "PetFeedsController@getAllPetsFromPetFeeds",
+                "middleware" => false
+            ],
             "api/approvalQueue/id/:id" => [
                 "handler" => "ApprovalQueueController@getApprovalQueueByID",
                 "middleware" => false
