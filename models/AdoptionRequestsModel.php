@@ -83,7 +83,7 @@ class AdoptionRequestsModel
             return;
         }
 
-        $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE userID = :id";
+        $query = "SELECT pets_tb.*, requests_tb.* FROM " . self::ADOPTION_REQUESTS_TABLE . " INNER JOIN pets_tb ON pets_tb.id = requests_tb.petID WHERE requests_tb.userID = :id";
         $statement = $this->pdo->prepare($query);
 
         $statement->bindValue(':id', $id, PDO::PARAM_INT);

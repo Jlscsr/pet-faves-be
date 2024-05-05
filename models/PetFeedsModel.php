@@ -30,9 +30,23 @@ class PetFeedsModel
         }
     }
 
+    public function getAllPetsFromPetFeedsByID($id)
+    {
+        $query = "SELECT users_tb.id as mainUserID, users_tb.firstName, users_tb.middleName, users_tb.lastName, pet_feeds_tb.* FROM users_tb INNER JOIN " . self::PET_FEEDS_TABLE . " ON users_tb.id = pet_feeds_tb.userID WHERE pet_feeds_tb.userID = :id";
+        $statement = $this->pdo->prepare($query);
+        $statement->bindValue(':id', $id, PDO::PARAM_INT);
+
+        try {
+            $statement->execute();
+            return $statement->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
     public function getAllPetsFromPetFeedsByStatus($status)
     {
-        $query = "SELECT users_tb.id as mainUserID, users_tb.firstName, users_tb.middleName, users_tb.lastName, pet_feeds_tb.* FROM users_tb INNER JOIN " . self::PET_FEEDS_TABLE . " ON users_tb.id = pet_feeds_tb.userID WHERE pet_feeds_tb.approvalStatus = :status";
+        $query = "SELECT users_tb.id as mainUserID, users_tb.firstName, users_tb.middleName, users_tb.lastName, pet_feeds_tb.* FROM users_tb INNER JOIN " . self::PET_FEEDS_TABLE . " ON users_tb.id = pet_feeds_tb.userID WHERE pet_feeds_tb.approvalStatus = :status ORDER BY pet_feeds_tb.id DESC";
         $statement = $this->pdo->prepare($query);
         $statement->bindValue(':status', $status, PDO::PARAM_STR);
 
@@ -75,6 +89,29 @@ class PetFeedsModel
         foreach ($bindParams as $key => $value) {
             $statement->bindValue($key, $value, PDO::PARAM_STR);
         }
+
+        try {
+            $statement->execute();
+
+            if ($statement->rowCount() > 0) {
+                return [
+                    'id' => $this->pdo->lastInsertId(),
+                    'userID' => $userID,
+                    'status' => $approvalStatus
+                ];
+            }
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function updatePetFeedsApprovalStatus($id, $status)
+    {
+        $query = "UPDATE " . self::PET_FEEDS_TABLE . " SET approvalStatus = :status WHERE id = :id";
+        $statement = $this->pdo->prepare($query);
+
+        $statement->bindValue(':status', $status, PDO::PARAM_STR);
+        $statement->bindValue(':id', $id, PDO::PARAM_INT);
 
         try {
             $statement->execute();
