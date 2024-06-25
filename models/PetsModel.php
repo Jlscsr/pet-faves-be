@@ -131,7 +131,7 @@ class PetsModel
         $petVacHistory = $payload['petVacHistory'];
         $petHistory = $payload['petHistory'];
         $petPhotoURL = $payload['petPhotoURL'];
-        $label = $payload['label'];
+        $label = $payload['petLabel'];
 
         $query = "INSERT INTO " . self::PETS_TABLE . " (userID, petName, age, gender, petType, petBreed, petVacHistory, petHistory, petPhotoURL, label) VALUES (:userID, :petName, :petAge, :petGender, :petType, :petBreed, :petVacHistory, :petHistory, :petPhotoURL, :label)";
         $statement = $this->pdo->prepare($query);

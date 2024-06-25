@@ -141,7 +141,7 @@ class PetsController
                 return;
             }
 
-            ResponseHelper::sendSuccessResponse($pet, "Pet added successfully");
+            ResponseHelper::sendSuccessResponse([], "Pet added successfully");
         } catch (RuntimeException $e) {
             ResponseHelper::sendErrorResponse($e->getMessage());
         }
