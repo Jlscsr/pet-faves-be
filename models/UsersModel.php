@@ -91,37 +91,21 @@ class UsersModel
         }
 
         $firstName = $userData['firstName'];
-        $middleName = $userData['middleName'];
         $lastName = $userData['lastName'];
         $email = $userData['email'];
-        $phoneNumber = $userData['phoneNumber'];
-        $gender = $userData['gender'];
         $password = $userData['password'];
-        $address = $userData['address'];
-        $region = $userData['region'];
-        $province = $userData['province'];
-        $city = $userData['city'];
-        $barangay = $userData['barangay'];
         $role = 'customer';
 
 
-        $query = "INSERT INTO " . self::USERS_TABLE . " (firstName, middleName, lastName, email, phoneNumber, gender, password, address, region, province, city, barangay, role) VALUES (:firstName, :middleName, :lastName, :email, :phoneNumber, :gender, :password, :address, :region, :province, :city, :barangay, :role)";
+        $query = "INSERT INTO " . self::USERS_TABLE . " (firstName, middleName, lastName, email, phoneNumber, gender, password, address, region, province, city, barangay, role) VALUES (:firstName, '', :lastName, :email, '', '', :password, '', '', '', '', '', :role)";
 
         $statement = $this->pdo->prepare($query);
 
         $bind_params = [
             ':firstName' => $firstName,
-            ':middleName' => $middleName,
             ':lastName' => $lastName,
             ':email' => $email,
-            ':phoneNumber' => $phoneNumber,
-            ':gender' => $gender,
             ':password' => $password,
-            ':address' => $address,
-            ':region' => $region,
-            ':province' => $province,
-            ':city' => $city,
-            ':barangay' => $barangay,
             ':role' => $role
         ];
 
