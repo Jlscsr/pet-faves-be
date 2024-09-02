@@ -39,6 +39,29 @@ class PetsController
         }
     }
 
+    public function getPetByID($param)
+    {
+        try {
+            if (empty($param) || !isset($param['id'])) {
+                ResponseHelper::sendErrorResponse("Invalid or missing pet id parameter", 400);
+                return;
+            }
+
+            $petID = (int) $param['id'];
+
+            $pet = $this->petsModel->getPetByID($petID);
+
+            if (!$pet) {
+                ResponseHelper::sendSuccessResponse([], 'No pet found');
+                return;
+            }
+
+            ResponseHelper::sendSuccessResponse($pet, 'Pet found');
+        } catch (RuntimeException $e) {
+            ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
     public function getAllPetsByLabel($param)
     {
         try {
@@ -101,24 +124,17 @@ class PetsController
         }
     }
 
-    public function getPetByID($param)
+    public function getAllPetsAgeCategories()
     {
         try {
-            if (empty($param) || !isset($param['id'])) {
-                ResponseHelper::sendErrorResponse("Invalid or missing pet id parameter", 400);
+            $ageCategories = $this->petsModel->getAllPetsAgeCategories();
+
+            if (!$ageCategories) {
+                ResponseHelper::sendSuccessResponse([], 'No age categories found');
                 return;
             }
 
-            $petID = (int) $param['id'];
-
-            $pet = $this->petsModel->getPetByID($petID);
-
-            if (!$pet) {
-                ResponseHelper::sendSuccessResponse([], 'No pet found');
-                return;
-            }
-
-            ResponseHelper::sendSuccessResponse($pet, 'Pet found');
+            ResponseHelper::sendSuccessResponse($ageCategories, 'Age categories found');
         } catch (RuntimeException $e) {
             ResponseHelper::sendErrorResponse($e->getMessage());
         }

@@ -50,6 +50,10 @@ class Route
                 "handler" => "AdoptionRequestsController@getAllUserRequestsByStatus",
                 "middleware" => false
             ],
+            "api/pets/ageCategories" => [
+                "handler" => "PetsController@getAllPetsAgeCategories",
+                "middleware" => false,
+            ],
             "api/pets/label/:label" => [
                 "handler" => "PetsController@getAllPetsByLabel",
                 "middleware" => false

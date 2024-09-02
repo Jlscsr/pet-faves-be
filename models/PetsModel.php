@@ -33,6 +33,25 @@ class PetsModel
         }
     }
 
+    public function getPetByID($petID)
+    {
+        if (!$petID) {
+            throw new InvalidArgumentException('Invalid or missing pet ID parameter');
+        }
+
+        $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE id = :petID";
+        $statement = $this->pdo->prepare($query);
+        $statement->bindValue(':petID', $petID, PDO::PARAM_INT);
+
+        try {
+            $statement->execute();
+
+            return $statement->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
     public function getAllPetsByLabel($label)
     {
         if (!$label) {
@@ -65,7 +84,13 @@ class PetsModel
         try {
             $statement->execute();
 
-            return $statement->fetchAll(PDO::FETCH_ASSOC);
+            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            $petTypes = array_map(function ($row) {
+                return $row['petType'];
+            }, $result);
+
+            return $petTypes;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
@@ -85,27 +110,34 @@ class PetsModel
 
         try {
             $statement->execute();
+            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-            return $statement->fetchAll(PDO::FETCH_ASSOC);
+            $petBreeds = array_map(function ($row) {
+                return $row['petBreed'];
+            }, $result);
+
+            return $petBreeds;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
     }
 
-    public function getPetByID($petID)
+    public function getAllPetsAgeCategories()
     {
-        if (!$petID) {
-            throw new InvalidArgumentException('Invalid or missing pet ID parameter');
-        }
-
-        $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE id = :petID";
+        $query = "SELECT DISTINCT ageCategory FROM " . self::PETS_TABLE;
         $statement = $this->pdo->prepare($query);
-        $statement->bindValue(':petID', $petID, PDO::PARAM_INT);
+
 
         try {
             $statement->execute();
 
-            return $statement->fetch(PDO::FETCH_ASSOC);
+            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            $ageCategories = array_map(function ($row) {
+                return $row['ageCategory'];
+            }, $result);
+
+            return $ageCategories;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
