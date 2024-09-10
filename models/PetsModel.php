@@ -19,10 +19,21 @@ class PetsModel
         $this->pdo = $pdo;
     }
 
-    public function getAllPets()
+    public function getAllPets($limit, $offset)
     {
-        $query = "SELECT * FROM " . self::PETS_TABLE;
+        $query = null;
+        if ($limit === 0 && $offset === 0) {
+            $query = "SELECT * FROM " . self::PETS_TABLE;
+        } else {
+            $query = "SELECT * FROM " . self::PETS_TABLE . " LIMIT :limit OFFSET :offset";
+        }
+
         $statement = $this->pdo->prepare($query);
+
+        if ($limit !== 0 && $offset !== 0) {
+            $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $statement->bindValue(':offset', $offset, PDO::PARAM_INT);
+        }
 
         try {
             $statement->execute();
@@ -52,7 +63,7 @@ class PetsModel
         }
     }
 
-    public function getAllPetsByLabel($label)
+    public function getAllPetsByLabel($label, $limit, $offset)
     {
         if (!$label) {
             throw new InvalidArgumentException('Invalid or missing label parameter');
@@ -63,9 +74,12 @@ class PetsModel
             $label = 'adoption';
         }
 
-        $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE label = :label";
+        $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE label = :label LIMIT :limit OFFSET :offset";
         $statement = $this->pdo->prepare($query);
+
         $statement->bindValue(':label', $label, PDO::PARAM_STR);
+        $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $statement->bindValue(':offset', $offset, PDO::PARAM_INT);
 
         try {
             $statement->execute();

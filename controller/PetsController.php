@@ -26,7 +26,10 @@ class PetsController
     public function getAllPets()
     {
         try {
-            $pets = $this->petsModel->getAllPets();
+            $limit = (int) $_GET['limit'];
+            $offset = (int) $_GET['offset'];
+
+            $pets = $this->petsModel->getAllPets($limit, $offset);
 
             if (!$pets) {
                 ResponseHelper::sendSuccessResponse([], 'No pets found');
@@ -71,8 +74,10 @@ class PetsController
             }
 
             $label = $param['label'];
+            $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 10;
+            $offset = isset($_GET['offset']) ? (int) $_GET['offset'] : 0;
 
-            $pets = $this->petsModel->getAllPetsByLabel($label);
+            $pets = $this->petsModel->getAllPetsByLabel($label, $limit, $offset);
 
             if (!$pets) {
                 ResponseHelper::sendSuccessResponse([], 'No pets found');
