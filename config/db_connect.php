@@ -1,9 +1,15 @@
 <?php
 
+use Helpers\ResponseHelper;
+use Helpers\HeaderHelper;
+
 require_once dirname(__DIR__) . '/config/load_env.php';
+
 
 function db_connect()
 {
+    HeaderHelper::setResponseHeaders();
+
     try {
         $environment = $_ENV['ENVIRONMENT'];
 
@@ -31,6 +37,7 @@ function db_connect()
             return $pdo;
         }
     } catch (PDOException $e) {
-        die("Database Connection failed: " . $e->getMessage());
+        ResponseHelper::sendDatabaseErrorResponse('Server Connection Failed. Please try again later.');
+        die();
     }
 }
