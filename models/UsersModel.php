@@ -97,7 +97,7 @@ class UsersModel
         $role = 'customer';
 
 
-        $query = "INSERT INTO " . self::USERS_TABLE . " (firstName, middleName, lastName, email, phoneNumber, gender, password, address, region, province, city, barangay, role) VALUES (:firstName, '', :lastName, :email, '', '', :password, '', '', '', '', '', :role)";
+        $query = "INSERT INTO " . self::USERS_TABLE . " (firstName, lastName, email, phoneNumber, gender, password, address, region, province, city, barangay, validIDImageURL, selfieImageURL, role) VALUES (:firstName, :lastName, :email, '', '', :password, '', '', '', '', '', '', '', :role)";
 
         $statement = $this->pdo->prepare($query);
 
