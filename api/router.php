@@ -56,12 +56,19 @@ switch ($request_method) {
     case 'POST':
         $payload = json_decode(file_get_contents('php://input'), true);
 
+
+
         if ($payload === null) {
             ResponseHelper::sendErrorResponse("Invalid payload or payload is empty", 400);
             return;
         }
 
-        $controller->$method($payload);
+        if (isset($handler['params'])) {
+            $controller->$method($handler['params'], $payload);
+            return;
+        } else {
+            $controller->$method($payload);
+        }
         break;
     case 'PUT':
         $payload = json_decode(file_get_contents('php://input'), true);

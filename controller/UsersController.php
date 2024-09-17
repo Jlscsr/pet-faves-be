@@ -43,7 +43,6 @@ class UsersController
             $responseData = [
                 'id' => $user['id'],
                 'firstName' => $user['firstName'],
-                'middleName' => $user['middleName'],
                 'lastName' => $user['lastName'],
                 'email' => $user['email'],
                 'phoneNumber' => $user['phoneNumber'],
@@ -53,6 +52,8 @@ class UsersController
                 'province' => $user['province'],
                 'city' => $user['city'],
                 'barangay' => $user['barangay'],
+                'validIDImageURL' => $user['validIDImageURL'] ?? null,
+                'selfieImageURL' => $user['selfieImageURL'] ?? null,
                 'created_at' => $user['created_at'],
                 'updated_at' => $user['updated_at']
             ];
@@ -92,7 +93,6 @@ class UsersController
             $responseData = [
                 'id' => $user['id'],
                 'firstName' => $user['firstName'],
-                'middleName' => $user['middleName'],
                 'lastName' => $user['lastName'],
                 'email' => $user['email'],
                 'phoneNumber' => $user['phoneNumber'],
@@ -102,11 +102,36 @@ class UsersController
                 'province' => $user['province'],
                 'city' => $user['city'],
                 'barangay' => $user['barangay'],
+                'validIDImageURL' => $user['validIDImageURL'] ?? null,
+                'selfieImageURL' => $user['selfieImageURL'] ?? null,
                 'created_at' => $user['created_at'],
                 'updated_at' => $user['updated_at']
             ];
 
             ResponseHelper::sendSuccessResponse($responseData, 'User found');
+        } catch (RuntimeException $e) {
+            ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function updateUserData($params, $payload)
+    {
+        try {
+            if (empty($payload) || !isset($params['id'])) {
+                ResponseHelper::sendErrorResponse("Invalid or missing id parameter", 400);
+                return;
+            }
+
+            $userID = $params['id'];
+
+            $isUserDataUpdated = $this->usersModel->updateUserData($userID, $payload);
+
+            if (!$isUserDataUpdated) {
+                ResponseHelper::sendErrorResponse("User not found", 404);
+                return;
+            }
+
+            ResponseHelper::sendSuccessResponse([], 'User data updated successfully');
         } catch (RuntimeException $e) {
             ResponseHelper::sendErrorResponse($e->getMessage());
         }

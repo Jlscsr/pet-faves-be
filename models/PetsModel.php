@@ -21,16 +21,49 @@ class PetsModel
 
     public function getAllPets($limit, $offset)
     {
-        $query = null;
-        if ($limit === 0 && $offset === 0) {
-            $query = "SELECT * FROM " . self::PETS_TABLE;
-        } else {
-            $query = "SELECT * FROM " . self::PETS_TABLE . " LIMIT :limit OFFSET :offset";
+        $query = "SELECT * FROM " . self::PETS_TABLE;
+
+        if ($limit !== 0 || $offset !== 0) {
+            $query .= " LIMIT :limit OFFSET :offset";
         }
 
         $statement = $this->pdo->prepare($query);
 
-        if ($limit !== 0 && $offset !== 0) {
+        if ($limit !== 0 || $offset !== 0) {
+            $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $statement->bindValue(':offset', $offset, PDO::PARAM_INT);
+        }
+
+        try {
+            $statement->execute();
+
+            return $statement->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function getAllPetsByAdoptionStatus($status, $limit, $offset)
+    {
+        $adoptionStatusMap = [
+            'available' => 0,
+            'pending' => 1,
+            'adopted' => 2,
+            'for approval' => 3
+        ];
+
+        $status = $adoptionStatusMap[$status];
+
+        $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE adoptionStatus = :status";
+
+        if ($limit !== 0 || $offset !== 0) {
+            $query .= " LIMIT :limit OFFSET :offset";
+        }
+
+        $statement = $this->pdo->prepare($query);
+        $statement->bindValue(':status', $status, PDO::PARAM_INT);
+
+        if ($limit !== 0 || $offset !== 0) {
             $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
             $statement->bindValue(':offset', $offset, PDO::PARAM_INT);
         }
@@ -171,28 +204,31 @@ class PetsModel
 
         $petName = $payload['petName'];
         $petAge = $payload['petAge'];
+        $petAgeCategory = $payload['petAgeCategory'];
         $petGender = $payload['petGender'];
         $petType = $payload['petType'];
         $petBreed = $payload['petBreed'];
         $petVacHistory = $payload['petVacHistory'];
         $petHistory = $payload['petHistory'];
         $petPhotoURL = $payload['petPhotoURL'];
-        $label = $payload['petLabel'];
+        $adoptionStatus = $payload['adoptionStatus'];
 
-        $query = "INSERT INTO " . self::PETS_TABLE . " (userID, petName, age, gender, petType, petBreed, petVacHistory, petHistory, petPhotoURL, label) VALUES (:userID, :petName, :petAge, :petGender, :petType, :petBreed, :petVacHistory, :petHistory, :petPhotoURL, :label)";
+
+        $query = "INSERT INTO " . self::PETS_TABLE . " (userID, petName, age, ageCategory, gender, petType, petBreed, petVacHistory, petHistory, petPhotoURL, adoptionStatus) VALUES (:userID, :petName, :petAge, :petAgeCategory, :petGender, :petType, :petBreed, :petVacHistory, :petHistory, :petPhotoURL, :adoptionStatus)";
         $statement = $this->pdo->prepare($query);
 
         $bindParams = [
             ':userID' => $userID,
             ':petName' => $petName,
             ':petAge' => $petAge,
+            ':petAgeCategory' => $petAgeCategory,
             ':petGender' => $petGender,
             ':petType' => $petType,
             ':petBreed' => $petBreed,
             ':petVacHistory' => $petVacHistory,
             ':petHistory' => $petHistory,
             ':petPhotoURL' => $petPhotoURL,
-            ':label' => $label,
+            ':adoptionStatus' => $adoptionStatus,
         ];
 
         foreach ($bindParams as $key => $value) {
@@ -205,6 +241,25 @@ class PetsModel
             return $statement->rowCount() > 0;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function updatePetAdoptionStatus($petID, $status)
+    {
+        $query = "UPDATE " . self::PETS_TABLE . " SET adoptionStatus = :status WHERE id = :petID";
+
+        $statement = $this->pdo->prepare($query);
+        $statement->bindValue(':status', $status, PDO::PARAM_INT);
+        $statement->bindValue(':petID', $petID, PDO::PARAM_INT);
+
+        try {
+
+            $statement->execute();
+
+            return $statement->rowCount() > 0;
+        } catch (RuntimeException $e) {
+            print_r($e->getMessage());
+            ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 }

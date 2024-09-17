@@ -7,6 +7,18 @@ class Route
     public function __construct()
     {
         $this->routes = [
+            "api/notifications/status/update/:id/:userID" => [
+                'handler' => 'NotificationsController@updateNotificationStatus',
+                'middleware' => false
+            ],
+            "api/notifications/add" => [
+                'handler' => 'NotificationsController@addNewNotification',
+                'middleware' => false
+            ],
+            "api/notifications/:userID/:status" => [
+                'handler' => 'NotificationsController@getAllNotificationsByUserIDAndStatus',
+                'middleware' => false
+            ],
             "api/pet/pet-feeds/id/:id" => [
                 "handler" => "PetFeedsController@getAllPetsFromPetFeedsByID",
                 "middleware" => false
@@ -27,27 +39,19 @@ class Route
                 "handler" => "PetFeedsController@getAllPetsFromPetFeeds",
                 "middleware" => false
             ],
-            "api/approvalQueue/id/:id" => [
-                "handler" => "ApprovalQueueController@getApprovalQueueByID",
+            "api/request/update/status/:id" => [
+                "handler" => "RequestsController@updateRequestStatus",
                 "middleware" => false
             ],
-            "api/approvalQueue/add" => [
-                "handler" => "ApprovalQueueController@addNewApprovalQueue",
+            "api/request/typeOfRequest/:type" => [
+                "handler" => "RequestsController@getRequestByTypeofRequest"
             ],
-            "api/request/adoption/status/update/:id" => [
-                "handler" => "AdoptionRequestsController@updateUserRequestStatus",
-                "middleware" => false
-            ],
-            "api/request/adoption/add" => [
-                "handler" => "AdoptionRequestsController@addNewUserRequest",
+            "api/request/add" => [
+                "handler" => "RequestsController@addNewUserRequest",
                 "middleware" => false
             ],
             "api/request/:id" => [
-                "handler" => "AdoptionRequestsController@getUserRequestByUserID",
-                "middleware" => false
-            ],
-            "api/requests/adoption/:status" => [
-                "handler" => "AdoptionRequestsController@getAllUserRequestsByStatus",
+                "handler" => "RequestsController@getUserRequestByUserID",
                 "middleware" => false
             ],
             "api/pets/ageCategories" => [
@@ -74,8 +78,16 @@ class Route
                 "handler" => "PetsController@getAllPetTypes",
                 "middleware" => false
             ],
+            "api/pets/status/:status" => [
+                "handler" => "PetsController@getAllPetsByAdoptionStatus",
+                "middleware" => false
+            ],
             "api/pets" => [
                 "handler" => "PetsController@getAllPets",
+                "middleware" => false
+            ],
+            "api/user/update/:id" => [
+                'handler' => "UsersController@updateUserData",
                 "middleware" => false
             ],
             "api/user/id/:id" => [
@@ -114,22 +126,30 @@ class Route
                 return $handler;
             }
 
-            // Check for dynamic parameters
+            // Split the route and request into parts
             $route_parts = explode('/', $route);
-            $requests_parts = explode('/', $url_request);
+            $request_parts = explode('/', $url_request);
 
-            if (count($route_parts) === count($requests_parts)) {
+            // Check if the number of parts match
+            if (count($route_parts) === count($request_parts)) {
                 $params = [];
+                $is_match = true;
+
+                // Loop through each part to extract parameters or check for match
                 for ($i = 0; $i < count($route_parts); $i++) {
+                    // Check for dynamic parameter (starts with ':')
                     if (strpos($route_parts[$i], ':') === 0) {
-                        $param_name = substr($route_parts[$i], 1);
-                        $params[$param_name] = $requests_parts[$i];
-                    } else if ($route_parts[$i] !== $requests_parts[$i]) {
+                        $param_name = substr($route_parts[$i], 1);  // Remove leading ':'
+                        $params[$param_name] = $request_parts[$i];
+                    } else if ($route_parts[$i] !== $request_parts[$i]) {
+                        // If parts do not match, mark as not matching
+                        $is_match = false;
                         break;
                     }
                 }
 
-                if (!empty($params)) {
+                // If everything matches, return the handler and parameters
+                if ($is_match) {
                     return [
                         'handler' => $handler,
                         'params' => $params
@@ -138,6 +158,7 @@ class Route
             }
         }
 
+        // If no match is found, return null
         return null;
     }
 }

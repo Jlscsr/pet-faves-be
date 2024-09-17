@@ -21,7 +21,7 @@ class UsersModel
 
     public function getAllUsers()
     {
-        $query = "SELECT id, firstName, middleName lastName, email, phoneNUmber, address, region, province, city, barangay, created_at, updated_at FROM " . self::USERS_TABLE;
+        $query = "SELECT id, firstName lastName, email, phoneNUmber, address, region, province, city, barangay, created_at, updated_at FROM " . self::USERS_TABLE;
 
         $statement = $this->pdo->prepare($query);
 
@@ -112,6 +112,35 @@ class UsersModel
         foreach ($bind_params as $param => $value) {
             $statement->bindValue($param, $value, PDO::PARAM_STR);
         }
+
+        try {
+            $statement->execute();
+
+            return $statement->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function updateUserData($userID, $payload)
+    {
+        $query = "UPDATE " . self::USERS_TABLE . " SET ";
+
+        foreach ($payload as $key => $value) {
+            if ($key === array_key_last($payload)) {
+                $query .= $key . " = :" . $key . " WHERE id = :userID";
+            } else {
+                $query .= $key . " = :" . $key . ", ";
+            }
+        }
+
+        $statement = $this->pdo->prepare($query);
+
+        foreach ($payload as $key => $value) {
+            $statement->bindValue(':' . $key, $value, PDO::PARAM_STR);
+        }
+
+        $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
 
         try {
             $statement->execute();

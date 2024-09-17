@@ -26,10 +26,36 @@ class PetsController
     public function getAllPets()
     {
         try {
-            $limit = (int) $_GET['limit'];
-            $offset = (int) $_GET['offset'];
+            $limit = (int) $_GET['limit'] ?? 0;
+            $offset = (int) $_GET['offset'] ?? 0;
 
             $pets = $this->petsModel->getAllPets($limit, $offset);
+
+            if (!$pets) {
+                ResponseHelper::sendSuccessResponse([], 'No pets found');
+                return;
+            }
+
+            ResponseHelper::sendSuccessResponse($pets, 'Pets found');
+        } catch (RuntimeException $e) {
+            ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function getAllPetsByAdoptionStatus($param)
+    {
+        try {
+            if (empty($param) || !isset($param['status'])) {
+                ResponseHelper::sendErrorResponse("Invalid or missing pet status parameter", 400);
+                return;
+            }
+
+            $limit = (int) $_GET['limit'] ?? 0;
+            $offset = (int) $_GET['offset'] ?? 0;
+
+            $status = $param['status'];
+
+            $pets = $this->petsModel->getAllPetsByAdoptionStatus($status, $limit, $offset);
 
             if (!$pets) {
                 ResponseHelper::sendSuccessResponse([], 'No pets found');

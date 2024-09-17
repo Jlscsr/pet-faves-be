@@ -1,44 +1,37 @@
 <?php
 
 use Helpers\ResponseHelper;
-use Models\AdoptionRequestsModel;
+use Models\RequestsModel;
 
-class AdoptionRequestsController
+class RequestsController
 {
     private $pdo;
-    private $adoptionRequestModel;
+    private $requestsModel;
 
     public function __construct($pdo)
     {
         $this->pdo = $pdo;
-        $this->adoptionRequestModel = new AdoptionRequestsModel($this->pdo);
+        $this->requestsModel = new RequestsModel($this->pdo);
     }
 
-    public function getAllUserRequestsByStatus($param)
+    public function getRequestByTypeofRequest($param)
     {
         if (empty($param)) {
             ResponseHelper::sendErrorResponse("Invalid or missing status parameter", 400);
             return;
         }
 
-        $status = null;
-
-        // chekc if the status in param has "-", if true, break it and store it in 2 vartiables
-        if (strpos($param['status'], '-') !== false) {
-            $status = explode('-', $param['status']);
-        } else {
-            $status = $param['status'];
-        }
+        $typeOfRequest = $param['type'];
 
         try {
-            $adoptionRequests = $this->adoptionRequestModel->getAllUserRequestsByStatus($status);
+            $requestsLists = $this->requestsModel->getRequestByTypeofRequest($typeOfRequest);
 
-            if (!$adoptionRequests) {
+            if (!$requestsLists) {
                 ResponseHelper::sendSuccessResponse([], 'No adoption requests found');
                 return;
             }
 
-            ResponseHelper::sendSuccessResponse($adoptionRequests, 'Adoption requests found');
+            ResponseHelper::sendSuccessResponse($requestsLists, 'Requests found');
         } catch (RuntimeException $e) {
             ResponseHelper::sendErrorResponse($e->getMessage());
         }
@@ -55,7 +48,7 @@ class AdoptionRequestsController
             $id = (int) $param['id'];
 
 
-            $adoptionRequest = $this->adoptionRequestModel->getUserRequestByUserID($id);
+            $adoptionRequest = $this->requestsModel->getUserRequestByUserID($id);
 
             if (!$adoptionRequest) {
                 ResponseHelper::sendSuccessResponse([], 'No adoption request found');
@@ -76,7 +69,7 @@ class AdoptionRequestsController
                 return;
             }
 
-            $request = $this->adoptionRequestModel->addNewUserRequest($payload);
+            $request = $this->requestsModel->addNewUserRequest($payload);
 
             if (!$request) {
                 ResponseHelper::sendErrorResponse("Failed to add pet", 400);
@@ -89,7 +82,7 @@ class AdoptionRequestsController
         }
     }
 
-    public function updateUserRequestStatus($param, $payload)
+    public function updateRequestStatus($param, $payload)
     {
 
         try {
@@ -100,7 +93,7 @@ class AdoptionRequestsController
 
             $id = (int) $param['id'];
 
-            $request = $this->adoptionRequestModel->updateUserRequestStatus($id, $payload);
+            $request = $this->requestsModel->updateRequestStatus($id, $payload);
 
             if (!$request) {
                 ResponseHelper::sendErrorResponse("Failed to update adoption request", 400);
