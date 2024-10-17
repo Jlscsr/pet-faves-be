@@ -97,6 +97,8 @@ class AuthenticationController
         ResponseHelper::sendSuccessResponse(['rl' => $response['role']], 'Logged In success', 201);
     }
 
+    public function getUserByUserUID() {}
+
     public function logout()
     {
         $this->cookieManager->resetCookieHeader();

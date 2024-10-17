@@ -54,26 +54,42 @@ class NotificationsModel
         $typeOfRequest = $payload['typeOfRequest'];
         $status = 'unread';
 
-        $query = "INSERT INTO " . self::NOTIFICATIONS_TABLE . " (userID, requestID, typeOfRequest, status) VALUES (:userID, :requestID, :typeOfRequest, :status)";
+        // check first if the id is already exist
+        $query = "SELECT * FROM " . self::NOTIFICATIONS_TABLE . " WHERE userID = :userID AND requestID = :requestID AND typeOfRequest = :typeOfRequest";
 
         $statement = $this->pdo->prepare($query);
-
-        $bindParams = [
-            ':userID' => $userID,
-            ':requestID' => $requestID,
-            ':typeOfRequest' => $typeOfRequest,
-            ':status' => $status
-        ];
-
-        foreach ($bindParams as $key => $value) {
-            $statement->bindValue($key, $value, PDO::PARAM_STR);
-        }
+        $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
+        $statement->bindValue(':requestID', $requestID, PDO::PARAM_STR);
+        $statement->bindValue(':typeOfRequest', $typeOfRequest, PDO::PARAM_STR);
 
         try {
             $statement->execute();
 
+            if ($statement->rowCount() > 0) {
+                // update the status of existing one to unread
+                return $this->updateNotificationStatus($statement->fetch(PDO::FETCH_ASSOC)['id'], $userID, $status);
+            }
+
+            $query = "INSERT INTO " . self::NOTIFICATIONS_TABLE . " (userID, requestID, typeOfRequest, status) VALUES (:userID, :requestID, :typeOfRequest, :status)";
+
+            $statement = $this->pdo->prepare($query);
+
+            $bindParams = [
+                ':userID' => $userID,
+                ':requestID' => $requestID,
+                ':typeOfRequest' => $typeOfRequest,
+                ':status' => $status
+            ];
+
+            foreach ($bindParams as $key => $value) {
+                $statement->bindValue($key, $value, PDO::PARAM_STR);
+            }
+
+            $statement->execute();
+
             return $statement->rowCount() > 0;
-        } catch (RuntimeException $e) {
+        } catch (PDOException $e) {
+            print_r($e->getMessage());
             throw new RuntimeException($e->getMessage());
         }
     }
@@ -96,6 +112,7 @@ class NotificationsModel
             $statement->execute();
             return $statement->rowCount() > 0;
         } catch (PDOException $e) {
+            print_r($e->getMessage());
             throw new RuntimeException($e->getMessage());
         }
     }

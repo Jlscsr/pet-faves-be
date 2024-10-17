@@ -26,7 +26,6 @@ class NotificationsController
 
         try {
             $notificationsLists = $this->notificationsModel->getAllNotificationsByUserIDAndStatus($userID, $status);
-
             if (!$notificationsLists) {
                 ResponseHelper::sendSuccessResponse([], 'No notifications found');
                 return;
