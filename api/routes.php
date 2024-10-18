@@ -7,6 +7,14 @@ class Route
     public function __construct()
     {
         $this->routes = [
+            "api/appointments/request/add" => [
+                'handler' => "AppointmentsController@addNewRequestAppointment",
+                'middleware' => false
+            ],
+            "api/appointments/request/:id" => [
+                'handler' => "AppointmentsController@getRequestAppointmentByRequestID",
+                'middleware' => false
+            ],
             "api/notifications/status/update/:id/:userID" => [
                 'handler' => 'NotificationsController@updateNotificationStatus',
                 'middleware' => false
@@ -50,7 +58,11 @@ class Route
                 "handler" => "RequestsController@addNewUserRequest",
                 "middleware" => false
             ],
-            "api/request/:id" => [
+            "api/request/user/:userID/:id" => [
+                "handler" => "RequestsController@getUserRequestByUserIDAndID",
+                "middleware" => false
+            ],
+            "api/request/user/:id" => [
                 "handler" => "RequestsController@getUserRequestByUserID",
                 "middleware" => false
             ],

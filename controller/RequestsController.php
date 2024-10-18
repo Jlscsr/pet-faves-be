@@ -61,6 +61,30 @@ class RequestsController
         }
     }
 
+    public function getUserRequestByUserIDAndID($param)
+    {
+        try {
+            if (empty($param) || !isset($param['id']) || !isset($param['userID'])) {
+                ResponseHelper::sendErrorResponse("Invalid or missing id parameter", 400);
+                return;
+            }
+
+            $id = (int) $param['id'];
+            $userID = (int) $param['userID'];
+
+            $adoptionRequest = $this->requestsModel->getUserRequestByUserIDAndID($id, $userID);
+
+            if (!$adoptionRequest) {
+                ResponseHelper::sendSuccessResponse([], 'No adoption request found');
+                return;
+            }
+
+            ResponseHelper::sendSuccessResponse($adoptionRequest, 'Adoption request found');
+        } catch (RuntimeException $e) {
+            ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
     public function addNewUserRequest($payload)
     {
         try {

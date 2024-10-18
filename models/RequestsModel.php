@@ -88,6 +88,28 @@ class RequestsModel
         }
     }
 
+    public function getUserRequestByUserIDAndID($id, $requestID)
+    {
+        if (!$id || !$requestID) {
+            throw new InvalidArgumentException("Invalid or missing id parameter");
+            return;
+        }
+
+        $query = "SELECT pets_tb.*, requests_tb.*, pets_tb.created_at AS pet_created_at, pets_tb.updated_at AS pet_updated_at FROM " . self::REQUESTS_TABLE . " INNER JOIN pets_tb ON pets_tb.id = requests_tb.petID WHERE requests_tb.userID = :id AND requests_tb.id = :requestID";
+        $statement = $this->pdo->prepare($query);
+
+        $statement->bindValue(':id', $id, PDO::PARAM_INT);
+        $statement->bindValue(':requestID', $requestID, PDO::PARAM_INT);
+
+        try {
+            $statement->execute();
+
+            return $statement->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
 
     public function addNewUserRequest($payload)
     {
