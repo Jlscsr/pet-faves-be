@@ -142,7 +142,7 @@ class RequestsModel
 
             $lastInsertedID = $this->pdo->lastInsertId();
 
-            if ($typeOfRequest === 'adopting') {
+            if ($typeOfRequest === 'adoption') {
                 $updatePetAdoptionStatus = $this->petsModel->updatePetAdoptionStatus($petID, 1);
             }
 

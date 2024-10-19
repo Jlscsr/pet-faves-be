@@ -66,6 +66,10 @@ class Route
                 "handler" => "RequestsController@getUserRequestByUserID",
                 "middleware" => false
             ],
+            "api/request/:id" => [
+                "handler" => "RequestsController@getRequestByID",
+                "middleware" => false
+            ],
             "api/pets/ageCategories" => [
                 "handler" => "PetsController@getAllPetsAgeCategories",
                 "middleware" => false,

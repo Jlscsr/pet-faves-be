@@ -14,6 +14,29 @@ class RequestsController
         $this->requestsModel = new RequestsModel($this->pdo);
     }
 
+    public function getRequestByID($param)
+    {
+        try {
+            if (empty($param) || !isset($param['id'])) {
+                ResponseHelper::sendErrorResponse("Invalid or missing id parameter", 400);
+                return;
+            }
+
+            $id = (int) $param['id'];
+
+            $adoptionRequest = $this->requestsModel->getRequestByID($id);
+
+            if (!$adoptionRequest) {
+                ResponseHelper::sendSuccessResponse([], 'No adoption request found');
+                return;
+            }
+
+            ResponseHelper::sendSuccessResponse($adoptionRequest, 'Adoption request found');
+        } catch (RuntimeException $e) {
+            ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
     public function getRequestByTypeofRequest($param)
     {
         if (empty($param)) {

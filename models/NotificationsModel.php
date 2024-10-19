@@ -26,7 +26,10 @@ class NotificationsModel
             return;
         }
 
-        $query = "SELECT * FROM " . self::NOTIFICATIONS_TABLE . " WHERE userID = :userID AND status = :status ORDER BY id DESC";
+        $query = "SELECT n.*, r.* FROM " . self::NOTIFICATIONS_TABLE . " n 
+              JOIN requests_tb r ON n.requestID = r.id 
+              WHERE n.userID = :userID AND n.notificationStatus = :status 
+              ORDER BY n.id DESC";
 
         $statement = $this->pdo->prepare($query);
 
@@ -70,7 +73,7 @@ class NotificationsModel
                 return $this->updateNotificationStatus($statement->fetch(PDO::FETCH_ASSOC)['id'], $userID, $status);
             }
 
-            $query = "INSERT INTO " . self::NOTIFICATIONS_TABLE . " (userID, requestID, typeOfRequest, status) VALUES (:userID, :requestID, :typeOfRequest, :status)";
+            $query = "INSERT INTO " . self::NOTIFICATIONS_TABLE . " (userID, requestID, typeOfRequest, notificationStatus) VALUES (:userID, :requestID, :typeOfRequest, :status)";
 
             $statement = $this->pdo->prepare($query);
 
@@ -101,7 +104,7 @@ class NotificationsModel
             return;
         }
 
-        $query = "UPDATE " . self::NOTIFICATIONS_TABLE . " SET status = :status WHERE id = :id AND userID = :userID";
+        $query = "UPDATE " . self::NOTIFICATIONS_TABLE . " SET notificationStatus = :status WHERE userID = :userID AND requestID = :id";
 
         $statement = $this->pdo->prepare($query);
         $statement->bindValue(':status', $status, PDO::PARAM_STR);
@@ -112,7 +115,6 @@ class NotificationsModel
             $statement->execute();
             return $statement->rowCount() > 0;
         } catch (PDOException $e) {
-            print_r($e->getMessage());
             throw new RuntimeException($e->getMessage());
         }
     }
