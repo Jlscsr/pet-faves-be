@@ -67,6 +67,28 @@ class RequestsModel
         }
     }
 
+    public function getAllRequestsByStatus($status)
+    {
+
+        if (!$status) {
+            throw new InvalidArgumentException("Invalid or missing status parameter");
+            return;
+        }
+
+        $query = "SELECT pets_tb.*, requests_tb.*, users_tb.* FROM " . self::REQUESTS_TABLE . " INNER JOIN pets_tb ON pets_tb.id = requests_tb.petID INNER JOIN users_tb ON users_tb.id = requests_tb.userID WHERE requests_tb.status = :status";
+        $statement = $this->pdo->prepare($query);
+
+        $statement->bindValue(':status', $status, PDO::PARAM_STR);
+
+        try {
+            $statement->execute();
+
+            return $statement->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
     public function getUserRequestByUserID($id)
     {
         if (!$id) {

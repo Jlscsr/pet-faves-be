@@ -60,6 +60,30 @@ class RequestsController
         }
     }
 
+    public function getAllRequestsByStatus($param)
+    {
+
+        try {
+            if (empty($param)) {
+                ResponseHelper::sendErrorResponse("Invalid or missing status parameter", 400);
+                return;
+            }
+
+            $status = $param['status'];
+
+            $requestsLists = $this->requestsModel->getAllRequestsByStatus($status);
+
+            if (!$requestsLists) {
+                ResponseHelper::sendSuccessResponse([], 'No adoption requests found');
+                return;
+            }
+
+            ResponseHelper::sendSuccessResponse($requestsLists, 'Requests found');
+        } catch (RuntimeException $e) {
+            ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
     public function getUserRequestByUserID($param)
     {
         try {

@@ -51,6 +51,10 @@ class Route
                 "handler" => "RequestsController@updateRequestStatus",
                 "middleware" => false
             ],
+            "api/request/status/:status" => [
+                "handler" => "RequestsController@getAllRequestsByStatus",
+                "middleware" => false
+            ],
             "api/request/typeOfRequest/:type" => [
                 "handler" => "RequestsController@getRequestByTypeofRequest"
             ],
