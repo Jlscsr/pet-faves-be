@@ -54,8 +54,8 @@ class UsersController
                 'barangay' => $user['barangay'],
                 'validIDImageURL' => $user['validIDImageURL'] ?? null,
                 'selfieImageURL' => $user['selfieImageURL'] ?? null,
-                'created_at' => $user['created_at'],
-                'updated_at' => $user['updated_at']
+                'createdAt' => $user['createdAt'],
+                'updatedAt' => $user['updatedAt']
             ];
 
             ResponseHelper::sendSuccessResponse($responseData, 'User found');
@@ -104,8 +104,8 @@ class UsersController
                 'barangay' => $user['barangay'],
                 'validIDImageURL' => $user['validIDImageURL'] ?? null,
                 'selfieImageURL' => $user['selfieImageURL'] ?? null,
-                'created_at' => $user['created_at'],
-                'updated_at' => $user['updated_at']
+                'createdAt' => $user['createdAt'],
+                'updatedAt' => $user['updatedAt']
             ];
 
             ResponseHelper::sendSuccessResponse($responseData, 'User found');

@@ -117,7 +117,7 @@ class RequestsModel
             return;
         }
 
-        $query = "SELECT pets_tb.*, requests_tb.*, pets_tb.created_at AS pet_created_at, pets_tb.updated_at AS pet_updated_at FROM " . self::REQUESTS_TABLE . " INNER JOIN pets_tb ON pets_tb.id = requests_tb.petID WHERE requests_tb.userID = :id AND requests_tb.id = :requestID";
+        $query = "SELECT pets_tb.*, requests_tb.*, pets_tb.createdAt AS petCreatedAt, pets_tb.updatedAt AS petUpdatedAt FROM " . self::REQUESTS_TABLE . " INNER JOIN pets_tb ON pets_tb.id = requests_tb.petID WHERE requests_tb.userID = :id AND requests_tb.id = :requestID";
         $statement = $this->pdo->prepare($query);
 
         $statement->bindValue(':id', $id, PDO::PARAM_INT);

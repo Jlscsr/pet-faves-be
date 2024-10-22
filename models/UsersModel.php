@@ -21,7 +21,7 @@ class UsersModel
 
     public function getAllUsers()
     {
-        $query = "SELECT id, firstName lastName, email, phoneNUmber, address, region, province, city, barangay, created_at, updated_at FROM " . self::USERS_TABLE;
+        $query = "SELECT id, firstName lastName, email, phoneNUmber, address, region, province, city, barangay, createdAt, updatedAt FROM " . self::USERS_TABLE;
 
         $statement = $this->pdo->prepare($query);
 

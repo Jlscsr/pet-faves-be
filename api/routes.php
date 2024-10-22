@@ -27,25 +27,13 @@ class Route
                 'handler' => 'NotificationsController@getAllNotificationsByUserIDAndStatus',
                 'middleware' => false
             ],
-            "api/pet/pet-feeds/id/:id" => [
-                "handler" => "PetFeedsController@getAllPetsFromPetFeedsByID",
-                "middleware" => false
+            "api/posts/:typeOfPost" => [
+                'handler' => 'PostsController@getAllPostsByTypeOfPost',
+                'middleware' => false
             ],
-            "api/pet/pet-feeds/approval-status/update/:id" => [
-                "handler" => "PetFeedsController@updatePetFeedsApprovalStatus",
-                "middleware" => false
-            ],
-            "api/pet/pet-feeds/add" => [
-                "handler" => "PetFeedsController@addNewPetToPetFeeds",
-                "middleware" => false
-            ],
-            "api/pet/pet-feeds/status/:status" => [
-                "handler" => "PetFeedsController@getAllPetsFromPetFeedsByStatus",
-                "middleware" => false
-            ],
-            "api/pet/pet-feeds" => [
-                "handler" => "PetFeedsController@getAllPetsFromPetFeeds",
-                "middleware" => false
+            "api/posts" => [
+                'handler' => 'PostsController@getAllPosts',
+                'middleware' => false
             ],
             "api/request/update/status/:id" => [
                 "handler" => "RequestsController@updateRequestStatus",
