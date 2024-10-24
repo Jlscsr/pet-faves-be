@@ -7,6 +7,34 @@ class Route
     public function __construct()
     {
         $this->routes = [
+            "api/post/interaction/delete/:postID/:userID" => [
+                'handler' => "PostsInteractionController@deletePostInteraction",
+                'middleware' => false
+            ],
+            "api/post/interaction/add" => [
+                'handler' => "PostsInteractionController@addNewPostInteraction",
+                'middleware' => false
+            ],
+            "api/post/approvalStatus/update/:postType/:postID" => [
+                'handler'  => "PostsController@updatePostApprovalStatus",
+                'middleware' => false
+            ],
+            "api/post/event/add" => [
+                'handler' => "PostsController@addNewEventPost",
+                'middleware' => false
+            ],
+            "api/post/media/add" => [
+                'handler' => "PostsController@addNewPostMedia",
+                'middleware' => false
+            ],
+            "api/post/media/update/:postID" => [
+                'handler' => "PostsController@updatePostMedia",
+                'middleware' => false
+            ],
+            "api/post/add" => [
+                'handler' => 'PostsController@addNewPost',
+                'middleware' => false
+            ],
             "api/appointments/request/add" => [
                 'handler' => "AppointmentsController@addNewRequestAppointment",
                 'middleware' => false
@@ -31,7 +59,7 @@ class Route
                 'handler' => 'PostsController@getAllPostsByTypeOfPost',
                 'middleware' => false
             ],
-            "api/posts" => [
+            "api/posts/approvalStatus/:approvalStatus" => [
                 'handler' => 'PostsController@getAllPosts',
                 'middleware' => false
             ],
@@ -129,28 +157,22 @@ class Route
     public function get_route($url_request)
     {
         foreach ($this->routes as $route => $handler) {
-            // Check for direct match
             if ($route === $url_request) {
                 return $handler;
             }
 
-            // Split the route and request into parts
             $route_parts = explode('/', $route);
             $request_parts = explode('/', $url_request);
 
-            // Check if the number of parts match
             if (count($route_parts) === count($request_parts)) {
                 $params = [];
                 $is_match = true;
 
-                // Loop through each part to extract parameters or check for match
                 for ($i = 0; $i < count($route_parts); $i++) {
-                    // Check for dynamic parameter (starts with ':')
                     if (strpos($route_parts[$i], ':') === 0) {
                         $param_name = substr($route_parts[$i], 1);  // Remove leading ':'
                         $params[$param_name] = $request_parts[$i];
                     } else if ($route_parts[$i] !== $request_parts[$i]) {
-                        // If parts do not match, mark as not matching
                         $is_match = false;
                         break;
                     }

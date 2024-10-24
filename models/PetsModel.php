@@ -198,8 +198,8 @@ class PetsModel
 
         $userID = null;
 
-        if (isset($payload['user_id'])) {
-            $userID = $payload['user_id'];
+        if (isset($payload['userID'])) {
+            $userID = $payload['userID'];
         }
 
         $petName = $payload['petName'];
@@ -212,9 +212,11 @@ class PetsModel
         $petHistory = $payload['petHistory'];
         $petPhotoURL = $payload['petPhotoURL'];
         $adoptionStatus = $payload['adoptionStatus'];
+        $approvalStatus = 'pending';
+        $postType = 'adoption';
 
 
-        $query = "INSERT INTO " . self::PETS_TABLE . " (userID, petName, age, ageCategory, gender, petType, petBreed, petVacHistory, petHistory, petPhotoURL, adoptionStatus) VALUES (:userID, :petName, :petAge, :petAgeCategory, :petGender, :petType, :petBreed, :petVacHistory, :petHistory, :petPhotoURL, :adoptionStatus)";
+        $query = "INSERT INTO " . self::PETS_TABLE . " (userOwnerID, petName, age, ageCategory, gender, petType, petBreed, petVacHistory, petHistory, petPhotoURL, adoptionStatus, approvalStatus, postType) VALUES (:userID, :petName, :petAge, :petAgeCategory, :petGender, :petType, :petBreed, :petVacHistory, :petHistory, :petPhotoURL, :adoptionStatus, :approvalStatus, :postType)";
         $statement = $this->pdo->prepare($query);
 
         $bindParams = [
@@ -229,6 +231,8 @@ class PetsModel
             ':petHistory' => $petHistory,
             ':petPhotoURL' => $petPhotoURL,
             ':adoptionStatus' => $adoptionStatus,
+            ':approvalStatus' => $approvalStatus,
+            ':postType' => $postType,
         ];
 
         foreach ($bindParams as $key => $value) {
