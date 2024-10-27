@@ -104,6 +104,7 @@ class UsersController
                 'barangay' => $user['barangay'],
                 'validIDImageURL' => $user['validIDImageURL'] ?? null,
                 'selfieImageURL' => $user['selfieImageURL'] ?? null,
+                'role' => $user['role'],
                 'createdAt' => $user['createdAt'],
                 'updatedAt' => $user['updatedAt']
             ];
