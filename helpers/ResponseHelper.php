@@ -27,6 +27,7 @@ class ResponseHelper
 
         http_response_code($status_code);
         echo json_encode($response);
+        return;
     }
 
     /**

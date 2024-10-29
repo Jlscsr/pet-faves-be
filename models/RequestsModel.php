@@ -3,59 +3,29 @@
 namespace Models;
 
 use Models\PetsModel;
-use Models\UsersModel;
+
 use PDOException;
 
 use PDO;
 
 use RuntimeException;
-use InvalidArgumentException;
 
 class RequestsModel
 {
     private $pdo;
-    private $petsModel;
     private const REQUESTS_TABLE = 'requests_tb';
 
     public function __construct($pdo)
     {
         $this->pdo = $pdo;
         $this->petsModel = new PetsModel($this->pdo);
-        $this->usersModel = new UsersModel($this->pdo);
     }
 
-    public function getRequestByTypeofRequest($type)
+    public function getRequestByID(int $id)
     {
-        if (!$type) {
-            throw new InvalidArgumentException("Invalid or missing status parameter");
-            return;
-        }
-
-        $query = "SELECT * FROM " . self::REQUESTS_TABLE . " WHERE typeOfRequest = :type ORDER BY id DESC";
-
-        $statement = $this->pdo->prepare($query);
-
-        $statement->bindValue(':type', $type, PDO::PARAM_STR);
-
-        try {
-            $statement->execute();
-
-            return $statement->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            throw new RuntimeException($e->getMessage());
-        }
-    }
-
-    public function getRequestByID($id)
-    {
-        if (!$id) {
-            throw new InvalidArgumentException("Invalid or missing id parameter");
-            return;
-        }
-
         $query = "SELECT * FROM " . self::REQUESTS_TABLE . " WHERE id = :id";
-        $statement = $this->pdo->prepare($query);
 
+        $statement = $this->pdo->prepare($query);
         $statement->bindValue(':id', $id, PDO::PARAM_INT);
 
         try {
@@ -67,17 +37,27 @@ class RequestsModel
         }
     }
 
-    public function getAllRequestsByStatus($status)
+    public function getRequestByTypeofRequest(string $typeOfRequest)
     {
+        $query = "SELECT * FROM " . self::REQUESTS_TABLE . " WHERE typeOfRequest = :typeOfRequest AND status != 'completed' AND status != 'cancelled'";
 
-        if (!$status) {
-            throw new InvalidArgumentException("Invalid or missing status parameter");
-            return;
-        }
-
-        $query = "SELECT pets_tb.*, requests_tb.*, users_tb.* FROM " . self::REQUESTS_TABLE . " INNER JOIN pets_tb ON pets_tb.id = requests_tb.petID INNER JOIN users_tb ON users_tb.id = requests_tb.userID WHERE requests_tb.status = :status";
         $statement = $this->pdo->prepare($query);
+        $statement->bindValue(':typeOfRequest', $typeOfRequest, PDO::PARAM_STR);
 
+        try {
+            $statement->execute();
+
+            return $statement->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function getAllRequestsByStatus(string $status)
+    {
+        $query = "SELECT * FROM " . self::REQUESTS_TABLE . " WHERE status = :status";
+
+        $statement = $this->pdo->prepare($query);
         $statement->bindValue(':status', $status, PDO::PARAM_STR);
 
         try {
@@ -89,17 +69,12 @@ class RequestsModel
         }
     }
 
-    public function getUserRequestByUserID($id)
+    public function getUserRequestByUserID(int $userID)
     {
-        if (!$id) {
-            throw new InvalidArgumentException("Invalid or missing id parameter");
-            return;
-        }
+        $query = "SELECT * FROM " . self::REQUESTS_TABLE . " WHERE userID = :userID";
 
-        $query = "SELECT pets_tb.*, requests_tb.* FROM " . self::REQUESTS_TABLE . " INNER JOIN pets_tb ON pets_tb.id = requests_tb.petID WHERE requests_tb.userID = :id";
         $statement = $this->pdo->prepare($query);
-
-        $statement->bindValue(':id', $id, PDO::PARAM_INT);
+        $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
 
         try {
             $statement->execute();
@@ -110,18 +85,13 @@ class RequestsModel
         }
     }
 
-    public function getUserRequestByUserIDAndID($id, $requestID)
+    public function getUserRequestByUserIDAndID(int $userID, int $id)
     {
-        if (!$id || !$requestID) {
-            throw new InvalidArgumentException("Invalid or missing id parameter");
-            return;
-        }
+        $query = "SELECT * FROM " . self::REQUESTS_TABLE . " WHERE userID = :userID AND id = :id";
 
-        $query = "SELECT pets_tb.*, requests_tb.*, pets_tb.createdAt AS petCreatedAt, pets_tb.updatedAt AS petUpdatedAt FROM " . self::REQUESTS_TABLE . " INNER JOIN pets_tb ON pets_tb.id = requests_tb.petID WHERE requests_tb.userID = :id AND requests_tb.id = :requestID";
         $statement = $this->pdo->prepare($query);
-
         $statement->bindValue(':id', $id, PDO::PARAM_INT);
-        $statement->bindValue(':requestID', $requestID, PDO::PARAM_INT);
+        $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
 
         try {
             $statement->execute();
@@ -133,46 +103,35 @@ class RequestsModel
     }
 
 
-    public function addNewUserRequest($payload)
+
+    public function addNewUserRequest(array $payload)
     {
-        if (!is_array($payload) && empty($payload)) {
-            throw new InvalidArgumentException("Invalid payload or payload is empty");
-        }
-
-        $userID = $payload['userID'];
-        $petID = $payload['petID'] ?? null;
-        $typeOfRequest = $payload['typeOfRequest'];
-        $status = $payload['status'];
-
-        $query = "INSERT INTO " . self::REQUESTS_TABLE . " (userID, petID, typeOfRequest, status) VALUES (:userID, :petID, :typeOfRequest, :status)";
-
-        $statement = $this->pdo->prepare($query);
-
-        $bindParams = [
-            ':userID' => $userID,
-            ':petID' => $petID,
-            ':typeOfRequest' => $typeOfRequest,
-            ':status' => $status,
-        ];
-
-        foreach ($bindParams as $key => $value) {
-            $statement->bindValue($key, $value, PDO::PARAM_STR);
-        }
-
         try {
+            $userID = (int) $payload['userID'];
+            $petID = (int) $payload['petID'] ?? null;
+            $typeOfRequest = $payload['typeOfRequest'];
+            $status = $payload['status'];
+
+            $query = "INSERT INTO " . self::REQUESTS_TABLE . " (userID, petID, typeOfRequest, status) VALUES (:userID, :petID, :typeOfRequest, :status)";
+
+            $statement = $this->pdo->prepare($query);
+            $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
+            $statement->bindValue(':petID', $petID, PDO::PARAM_INT);
+            $statement->bindValue(':typeOfRequest', $typeOfRequest, PDO::PARAM_STR);
+            $statement->bindValue(':status', $status, PDO::PARAM_STR);
+
             $statement->execute();
 
             $lastInsertedID = $this->pdo->lastInsertId();
 
             if ($typeOfRequest === 'adoption') {
                 $updatePetAdoptionStatus = $this->petsModel->updatePetAdoptionStatus($petID, 1);
+
+                if (!$updatePetAdoptionStatus) {
+                    throw new RuntimeException("Failed to update pet adoption status");
+                }
             }
 
-            if (!$updatePetAdoptionStatus) {
-                throw new RuntimeException("Failed to update pet adoption status");
-            }
-
-            // Construct and execute a SELECT query to fetch the last inserted data
             $selectQuery = "SELECT * FROM " . self::REQUESTS_TABLE . " WHERE id = :lastInsertedID";
             $selectStatement = $this->pdo->prepare($selectQuery);
             $selectStatement->bindValue(':lastInsertedID', $lastInsertedID, PDO::PARAM_INT);
@@ -192,20 +151,15 @@ class RequestsModel
         }
     }
 
-    public function updateRequestStatus($id, $payload)
+    public function updateRequestStatus(int $id, string $status)
     {
-        if (!is_array($payload) && empty($payload)) {
-            throw new InvalidArgumentException("Invalid payload or payload is empty");
-        }
-
-        $status = $payload['status'];
-
-        $query = "UPDATE " . self::REQUESTS_TABLE . " SET status = :status WHERE id = :id";
-        $statement = $this->pdo->prepare($query);
-        $statement->bindValue(':status', $status, PDO::PARAM_STR);
-        $statement->bindValue(':id', $id, PDO::PARAM_INT);
-
         try {
+            $query = "UPDATE " . self::REQUESTS_TABLE . " SET status = :status WHERE id = :id";
+            $statement = $this->pdo->prepare($query);
+
+            $statement->bindValue(':status', $status, PDO::PARAM_STR);
+            $statement->bindValue(':id', $id, PDO::PARAM_INT);
+
             $statement->execute();
 
             $lastUpdatedID = $this->getRequestByID($id);

@@ -1,12 +1,17 @@
 <?php
 
 use Helpers\ResponseHelper;
+
+use Validators\HTTPRequestValidator;
+
 use Models\RequestsModel;
 
 class RequestsController
 {
     private $pdo;
     private $requestsModel;
+    private $acceptableParamsKeys = ['id', 'status', 'typeOfRequest', 'userID'];
+    private $expectedPostPayloadKeys = ['userID', 'petID', 'typeOfRequest', 'status'];
 
     public function __construct($pdo)
     {
@@ -14,166 +19,136 @@ class RequestsController
         $this->requestsModel = new RequestsModel($this->pdo);
     }
 
-    public function getRequestByID($param)
+    public function getRequestByID(array $params)
     {
         try {
-            if (empty($param) || !isset($param['id'])) {
-                ResponseHelper::sendErrorResponse("Invalid or missing id parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $id = (int) $param['id'];
+            $id = (int) $params['id'];
 
             $adoptionRequest = $this->requestsModel->getRequestByID($id);
 
             if (!$adoptionRequest) {
-                ResponseHelper::sendSuccessResponse([], 'No adoption request found');
-                return;
+                return ResponseHelper::sendSuccessResponse([], 'No request found');
             }
 
-            ResponseHelper::sendSuccessResponse($adoptionRequest, 'Adoption request found');
+            return ResponseHelper::sendSuccessResponse($adoptionRequest, 'Request found');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function getRequestByTypeofRequest($param)
+    public function getRequestByTypeofRequest(array $params)
     {
-        if (empty($param)) {
-            ResponseHelper::sendErrorResponse("Invalid or missing status parameter", 400);
-            return;
-        }
-
-        $typeOfRequest = $param['type'];
-
         try {
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
+
+            $typeOfRequest = $params['typeOfRequest'];
+
             $requestsLists = $this->requestsModel->getRequestByTypeofRequest($typeOfRequest);
 
             if (!$requestsLists) {
-                ResponseHelper::sendSuccessResponse([], 'No adoption requests found');
-                return;
+                return ResponseHelper::sendSuccessResponse([], 'No Requests found');
             }
 
-            ResponseHelper::sendSuccessResponse($requestsLists, 'Requests found');
+            return ResponseHelper::sendSuccessResponse($requestsLists, 'Requests found');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function getAllRequestsByStatus($param)
+    public function getAllRequestsByStatus(array $params)
     {
-
         try {
-            if (empty($param)) {
-                ResponseHelper::sendErrorResponse("Invalid or missing status parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $status = $param['status'];
+            $status = $params['status'];
 
             $requestsLists = $this->requestsModel->getAllRequestsByStatus($status);
 
             if (!$requestsLists) {
-                ResponseHelper::sendSuccessResponse([], 'No adoption requests found');
-                return;
+                return ResponseHelper::sendSuccessResponse([], 'No Requests found');
             }
 
-            ResponseHelper::sendSuccessResponse($requestsLists, 'Requests found');
+            return ResponseHelper::sendSuccessResponse($requestsLists, 'Requests found');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function getUserRequestByUserID($param)
+    public function getUserRequestByUserID(array $params)
     {
         try {
-            if (empty($param) || !isset($param['id'])) {
-                ResponseHelper::sendErrorResponse("Invalid or missing id parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $id = (int) $param['id'];
+            $userID = (int) $params['userID'];
 
-
-            $adoptionRequest = $this->requestsModel->getUserRequestByUserID($id);
+            $adoptionRequest = $this->requestsModel->getUserRequestByUserID($userID);
 
             if (!$adoptionRequest) {
-                ResponseHelper::sendSuccessResponse([], 'No adoption request found');
-                return;
+                return ResponseHelper::sendSuccessResponse([], 'No Request found');
             }
 
-            ResponseHelper::sendSuccessResponse($adoptionRequest, 'Adoption request found');
+            return ResponseHelper::sendSuccessResponse($adoptionRequest, 'Request found');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function getUserRequestByUserIDAndID($param)
+    public function getUserRequestByUserIDAndID(array $params)
     {
         try {
-            if (empty($param) || !isset($param['id']) || !isset($param['userID'])) {
-                ResponseHelper::sendErrorResponse("Invalid or missing id parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $id = (int) $param['id'];
-            $userID = (int) $param['userID'];
+            $id = (int) $params['id'];
+            $userID = (int) $params['userID'];
 
-            $adoptionRequest = $this->requestsModel->getUserRequestByUserIDAndID($id, $userID);
+            $adoptionRequest = $this->requestsModel->getUserRequestByUserIDAndID($userID, $id);
 
             if (!$adoptionRequest) {
-                ResponseHelper::sendSuccessResponse([], 'No adoption request found');
-                return;
+                return ResponseHelper::sendSuccessResponse([], 'No Request found');
             }
 
-            ResponseHelper::sendSuccessResponse($adoptionRequest, 'Adoption request found');
+            return ResponseHelper::sendSuccessResponse($adoptionRequest, 'Request found');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function addNewUserRequest($payload)
+    public function addNewUserRequest(array $payload)
     {
         try {
-            if (empty($payload)) {
-                ResponseHelper::sendErrorResponse("Invalid payload or payload is empty", 400);
-                return;
+            HTTPRequestValidator::validatePOSTPayload($this->expectedPostPayloadKeys, $payload);
+
+            $response = $this->requestsModel->addNewUserRequest($payload);
+
+            if (!$response) {
+                return ResponseHelper::sendErrorResponse("Failed to add pet", 400);
             }
 
-            $request = $this->requestsModel->addNewUserRequest($payload);
-
-            if (!$request) {
-                ResponseHelper::sendErrorResponse("Failed to add pet", 400);
-                return;
-            }
-
-            ResponseHelper::sendSuccessResponse($request, "New Adoption Request added successfully");
+            return ResponseHelper::sendSuccessResponse($response, "New Request added successfully");
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function updateRequestStatus($param, $payload)
+    public function updateRequestStatus(array $params, array $payload)
     {
-
         try {
-            if (empty($payload)) {
-                ResponseHelper::sendErrorResponse("Invalid payload or payload is empty", 400);
-                return;
-            }
+            HTTPRequestValidator::validatePUTPayload($this->acceptableParamsKeys, ['status'], $params, $payload);
 
-            $id = (int) $param['id'];
+            $id = (int) $params['id'];
+            $status = $payload['status'];
 
-            $request = $this->requestsModel->updateRequestStatus($id, $payload);
+            $request = $this->requestsModel->updateRequestStatus($id, $status);
 
             if (!$request) {
-                ResponseHelper::sendErrorResponse("Failed to update adoption request", 400);
-                return;
+                return ResponseHelper::sendErrorResponse("Failed to update request", 400);
             }
 
-            ResponseHelper::sendSuccessResponse($request, "Adoption request updated successfully");
+            return ResponseHelper::sendSuccessResponse($request, "Request updated successfully");
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 }

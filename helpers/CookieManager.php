@@ -24,7 +24,7 @@ class CookieManager
      * @param int $expiry_date The expiry date of the cookie in Unix timestamp format.
      * @return void
      */
-    public function setCookiHeader($token, $expiry_date)
+    public function setCookiHeader(string $token, string $expiry_date)
     {
         setcookie($this->cookie_name, $token, $expiry_date, '/', '', $this->is_secure, $this->is_http_only);
     }

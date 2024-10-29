@@ -19,22 +19,22 @@ class PetsModel
         $this->pdo = $pdo;
     }
 
-    public function getAllPets($limit, $offset)
+    public function getAllPets(int $limit, int $offset)
     {
-        $query = "SELECT * FROM " . self::PETS_TABLE;
-
-        if ($limit !== 0 || $offset !== 0) {
-            $query .= " LIMIT :limit OFFSET :offset";
-        }
-
-        $statement = $this->pdo->prepare($query);
-
-        if ($limit !== 0 || $offset !== 0) {
-            $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
-            $statement->bindValue(':offset', $offset, PDO::PARAM_INT);
-        }
-
         try {
+            $query = "SELECT * FROM " . self::PETS_TABLE;
+
+            if ($limit !== 0 || $offset !== 0) {
+                $query .= " LIMIT :limit OFFSET :offset";
+            }
+
+            $statement = $this->pdo->prepare($query);
+
+            if ($limit !== 0 || $offset !== 0) {
+                $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+                $statement->bindValue(':offset', $offset, PDO::PARAM_INT);
+            }
+
             $statement->execute();
 
             return $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -43,7 +43,7 @@ class PetsModel
         }
     }
 
-    public function getAllPetsByAdoptionStatus($status, $limit, $offset)
+    public function getAllPetsByAdoptionStatus(string $status, int $limit, int $offset)
     {
         $adoptionStatusMap = [
             'available' => 0,
@@ -77,17 +77,14 @@ class PetsModel
         }
     }
 
-    public function getPetByID($petID)
+
+    public function getPetByID(int $petID)
     {
-        if (!$petID) {
-            throw new InvalidArgumentException('Invalid or missing pet ID parameter');
-        }
-
-        $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE id = :petID";
-        $statement = $this->pdo->prepare($query);
-        $statement->bindValue(':petID', $petID, PDO::PARAM_INT);
-
         try {
+            $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE id = :petID";
+            $statement = $this->pdo->prepare($query);
+            $statement->bindValue(':petID', $petID, PDO::PARAM_INT);
+
             $statement->execute();
 
             return $statement->fetch(PDO::FETCH_ASSOC);
@@ -96,17 +93,8 @@ class PetsModel
         }
     }
 
-    public function getAllPetsByLabel($label, $limit, $offset)
+    public function getAllPetsByLabel(string $label, int $limit, int $offset)
     {
-        if (!$label) {
-            throw new InvalidArgumentException('Invalid or missing label parameter');
-            return;
-        }
-
-        if ($label === 'fadoption') {
-            $label = 'adoption';
-        }
-
         $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE label = :label LIMIT :limit OFFSET :offset";
         $statement = $this->pdo->prepare($query);
 
@@ -171,11 +159,10 @@ class PetsModel
 
     public function getAllPetsAgeCategories()
     {
-        $query = "SELECT DISTINCT ageCategory FROM " . self::PETS_TABLE;
-        $statement = $this->pdo->prepare($query);
-
-
         try {
+            $query = "SELECT DISTINCT ageCategory FROM " . self::PETS_TABLE;
+            $statement = $this->pdo->prepare($query);
+
             $statement->execute();
 
             $result = $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -190,12 +177,8 @@ class PetsModel
         }
     }
 
-    public function addNewPet($payload)
+    public function addNewPet(array $payload)
     {
-        if (!is_array($payload) && empty($payload)) {
-            throw new InvalidArgumentException("Invalid payload or payload is empty");
-        }
-
         $userID = null;
 
         if (isset($payload['userID'])) {
@@ -212,11 +195,12 @@ class PetsModel
         $petHistory = $payload['petHistory'];
         $petPhotoURL = $payload['petPhotoURL'];
         $adoptionStatus = $payload['adoptionStatus'];
-        $approvalStatus = 'pending';
-        $postType = 'adoption';
+        $approvalStatus = $payload['approvalStatus'];
+        $postType = $payload['postType'];
 
 
         $query = "INSERT INTO " . self::PETS_TABLE . " (userOwnerID, petName, age, ageCategory, gender, petType, petBreed, petVacHistory, petHistory, petPhotoURL, adoptionStatus, approvalStatus, postType) VALUES (:userID, :petName, :petAge, :petAgeCategory, :petGender, :petType, :petBreed, :petVacHistory, :petHistory, :petPhotoURL, :adoptionStatus, :approvalStatus, :postType)";
+
         $statement = $this->pdo->prepare($query);
 
         $bindParams = [
@@ -248,7 +232,7 @@ class PetsModel
         }
     }
 
-    public function updatePetAdoptionStatus($petID, $status)
+    public function updatePetAdoptionStatus(int $petID, string $status)
     {
         $query = "UPDATE " . self::PETS_TABLE . " SET adoptionStatus = :status WHERE id = :petID";
 

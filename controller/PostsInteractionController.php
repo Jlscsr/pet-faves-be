@@ -1,84 +1,58 @@
 <?php
 
-use Models\PostsInteractionModel;
-
 use Helpers\ResponseHelper;
-use Helpers\HeaderHelper;
 
+use Validators\HTTPRequestValidator;
+
+use Models\PostsInteractionModel;
 
 class PostsInteractionController
 {
     private $pdo;
-    private $postsModel;
+    private $postsInteractionModel;
+    private $acceptableKeys = ['postID', 'userID'];
+    private $expectedPostPayloadKeys = ['postID', 'userID', 'typeOfPost'];
 
     public function __construct($pdo)
     {
         $this->pdo = $pdo;
         $this->postsInteractionModel = new PostsInteractionModel($this->pdo);
-
-        HeaderHelper::setResponseHeaders();
     }
 
-    public function getAllPostLikesByPostID($posts)
+    public function addNewPostInteraction(array $payload)
     {
         try {
-            if (!is_array($posts)) {
-                ResponseHelper::sendErrorResponse("Invalid or missing posts parameter", 400);
-                return;
-            }
-
-            $response = $this->postsInteractionModel->getAllPostLikesByPostID($posts);
-
-            if (!$response) {
-                ResponseHelper::sendSuccessResponse([], "No posts found", 404);
-                exit;
-            }
-
-            ResponseHelper::sendSuccessResponse($response, 'Successfully fetched posts');
-        } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
-        }
-    }
-
-    public function addNewPostInteraction($payload)
-    {
-        try {
-            if (!is_array($payload) && empty($payload)) {
-                ResponseHelper::sendErrorResponse("Invalid or missing payload parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validatePOSTPayload($this->expectedPostPayloadKeys, $payload);
 
             $response = $this->postsInteractionModel->addNewPostInteraction($payload);
 
             if (!$response) {
-                ResponseHelper::sendSuccessResponse([], "Failed to add new like to the post", 404);
-                exit;
+                return ResponseHelper::sendSuccessResponse([], "Failed to add new like to the post", 404);
             }
 
-            ResponseHelper::sendSuccessResponse([], 'Successfully added new like to the post');
+            return ResponseHelper::sendSuccessResponse([], 'Successfully added new like to the post');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
     public function deletePostInteraction($params)
     {
         try {
-            if (!is_array($params) && empty($params)) {
-                ResponseHelper::sendErrorResponse("Invalid or missing payload parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validateGETParameter($this->acceptableKeys, $params);
 
-            $response = $this->postsInteractionModel->deletePostInteraction($params);
+            $postID = $params['postID'];
+            $userID = $params['userID'];
+
+            $response = $this->postsInteractionModel->deletePostInteraction($postID, $userID);
 
             if (!$response) {
-                ResponseHelper::sendErrorResponse("Failed to delete like to the post");
-                exit;
+                return ResponseHelper::sendErrorResponse("Failed to delete like to the post");
             }
 
-            ResponseHelper::sendSuccessResponse([], 'Successfully deleted like to the post');
+            return ResponseHelper::sendSuccessResponse([], 'Successfully deleted like to the post');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 }

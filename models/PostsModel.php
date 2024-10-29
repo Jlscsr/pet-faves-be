@@ -7,12 +7,10 @@ use RuntimeException;
 
 use PDO;
 
-use Models\PostInteractionModel;
 
 class PostsModel
 {
     private $pdo;
-    private $postInteractionModel;
     private $cachedAllPosts = null;
     private $cachedAllPostsByStatus = [];
     private const POSTS_TABLE = 'posts_tb';
@@ -25,7 +23,7 @@ class PostsModel
         $this->pdo = $pdo;
     }
 
-    public function getAllPosts($status, $offset, $limit)
+    public function getAllPosts(string $status, int $offset, int $limit)
     {
         try {
             if ($this->cachedAllPosts === null) {
@@ -129,7 +127,7 @@ class PostsModel
         }
     }
 
-    public function getAllPostsByTypeOfPost($typeOfPost, $offset, $limit)
+    public function getAllPostsByTypeOfPost(string $typeOfPost, int $offset, int $limit)
     {
         try {
             // Check if cached posts exist for the given status
@@ -232,17 +230,13 @@ class PostsModel
         }
     }
 
-    public function addNewPost($payload)
+    public function addNewPost(array $payload)
     {
         try {
-            if (empty($payload)) {
-                throw new RuntimeException("Invalid or missing payload parameter");
-                return;
-            }
 
-            $userID = $payload['userID'];
+            $userID = (int) $payload['userID'];
             $postDescription = $payload['postDescription'];
-            $approvalStatus = 'pending';
+            $approvalStatus = $payload['approvalStatus'];
             $postType = $payload['postType'];
 
             $query = "INSERT INTO " . self::POSTS_TABLE . " (userID, postDescription, approvalStatus, postType) VALUES (:userID, :postDescription, :approvalStatus, :postType)";
@@ -261,18 +255,13 @@ class PostsModel
         }
     }
 
-    public function addNewPostMedia($payload)
+    public function addNewPostMedia(array $payload)
     {
         try {
-            if (empty($payload)) {
-                throw new RuntimeException("Invalid or missing payload parameter");
-                return;
-            }
-
-            $userID = $payload['userID'];
+            $userID = (int) $payload['userID'];
             $postDescription = $payload['postDescription'];
             $mediaURL = $payload['mediaURL'] ?? null;
-            $approvalStatus = 'pending';
+            $approvalStatus = $payload['approvalStatus'];
             $postType = $payload['postType'];
             $mediaType = $payload['mediaType'];
 
@@ -298,17 +287,12 @@ class PostsModel
         }
     }
 
-    public function addNewEventPost($payload)
+    public function addNewEventPost(array $payload)
     {
         try {
-            if (empty($payload)) {
-                throw new RuntimeException("Invalid or missing payload parameter");
-                return;
-            }
-
-            $userID = $payload['userID'];
+            $userID = (int) $payload['userID'];
             $postDescription = $payload['postDescription'];
-            $approvalStatus = 'pending';
+            $approvalStatus = $payload['approvalStatus'];
             $eventDate = $payload['eventDate'];
             $eventTime = $payload['eventTime'];
             $eventLocation = $payload['eventLocation'];
@@ -333,14 +317,10 @@ class PostsModel
         }
     }
 
-    public function updatePostMedia($postID, $mediaURL)
+    public function updatePostMedia(int $postID, string $mediaURL)
     {
         try {
-            $query = "
-            UPDATE " . self::MEDIA_POSTS_TABLE . "
-            SET mediaURL = :mediaURL
-            WHERE id = :postID
-            ";
+            $query = "UPDATE " . self::MEDIA_POSTS_TABLE . " SET mediaURL = :mediaURL WHERE id = :postID";
             $statement = $this->pdo->prepare($query);
             $statement->bindParam(':mediaURL', $mediaURL, PDO::PARAM_STR);
             $statement->bindParam(':postID', $postID, PDO::PARAM_INT);
@@ -352,15 +332,9 @@ class PostsModel
         }
     }
 
-    public function updatePostApprovalStatus($postID, $status, $postType)
+    public function updatePostApprovalStatus(int $postID, string $status, string $postType)
     {
-
         try {
-
-            if (!$postID || !$status || !$postType) {
-                throw new RuntimeException("Invalid or missing postID, status, or postType parameter");
-                return;
-            }
 
             $table = null;
 
@@ -373,11 +347,7 @@ class PostsModel
             }
 
 
-            $query = "
-            UPDATE " . $table . "
-            SET approvalStatus = :status
-            WHERE id = :postID AND postType = :postType
-            ";
+            $query = "UPDATE " . $table . " SET approvalStatus = :status WHERE id = :postID AND postType = :postType";
             $statement = $this->pdo->prepare($query);
             $statement->bindParam(':status', $status, PDO::PARAM_STR);
             $statement->bindParam(':postID', $postID, PDO::PARAM_INT);

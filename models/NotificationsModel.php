@@ -7,7 +7,6 @@ use PDOException;
 use PDO;
 
 use RuntimeException;
-use InvalidArgumentException;
 
 class NotificationsModel
 {
@@ -19,24 +18,18 @@ class NotificationsModel
         $this->pdo = $pdo;
     }
 
-    public function getAllNotificationsByUserIDAndStatus($userID, $status)
+    public function getAllNotificationsByUserIDAndStatus(int $userID, string $status)
     {
-        if (!$status) {
-            throw new InvalidArgumentException("Invalid or missing status parameter");
-            return;
-        }
-
-        $query = "SELECT n.*, r.* FROM " . self::NOTIFICATIONS_TABLE . " n 
-              JOIN requests_tb r ON n.requestID = r.id 
-              WHERE n.userID = :userID AND n.notificationStatus = :status 
-              ORDER BY n.id DESC";
-
-        $statement = $this->pdo->prepare($query);
-
-        $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
-        $statement->bindValue(':status', $status, PDO::PARAM_STR);
-
         try {
+            $query = "SELECT * FROM " . self::NOTIFICATIONS_TABLE . "
+            WHERE userID = :userID AND notificationStatus = :status 
+            ORDER BY id DESC";
+
+            $statement = $this->pdo->prepare($query);
+
+            $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
+            $statement->bindValue(':status', $status, PDO::PARAM_STR);
+
             $statement->execute();
 
             return $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -45,48 +38,29 @@ class NotificationsModel
         }
     }
 
-    public function addNewNotification($payload)
+    public function addNewNotification(array $payload)
     {
-        if (empty($payload)) {
-            throw new InvalidArgumentException("Invalid payload or payload is empty");
-            return;
-        }
-
-        $userID = $payload['userID'];
-        $requestID = $payload['requestID'];
-        $typeOfRequest = $payload['typeOfRequest'];
-        $status = 'unread';
-
-        // check first if the id is already exist
-        $query = "SELECT * FROM " . self::NOTIFICATIONS_TABLE . " WHERE userID = :userID AND requestID = :requestID AND typeOfRequest = :typeOfRequest";
-
-        $statement = $this->pdo->prepare($query);
-        $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
-        $statement->bindValue(':requestID', $requestID, PDO::PARAM_STR);
-        $statement->bindValue(':typeOfRequest', $typeOfRequest, PDO::PARAM_STR);
-
         try {
-            $statement->execute();
+            $userID = (int) $payload['userID'];
+            $requestID = (int) $payload['requestID'];
+            $typeOfRequest = $payload['typeOfRequest'];
+            $status = $payload['status'];
 
-            if ($statement->rowCount() > 0) {
-                // update the status of existing one to unread
-                return $this->updateNotificationStatus($statement->fetch(PDO::FETCH_ASSOC)['id'], $userID, $status);
+            $existingNotifID = $this->checkIfNotificationExist($userID, $requestID, $typeOfRequest);
+
+            if ($existingNotifID) {
+                return $this->updateNotificationStatus($existingNotifID, $userID, $status);
             }
 
+            // If there is no existing notification, insert a new one
             $query = "INSERT INTO " . self::NOTIFICATIONS_TABLE . " (userID, requestID, typeOfRequest, notificationStatus) VALUES (:userID, :requestID, :typeOfRequest, :status)";
 
             $statement = $this->pdo->prepare($query);
 
-            $bindParams = [
-                ':userID' => $userID,
-                ':requestID' => $requestID,
-                ':typeOfRequest' => $typeOfRequest,
-                ':status' => $status
-            ];
-
-            foreach ($bindParams as $key => $value) {
-                $statement->bindValue($key, $value, PDO::PARAM_STR);
-            }
+            $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
+            $statement->bindValue(':requestID', $requestID, PDO::PARAM_INT);
+            $statement->bindValue(':typeOfRequest', $typeOfRequest, PDO::PARAM_STR);
+            $statement->bindValue(':status', $status, PDO::PARAM_STR);
 
             $statement->execute();
 
@@ -97,23 +71,42 @@ class NotificationsModel
         }
     }
 
-    public function updateNotificationStatus($id, $userID, $status)
+    public function updateNotificationStatus(int $id, int $userID, string $status)
     {
-        if (!$userID || !$status || !$id) {
-            throw new InvalidArgumentException("Invalid or missing id parameter");
-            return;
-        }
-
-        $query = "UPDATE " . self::NOTIFICATIONS_TABLE . " SET notificationStatus = :status WHERE userID = :userID AND requestID = :id";
+        $query = "UPDATE " . self::NOTIFICATIONS_TABLE . " SET notificationStatus = :status WHERE id = :id AND userID = :userID";
 
         $statement = $this->pdo->prepare($query);
+        $statement->bindValue(':id', $id, PDO::PARAM_INT);
+        $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
         $statement->bindValue(':status', $status, PDO::PARAM_STR);
-        $statement->bindValue(':id', $id, PDO::PARAM_STR);
-        $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
 
         try {
             $statement->execute();
+
             return $statement->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    private function checkIfNotificationExist(int $userID, int $requestID, string $typeOfRequest)
+    {
+        try {
+
+            $query = "SELECT * FROM " . self::NOTIFICATIONS_TABLE . " WHERE userID = :userID AND requestID = :requestID AND typeOfRequest = :typeOfRequest";
+            $statement = $this->pdo->prepare($query);
+
+            $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
+            $statement->bindValue(':requestID', $requestID, PDO::PARAM_INT);
+            $statement->bindValue(':typeOfRequest', $typeOfRequest, PDO::PARAM_STR);
+
+            $statement->execute();
+
+            if ($statement->rowCount() > 0) {
+                return $statement->fetch(PDO::FETCH_ASSOC)['id'];
+            }
+
+            return false;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }

@@ -40,7 +40,7 @@ class JWTHelper
      * @throws Exception If there is an error decoding the token.
      * @return mixed The decoded data from the JWT token.
      */
-    public function decodeJWTData($token)
+    public function decodeJWTData(string $token)
     {
         try {
             $data = JWT::decode($token, new Key($this->secret_key, $this->hash_algorithm));
@@ -58,7 +58,7 @@ class JWTHelper
      * @throws \Firebase\JWT\SignatureInvalidException If the token signature is invalid.
      * @return bool Returns true if the token is valid, false otherwise.
      */
-    public function validateToken($token)
+    public function validateToken(string $token)
     {
         try {
             $data = $this->decodeJWTData($token);

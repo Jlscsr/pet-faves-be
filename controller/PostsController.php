@@ -3,175 +3,166 @@
 use Models\PostsModel;
 
 use Helpers\ResponseHelper;
-use Helpers\HeaderHelper;
 
-use Validators\Controllers\PetFeedsValidator;
+use Validators\HTTPRequestValidator;
 
 class PostsController
 {
     private $pdo;
     private $postsModel;
+    private $acceptableParamsKeys = ['approvalStatus', 'postID', 'postType', 'typeOfPost'];
+    private $commonPostPayloadKeys = ['userID', 'postDescription', 'approvalStatus', 'postType'];
+    private $expectedPutMediaPayloadKeys = ['mediaURL'];
 
+    private $expectedPostPayloadKeys;
+    private $expectedPostMediaPayloadKeys;
+    private $expectedEventPostPayloadKeys;
     public function __construct($pdo)
     {
         $this->pdo = $pdo;
         $this->postsModel = new PostsModel($this->pdo);
 
-        HeaderHelper::setResponseHeaders();
+        $this->expectedPostPayloadKeys = $this->commonPostPayloadKeys;
+        $this->expectedPostMediaPayloadKeys = array_merge($this->commonPostPayloadKeys, ['mediaURL', 'mediaType']);
+        $this->expectedEventPostPayloadKeys = array_merge($this->commonPostPayloadKeys, [
+            'eventDate',
+            'eventTime',
+            'eventLocation'
+        ]);
     }
 
-    public function getAllPosts($param)
+    public function getAllPosts(array $params)
     {
         try {
-            if (empty($param)) {
-                ResponseHelper::sendErrorResponse("Invalid or missing payload parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
+
+            $approvalStatus = $params['approvalStatus'];
             $limit = (int) $_GET['limit'] ?? 0;
             $offset = (int) $_GET['offset'] ?? 0;
 
-            $response = $this->postsModel->getAllPosts($param['approvalStatus'], $offset, $limit);
+            $response = $this->postsModel->getAllPosts($approvalStatus, $offset, $limit);
 
             if (!$response) {
-                ResponseHelper::sendSuccessResponse([], "No posts found.");
-                exit;
+                return ResponseHelper::sendSuccessResponse([], "No posts found.");
             }
 
-            ResponseHelper::sendSuccessResponse($response, 'Successfully fetched posts.');
+            return ResponseHelper::sendSuccessResponse($response, 'Successfully fetched posts.');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function getAllPostsByTypeOfPost($param)
+    public function getAllPostsByTypeOfPost(array $params)
     {
         try {
 
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
+
+            $typeOfPost = $params['typeOfPost'] ?? '';
             $limit = (int) $_GET['limit'] ?? 0;
             $offset = (int) $_GET['offset'] ?? 0;
-
-            if (empty($param) && !isset($param['typeOfPost'])) {
-                ResponseHelper::sendErrorResponse("Invalid or missing typeOfPost parameter", 400);
-                return;
-            }
-
-            $typeOfPost = $param['typeOfPost'] ?? '';
 
             $response = $this->postsModel->getAllPostsByTypeOfPost($typeOfPost, $offset, $limit);
 
             if (!$response) {
-                ResponseHelper::sendSuccessResponse([], "No posts found.");
-                exit;
+                return ResponseHelper::sendSuccessResponse([], "No posts found.");
             }
 
-            ResponseHelper::sendSuccessResponse($response, 'Successfully fetched posts.');
+            return ResponseHelper::sendSuccessResponse($response, 'Successfully fetched posts.');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
     public function addNewPost($payload)
     {
         try {
-            if (empty($payload)) {
-                ResponseHelper::sendErrorResponse("Invalid or missing payload parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validatePOSTPayload($this->expectedPostPayloadKeys, $payload);
 
             $response = $this->postsModel->addNewPost($payload);
 
             if (!$response) {
-                ResponseHelper::sendSuccessResponse([], "Post successfully added.");
-                exit;
+                return ResponseHelper::sendSuccessResponse([], "Post successfully added.");
             }
 
-            ResponseHelper::sendSuccessResponse([], 'Successfully added post.');
+            return ResponseHelper::sendSuccessResponse([], 'Successfully added post.');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
     public function addNewPostMedia($payload)
     {
         try {
-            if (empty($payload)) {
-                ResponseHelper::sendErrorResponse("Invalid or missing payload parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validatePOSTPayload($this->expectedPostMediaPayloadKeys, $payload);
 
             $response = $this->postsModel->addNewPostMedia($payload);
 
             if (!$response) {
-                ResponseHelper::sendSuccessResponse([], "Post media successfully added.");
-                exit;
+                return ResponseHelper::sendSuccessResponse([], "Post media successfully added.");
             }
 
-            ResponseHelper::sendSuccessResponse($response, 'Successfully added post media.');
+            return ResponseHelper::sendSuccessResponse($response, 'Successfully added post media.');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
     public function addNewEventPost($payload)
     {
         try {
-            if (empty($payload)) {
-                ResponseHelper::sendErrorResponse("Invalid or missing payload parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validatePOSTPayload($this->expectedEventPostPayloadKeys, $payload);
 
             $response = $this->postsModel->addNewEventPost($payload);
 
             if (!$response) {
-                ResponseHelper::sendSuccessResponse([], "Post event successfully added.");
-                exit;
+                return ResponseHelper::sendSuccessResponse([], "Post event successfully added.");
             }
 
-            ResponseHelper::sendSuccessResponse([], 'Successfully added post event.');
+            return ResponseHelper::sendSuccessResponse([], 'Successfully added post event.');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function updatePostMedia($param, $payload)
+    public function updatePostMedia($params, $payload)
     {
         try {
-            if (empty($param) && !isset($param['postID'])) {
-                ResponseHelper::sendErrorResponse("Invalid or missing postID parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validatePUTPayload($this->acceptableParamsKeys, $this->expectedPutMediaPayloadKeys, $params, $payload);
 
-            $response = $this->postsModel->updatePostMedia($param['postID'], $payload['mediaURL']);
+            $postID = $params['postID'];
+            $mediaURL = $payload['mediaURL'];
+
+            $response = $this->postsModel->updatePostMedia($postID, $mediaURL);
 
             if (!$response) {
-                ResponseHelper::sendErrorResponse("Failed to upload media file", 400);
-                exit;
+                return ResponseHelper::sendErrorResponse("Failed to upload media file", 400);
             }
 
-            ResponseHelper::sendSuccessResponse([], 'Successfully uploaded media file.');
+            return ResponseHelper::sendSuccessResponse([], 'Successfully uploaded media file.');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function updatePostApprovalStatus($param, $payload)
+    public function updatePostApprovalStatus($params, $payload)
     {
         try {
-            if (empty($param) && !isset($param['postID'])) {
-                ResponseHelper::sendErrorResponse("Invalid or missing postID parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validatePUTPayload($this->acceptableParamsKeys, ['approvalStatus'], $params, $payload);
 
-            $response = $this->postsModel->updatePostApprovalStatus($param['postID'], $payload['approvalStatus'], $param['postType']);
+            $postID = $params['postID'];
+            $approvalStatus = $payload['approvalStatus'];
+            $postType = $params['postType'];
+
+            $response = $this->postsModel->updatePostApprovalStatus($postID, $approvalStatus, $postType);
 
             if (!$response) {
-                ResponseHelper::sendErrorResponse("Failed to update post approval status", 400);
-                exit;
+                return ResponseHelper::sendErrorResponse("Failed to update post approval status", 400);
             }
 
-            ResponseHelper::sendSuccessResponse([], 'Successfully updated post approval status.');
+            return ResponseHelper::sendSuccessResponse([], 'Successfully updated post approval status.');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 }

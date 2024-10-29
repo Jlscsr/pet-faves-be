@@ -2,8 +2,9 @@
 
 use Helpers\JWTHelper;
 use Helpers\ResponseHelper;
-use Helpers\HeaderHelper;
 use Helpers\CookieManager;
+
+use Validators\HTTPRequestValidator;
 
 use Models\UsersModel;
 
@@ -12,55 +13,34 @@ class UsersController
     private $jwt;
     private $usersModel;
     private $cookieManager;
+    private $acceptableParamsKeys = ['id'];
+    private $acceptablePayloadKeys = ['firstName', 'lastName', 'email', 'phoneNumber', 'gender', 'password', 'address', 'region', 'province', 'city', 'barangay', 'validIDImageURL', 'selfieImageURL'];
 
     public function __construct($pdo)
     {
         $this->jwt = new JWTHelper();
         $this->usersModel = new UsersModel($pdo);
         $this->cookieManager = new CookieManager();
-
-        HeaderHelper::setResponseHeaders();
     }
 
-    public function getUserByID($param)
-
+    public function getUserByID(array $params)
     {
         try {
-            if (empty($param) || !isset($param['id'])) {
-                ResponseHelper::sendErrorResponse("Invalid or missing id parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $id = (int) $param['id'];
+            $id = (int) $params['id'];
 
             $user = $this->usersModel->getUserByID($id);
 
             if (!$user) {
-                ResponseHelper::sendErrorResponse("User not found", 404);
-                return;
+                return ResponseHelper::sendSuccessResponse([], "User not found");
             }
 
-            $responseData = [
-                'id' => $user['id'],
-                'firstName' => $user['firstName'],
-                'lastName' => $user['lastName'],
-                'email' => $user['email'],
-                'phoneNumber' => $user['phoneNumber'],
-                'gender' => $user['gender'],
-                'address' => $user['address'],
-                'region' => $user['region'],
-                'province' => $user['province'],
-                'city' => $user['city'],
-                'barangay' => $user['barangay'],
-                'validIDImageURL' => $user['validIDImageURL'] ?? null,
-                'selfieImageURL' => $user['selfieImageURL'] ?? null,
-                'createdAt' => $user['createdAt'],
-                'updatedAt' => $user['updatedAt']
-            ];
+            unset($user['password']);
 
-            ResponseHelper::sendSuccessResponse($responseData, 'User found');
+            return ResponseHelper::sendSuccessResponse($user, 'User found');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
@@ -74,8 +54,7 @@ class UsersController
 
             if (!$this->jwt->validateToken($token)) {
                 $this->cookieManager->resetCookieHeader();
-                ResponseHelper::sendUnauthorizedResponse('Invalid token');
-                return;
+                return ResponseHelper::sendUnauthorizedResponse('Invalid token');
             }
 
             $decodedData = $this->jwt->decodeJWTData($token);
@@ -86,55 +65,34 @@ class UsersController
 
             if (!$user) {
                 $this->cookieManager->resetCookieHeader();
-                ResponseHelper::sendUnauthorizedResponse('Invalid token');
-                return;
+                return ResponseHelper::sendUnauthorizedResponse('Invalid token');
             }
 
-            $responseData = [
-                'id' => $user['id'],
-                'firstName' => $user['firstName'],
-                'lastName' => $user['lastName'],
-                'email' => $user['email'],
-                'phoneNumber' => $user['phoneNumber'],
-                'gender' => $user['gender'],
-                'address' => $user['address'],
-                'region' => $user['region'],
-                'province' => $user['province'],
-                'city' => $user['city'],
-                'barangay' => $user['barangay'],
-                'validIDImageURL' => $user['validIDImageURL'] ?? null,
-                'selfieImageURL' => $user['selfieImageURL'] ?? null,
-                'role' => $user['role'],
-                'createdAt' => $user['createdAt'],
-                'updatedAt' => $user['updatedAt']
-            ];
+            unset($user['password']);
 
-            ResponseHelper::sendSuccessResponse($responseData, 'User found');
+            return ResponseHelper::sendSuccessResponse($user, 'User found');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function updateUserData($params, $payload)
+    public function updateUserData(array $params, array $payload)
     {
         try {
-            if (empty($payload) || !isset($params['id'])) {
-                ResponseHelper::sendErrorResponse("Invalid or missing id parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
+            HTTPRequestValidator::validateGETParameter($this->acceptablePayloadKeys, $payload);
 
-            $userID = $params['id'];
+            $userID = (int) $params['id'];
 
             $isUserDataUpdated = $this->usersModel->updateUserData($userID, $payload);
 
             if (!$isUserDataUpdated) {
-                ResponseHelper::sendErrorResponse("User not found", 404);
-                return;
+                return ResponseHelper::sendErrorResponse("User not found", 404);
             }
 
-            ResponseHelper::sendSuccessResponse([], 'User data updated successfully');
+            return ResponseHelper::sendSuccessResponse([], 'User data updated successfully');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 }

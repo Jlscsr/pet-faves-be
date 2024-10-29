@@ -21,70 +21,74 @@ $handler = $route->get_route($url);
 
 $middleware_required = isset($handler['middleware']) && is_array($handler['middleware']) && $handler['middleware']['required'];
 
-if ($middleware_required) {
-    $middleware = $handler['middleware']['handler'];
+try {
+    if ($middleware_required) {
+        $middleware = $handler['middleware']['handler'];
 
-    try {
-        require_once dirname(__DIR__) . '/middleware' . '/' . $middleware . '.php';
+        try {
+            require_once dirname(__DIR__) . '/middleware' . '/' . $middleware . '.php';
 
-        $is_valid = new $middleware();
+            $is_valid = new $middleware();
 
-        if (!$is_valid) {
-            ResponseHelper::sendUnauthorizedResponse('Invalid Token or User is not authorized');
+            if (!$is_valid) {
+                ResponseHelper::sendUnauthorizedResponse('Invalid Token or User is not authorized');
+                return;
+            }
+        } catch (Exception $e) {
+            ResponseHelper::sendErrorResponse($e->getMessage());
             return;
         }
-    } catch (Exception $e) {
-        ResponseHelper::sendErrorResponse($e->getMessage());
-        return;
     }
-}
 
-list($controller, $method) = explode('@', is_array($handler['handler']) ? $handler['handler']['handler'] : $handler['handler']);
+    list($controller, $method) = explode('@', is_array($handler['handler']) ? $handler['handler']['handler'] : $handler['handler']);
 
-require_once dirname(__DIR__) . '/controller' . '/' . $controller . '.php';
+    require_once dirname(__DIR__) . '/controller' . '/' . $controller . '.php';
 
-$controller = new $controller($pdo);
+    $controller = new $controller($pdo);
 
-switch ($request_method) {
-    case 'GET':
-        if (isset($handler['params'])) {
-            $controller->$method($handler['params']);
-        } else {
-            $controller->$method();
-        }
-        break;
-    case 'POST':
-        $payload = json_decode(file_get_contents('php://input'), true);
-
+    switch ($request_method) {
+        case 'GET':
+            if (isset($handler['params'])) {
+                $controller->$method($handler['params']);
+            } else {
+                $controller->$method();
+            }
+            break;
+        case 'POST':
+            $payload = json_decode(file_get_contents('php://input'), true);
 
 
-        if ($payload === null) {
-            ResponseHelper::sendErrorResponse("Invalid payload or payload is empty", 400);
-            return;
-        }
 
-        if (isset($handler['params'])) {
+            if ($payload === null) {
+                ResponseHelper::sendErrorResponse("Invalid payload or payload is empty", 400);
+                return;
+            }
+
+            if (isset($handler['params'])) {
+                $controller->$method($handler['params'], $payload);
+                return;
+            } else {
+                $controller->$method($payload);
+            }
+            break;
+        case 'PUT':
+            $payload = json_decode(file_get_contents('php://input'), true);
+
+            if ($payload === null) {
+                ResponseHelper::sendErrorResponse("Invalid payload or payload is empty", 400);
+                return;
+            }
+
             $controller->$method($handler['params'], $payload);
-            return;
-        } else {
-            $controller->$method($payload);
-        }
-        break;
-    case 'PUT':
-        $payload = json_decode(file_get_contents('php://input'), true);
+            break;
 
-        if ($payload === null) {
-            ResponseHelper::sendErrorResponse("Invalid payload or payload is empty", 400);
-            return;
-        }
-
-        $controller->$method($handler['params'], $payload);
-        break;
-
-    case 'DELETE':
-        $controller->$method($handler['params']);
-        break;
-    default:
-        ResponseHelper::sendErrorResponse('Invalid Request Method', 400);
-        break;
+        case 'DELETE':
+            $controller->$method($handler['params']);
+            break;
+        default:
+            ResponseHelper::sendErrorResponse('Invalid Request Method', 400);
+            break;
+    }
+} catch (RuntimeException $e) {
+    ResponseHelper::sendErrorResponse($e->getMessage());
 }

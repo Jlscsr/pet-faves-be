@@ -1,12 +1,17 @@
 <?php
 
 use Helpers\ResponseHelper;
+
+use Validators\HTTPRequestValidator;
+
 use Models\NotificationsModel;
 
 class NotificationsController
 {
     private $pdo;
-    private $requestsModel;
+    private $acceptableParamsKeys = ['id', 'status', 'userID'];
+    private $expectedPostPayloadKeys = ['userID', 'requestID', 'typeOfRequest', 'status'];
+    private $expectedPutPayloadKeys = ['status'];
 
     public function __construct($pdo)
     {
@@ -14,72 +19,62 @@ class NotificationsController
         $this->notificationsModel = new NotificationsModel($this->pdo);
     }
 
-    public function getAllNotificationsByUserIDAndStatus($params)
+    public function getAllNotificationsByUserIDAndStatus(array $params)
     {
-        if (empty($params)) {
-            ResponseHelper::sendErrorResponse("Invalid or missing status parameter", 400);
-            return;
-        }
-
-        $status = $params['status'];
-        $userID = $params['userID'];
-
         try {
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
+
+            $userID = (int) $params['userID'];
+            $status =  $params['status'];
+
             $notificationsLists = $this->notificationsModel->getAllNotificationsByUserIDAndStatus($userID, $status);
+
             if (!$notificationsLists) {
-                ResponseHelper::sendSuccessResponse([], 'No notifications found');
-                return;
+                return ResponseHelper::sendSuccessResponse([], 'No notifications found');
             }
 
-            ResponseHelper::sendSuccessResponse($notificationsLists, 'Notifications found');
+            return ResponseHelper::sendSuccessResponse($notificationsLists, 'Notifications found');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function addNewNotification($payload)
+    public function addNewNotification(array $payload)
     {
-        if (empty($payload)) {
-            ResponseHelper::sendErrorResponse("Invalid payload or payload is empty", 400);
-            return;
-        }
 
         try {
+            HTTPRequestValidator::validatePOSTPayload($this->expectedPostPayloadKeys, $payload);
+
             $isAddingNotifSuccess = $this->notificationsModel->addNewNotification($payload);
 
             if (!$isAddingNotifSuccess) {
-                ResponseHelper::sendErrorResponse("Failed to add new notification", 400);
-                return;
+                return ResponseHelper::sendErrorResponse("Failed to add new notification", 400);
             }
 
-            ResponseHelper::sendSuccessResponse([], "New notification added successfully");
+            return ResponseHelper::sendSuccessResponse([], "New notification added successfully");
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function updateNotificationStatus($params, $payload)
+    public function updateNotificationStatus(array $params, array $payload)
     {
-        if (empty($payload)) {
-            ResponseHelper::sendErrorResponse("Invalid payload or payload is empty", 400);
-            return;
-        }
-
-        $id = $params['id'];
-        $status = $payload['status'];
-        $userID = $params['userID'];
-
         try {
+            HTTPRequestValidator::validatePUTPayload($this->acceptableParamsKeys, $this->expectedPutPayloadKeys, $params, $payload);
+
+            $id = (int) $params['id'];
+            $userID = (int) $params['userID'];
+            $status = $payload['status'];
+
             $isUpdatingNotifSuccess = $this->notificationsModel->updateNotificationStatus($id, $userID, $status);
 
             if (!$isUpdatingNotifSuccess) {
-                ResponseHelper::sendErrorResponse("Failed to update notification status", 400);
-                return;
+                return ResponseHelper::sendErrorResponse("Failed to update notification status", 400);
             }
 
-            ResponseHelper::sendSuccessResponse([], "Notification status updated successfully");
+            return ResponseHelper::sendSuccessResponse([], "Notification status updated successfully");
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 }

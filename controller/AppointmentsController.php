@@ -1,61 +1,107 @@
 <?php
 
 use Helpers\ResponseHelper;
-use Helpers\HeaderHelper;
+
+use Validators\HTTPRequestValidator;
 
 use Models\AppointmentsModel;
 
 class AppointmentsController
 {
     private $appointmentsModel;
+    private $acceptableParamsKeys = ['id', 'requestID'];
+    private $expectedPostPayloadKeys = ['requestID', 'userOwnerID', 'userID', 'petID', 'appointmentDate', 'appointmentTime'];
 
     public function __construct($pdo)
     {
         $this->appointmentsModel = new AppointmentsModel($pdo);
-
-        HeaderHelper::setResponseHeaders();
     }
 
-    public function getRequestAppointmentByRequestID($param)
+    public function getAllAppointments()
     {
         try {
-            if (empty($param) || !isset($params['id'])) {
-                ResponseHelper::sendErrorResponse("Invalid or missing id parameter", 400);
-                return;
-            }
-
-            $id = (int) $param['id'];
-            $response = $this->appointmentsModel->getRequestAppointmentByRequestID($id);
+            $response = $this->appointmentsModel->getAllAppointments();
 
             if (!$response) {
-                ResponseHelper::sendErrorResponse("Appointment not found", 404);
-                exit;
+                return ResponseHelper::sendSuccessResponse([], 'No Appointment found');
             }
 
-            ResponseHelper::sendSuccessResponse($response, 'Successfully fetched appointment of the request');
+            return ResponseHelper::sendSuccessResponse($response, 'Successfully fetched all appointments');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function addNewRequestAppointment($payload)
+    public function getAppointmentByID(array $params)
     {
         try {
-            if (empty($payload)) {
-                ResponseHelper::sendErrorResponse("Payload is empty", 400);
-                return;
-            }
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $response = $this->appointmentsModel->addNewRequestAppointment($payload);
+            $appointmentID = (int) $params['id'];
+
+            $response = $this->appointmentsModel->getAppointmentByID($appointmentID);
 
             if (!$response) {
-                ResponseHelper::sendErrorResponse("Request not found", 404);
+                return ResponseHelper::sendSuccessResponse([], 'No Appointment found');
+            }
+
+            return ResponseHelper::sendSuccessResponse($response, 'Successfully fetched appointment');
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function getAppointmentByRequestID(array $params)
+    {
+        try {
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
+
+            $requestID = (int) $params['requestID'];
+            $response = $this->appointmentsModel->getAppointmentByRequestID($requestID);
+
+            if (!$response) {
+                return ResponseHelper::sendSuccessResponse([], 'No Appointment found for the request');
+            }
+
+            return ResponseHelper::sendSuccessResponse($response, 'Successfully fetched appointment of the request');
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function addNewAppointment(array $payload)
+    {
+        try {
+            HTTPRequestValidator::validatePOSTPayload($this->expectedPostPayloadKeys, $payload);
+
+            $isAppointmentAdded = $this->appointmentsModel->addNewAppointment($payload);
+
+            if (!$isAppointmentAdded) {
+                ResponseHelper::sendErrorResponse("Failed to add new request appointment", 404);
                 exit;
             }
 
-            ResponseHelper::sendSuccessResponse($response, 'Successfully added new request appointment');
+            return ResponseHelper::sendSuccessResponse([], 'Successfully added new request appointment');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function deleteAppointmentByID(array $params)
+    {
+        try {
+            HTTPRequestValidator::validateDELETEParameter($this->acceptableParamsKeys, $params);
+
+            $appointmentID = (int) $params['id'];
+            $isAppointmentDeleted = $this->appointmentsModel->deleteAppointmentByID($appointmentID);
+
+            if (!$isAppointmentDeleted) {
+                return ResponseHelper::sendErrorResponse("Failed to delete appointment", 404);
+            }
+
+            return ResponseHelper::sendSuccessResponse($isAppointmentDeleted, 'Successfully deleted appointment');
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 }

@@ -1,26 +1,20 @@
 <?php
 
-
 use Helpers\ResponseHelper;
-use Helpers\HeaderHelper;
+
+use Validators\HTTPRequestValidator;
 
 use Models\PetsModel;
 
 class PetsController
 {
     private $petsModel;
+    private $acceptableParamsKeys = ['id', 'status', 'label', 'petType'];
+    private $expectedPostPayloadKeys = ['userID', 'petName', 'petAge', 'petAgeCategory', 'petGender', 'petType', 'petBreed', 'petVacHistory', 'petHistory', 'petPhotoURL', 'adoptionStatus', 'approvalStatus', 'postType'];
 
-    /**
-     * Constructor for the class.
-     *
-     * @param PDO $pdo The PDO object for database connection.
-     * @return void
-     */
     public function __construct($pdo)
     {
         $this->petsModel = new PetsModel($pdo);
-
-        HeaderHelper::setResponseHeaders();
     }
 
     public function getAllPets()
@@ -32,87 +26,74 @@ class PetsController
             $pets = $this->petsModel->getAllPets($limit, $offset);
 
             if (!$pets) {
-                ResponseHelper::sendSuccessResponse([], 'No pets found');
-                return;
+                return ResponseHelper::sendSuccessResponse([], 'No pets found');
             }
 
-            ResponseHelper::sendSuccessResponse($pets, 'Pets found');
+            return ResponseHelper::sendSuccessResponse($pets, 'Pets found');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function getAllPetsByAdoptionStatus($param)
+    public function getAllPetsByAdoptionStatus(array $params)
     {
         try {
-            if (empty($param) || !isset($param['status'])) {
-                ResponseHelper::sendErrorResponse("Invalid or missing pet status parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
             $limit = (int) $_GET['limit'] ?? 0;
             $offset = (int) $_GET['offset'] ?? 0;
 
-            $status = $param['status'];
+            $status = $params['status'];
 
             $pets = $this->petsModel->getAllPetsByAdoptionStatus($status, $limit, $offset);
 
             if (!$pets) {
-                ResponseHelper::sendSuccessResponse([], 'No pets found');
-                return;
+                return ResponseHelper::sendSuccessResponse([], 'No pets found');
             }
 
-            ResponseHelper::sendSuccessResponse($pets, 'Pets found');
+            return ResponseHelper::sendSuccessResponse($pets, 'Pets found');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function getPetByID($param)
+    public function getPetByID(array $params)
     {
         try {
-            if (empty($param) || !isset($param['id'])) {
-                ResponseHelper::sendErrorResponse("Invalid or missing pet id parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $petID = (int) $param['id'];
+            $petID = (int) $params['id'];
 
             $pet = $this->petsModel->getPetByID($petID);
 
             if (!$pet) {
-                ResponseHelper::sendSuccessResponse([], 'No pet found');
-                return;
+                return ResponseHelper::sendSuccessResponse([], 'No pet found');
             }
 
-            ResponseHelper::sendSuccessResponse($pet, 'Pet found');
+            return ResponseHelper::sendSuccessResponse($pet, 'Pet found');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function getAllPetsByLabel($param)
+    public function getAllPetsByLabel(array $params)
     {
         try {
-            if (empty($param) || !isset($param['label'])) {
-                ResponseHelper::sendErrorResponse("Invalid or missing label parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validateGETParams($this->acceptableParamsKeys, $params);
 
-            $label = $param['label'];
+            $label = $params['label'];
             $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 10;
             $offset = isset($_GET['offset']) ? (int) $_GET['offset'] : 0;
 
             $pets = $this->petsModel->getAllPetsByLabel($label, $limit, $offset);
 
             if (!$pets) {
-                ResponseHelper::sendSuccessResponse([], 'No pets found');
-                return;
+                return ResponseHelper::sendSuccessResponse([], 'No pets found');
             }
 
-            ResponseHelper::sendSuccessResponse($pets, 'Pets found');
+            return ResponseHelper::sendSuccessResponse($pets, 'Pets found');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
@@ -122,36 +103,31 @@ class PetsController
             $types = $this->petsModel->getAllPetTypes();
 
             if (!$types) {
-                ResponseHelper::sendSuccessResponse([], 'No types found');
-                return;
+                return ResponseHelper::sendSuccessResponse([], 'No types found');
             }
 
-            ResponseHelper::sendSuccessResponse($types, 'Types found');
+            return ResponseHelper::sendSuccessResponse($types, 'Types found');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    public function getAllPetBreedsByType($param)
+    public function getAllPetBreedsByType(array $params)
     {
         try {
-            if (empty($param) || !isset($param['petType'])) {
-                ResponseHelper::sendErrorResponse("Invalid or missing pet type parameter", 400);
-                return;
-            }
+            HTTPRequestValidator::validateGETParams($this->acceptableParamsKeys, $params);
 
-            $petType = $param['petType'];
+            $petType = $params['petType'];
 
             $breeds = $this->petsModel->getAllPetBreedsByType($petType);
 
             if (!$breeds) {
-                ResponseHelper::sendSuccessResponse([], 'No breeds found');
-                return;
+                return ResponseHelper::sendSuccessResponse([], 'No breeds found');
             }
 
-            ResponseHelper::sendSuccessResponse($breeds, 'Breeds found');
+            return ResponseHelper::sendSuccessResponse($breeds, 'Breeds found');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
@@ -161,36 +137,30 @@ class PetsController
             $ageCategories = $this->petsModel->getAllPetsAgeCategories();
 
             if (!$ageCategories) {
-                ResponseHelper::sendSuccessResponse([], 'No age categories found');
-                return;
+                return  ResponseHelper::sendSuccessResponse([], 'No age categories found');
             }
 
-            ResponseHelper::sendSuccessResponse($ageCategories, 'Age categories found');
+            return ResponseHelper::sendSuccessResponse($ageCategories, 'Age categories found');
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
 
-    public function addNewPet($payload)
+    public function addNewPet(array $payload)
     {
         try {
-            if (empty($payload)) {
-                ResponseHelper::sendErrorResponse("Invalid payload or payload is empty", 400);
-                return;
-            }
-
+            HTTPRequestValidator::validatePOSTPayload($this->expectedPostPayloadKeys, $payload);
 
             $pet = $this->petsModel->addNewPet($payload);
 
             if (!$pet) {
-                ResponseHelper::sendErrorResponse("Failed to add pet", 400);
-                return;
+                return ResponseHelper::sendErrorResponse("Failed to add pet", 400);
             }
 
-            ResponseHelper::sendSuccessResponse([], "Pet added successfully");
+            return ResponseHelper::sendSuccessResponse([], "Pet added successfully");
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 }
