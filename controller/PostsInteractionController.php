@@ -1,5 +1,7 @@
 <?php
 
+use Ramsey\Uuid\Uuid;
+
 use Helpers\ResponseHelper;
 
 use Validators\HTTPRequestValidator;
@@ -24,10 +26,13 @@ class PostsInteractionController
         try {
             HTTPRequestValidator::validatePOSTPayload($this->expectedPostPayloadKeys, $payload);
 
+            $uuid = Uuid::uuid7()->toString();
+            $payload['id'] = $uuid;
+
             $response = $this->postsInteractionModel->addNewPostInteraction($payload);
 
             if (!$response) {
-                return ResponseHelper::sendSuccessResponse([], "Failed to add new like to the post", 404);
+                return ResponseHelper::sendErrorResponse("Failed to add new like to the post");
             }
 
             return ResponseHelper::sendSuccessResponse([], 'Successfully added new like to the post');
@@ -36,7 +41,7 @@ class PostsInteractionController
         }
     }
 
-    public function deletePostInteraction($params)
+    public function deletePostInteraction(array $params)
     {
         try {
             HTTPRequestValidator::validateGETParameter($this->acceptableKeys, $params);

@@ -1,5 +1,7 @@
 <?php
 
+use Ramsey\Uuid\Uuid;
+
 use Helpers\JWTHelper;
 use Helpers\ResponseHelper;
 use Helpers\HeaderHelper;
@@ -32,6 +34,9 @@ class AuthenticationController
     {
         try {
             HTTPRequestValidator::validatePOSTPayload($this->expectedRegisterPayload, $payload);
+
+            $uuid = Uuid::uuid7()->toString();
+            $payload['id'] = $uuid;
 
             $password = $payload['password'];
             $hashed_password = password_hash($password, PASSWORD_BCRYPT, ['cost' => 15]);

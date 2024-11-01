@@ -22,15 +22,17 @@ class PostsInteractionModel
     {
         try {
 
-            $postID = (int) $payload['postID'];
-            $userID = (int) $payload['userID'];
+            $id = $payload['id'];
+            $postID = $payload['postID'];
+            $userID = $payload['userID'];
             $postType = $payload['typeOfPost'];
 
-            $query = "INSERT INTO " . self::POST_INTERACTIONS_TABLE . " (postID, userID, postType) VALUES (:postID, :userID, :postType)";
+            $query = "INSERT INTO " . self::POST_INTERACTIONS_TABLE . " (id, postID, userID, postType) VALUES (:id,:postID, :userID, :postType)";
             $statement = $this->pdo->prepare($query);
 
-            $statement->bindValue(':postID', $postID, PDO::PARAM_INT);
-            $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
+            $statement->bindValue(':id', $id, PDO::PARAM_STR);
+            $statement->bindValue(':postID', $postID, PDO::PARAM_STR);
+            $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
             $statement->bindValue(':postType', $postType, PDO::PARAM_STR);
 
             $statement->execute();
@@ -41,14 +43,14 @@ class PostsInteractionModel
         }
     }
 
-    public function deletePostInteraction(int $postID, int $userID)
+    public function deletePostInteraction(string $postID, string $userID)
     {
         try {
             $query = "DELETE FROM " . self::POST_INTERACTIONS_TABLE . " WHERE postID = :postID AND userID = :userID";
             $statement = $this->pdo->prepare($query);
 
-            $statement->bindValue(':postID', $postID, PDO::PARAM_INT);
-            $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
+            $statement->bindValue(':postID', $postID, PDO::PARAM_STR);
+            $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
 
             $statement->execute();
 

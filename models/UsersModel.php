@@ -33,13 +33,13 @@ class UsersModel
         }
     }
 
-    public function getUserByID(int $userID)
+    public function getUserByID(string $userID)
     {
         try {
             $query = "SELECT * FROM " . self::USERS_TABLE . " WHERE id = :userID";
             $statement = $this->pdo->prepare($query);
 
-            $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
+            $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
 
             $statement->execute();
 
@@ -75,6 +75,7 @@ class UsersModel
                 throw new RuntimeException('Email is already in use');
             }
 
+            $id = $userData['id'];
             $firstName = $userData['firstName'];
             $lastName = $userData['lastName'];
             $email = $userData['email'];
@@ -82,11 +83,12 @@ class UsersModel
             $role = 'customer';
 
 
-            $query = "INSERT INTO " . self::USERS_TABLE . " (firstName, lastName, email, phoneNumber, gender, password, address, region, province, city, barangay, validIDImageURL, selfieImageURL, role) VALUES (:firstName, :lastName, :email, '', '', :password, '', '', '', '', '', '', '', :role)";
+            $query = "INSERT INTO " . self::USERS_TABLE . " (id, firstName, lastName, email, phoneNumber, password, address, region, province, city, barangay, validIDImageURL, selfieImageURL, role) VALUES (:id, :firstName, :lastName, :email, '', :password, '', '', '', '', '', '', '', :role)";
 
             $statement = $this->pdo->prepare($query);
 
             $bind_params = [
+                ':id' => $id,
                 ':firstName' => $firstName,
                 ':lastName' => $lastName,
                 ':email' => $email,
@@ -106,7 +108,7 @@ class UsersModel
         }
     }
 
-    public function updateUserData(int $userID, array $payload)
+    public function updateUserData(string $userID, array $payload)
     {
         try {
             $query = "UPDATE " . self::USERS_TABLE . " SET ";
@@ -125,7 +127,7 @@ class UsersModel
                 $statement->bindValue(':' . $key, $value, PDO::PARAM_STR);
             }
 
-            $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
+            $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
 
             $statement->execute();
 

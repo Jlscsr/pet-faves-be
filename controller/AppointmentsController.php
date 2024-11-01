@@ -1,5 +1,7 @@
 <?php
 
+use Ramsey\Uuid\Uuid;
+
 use Helpers\ResponseHelper;
 
 use Validators\HTTPRequestValidator;
@@ -37,7 +39,7 @@ class AppointmentsController
         try {
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $appointmentID = (int) $params['id'];
+            $appointmentID = $params['id'];
 
             $response = $this->appointmentsModel->getAppointmentByID($appointmentID);
 
@@ -56,7 +58,7 @@ class AppointmentsController
         try {
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $requestID = (int) $params['requestID'];
+            $requestID = $params['requestID'];
             $response = $this->appointmentsModel->getAppointmentByRequestID($requestID);
 
             if (!$response) {
@@ -74,11 +76,13 @@ class AppointmentsController
         try {
             HTTPRequestValidator::validatePOSTPayload($this->expectedPostPayloadKeys, $payload);
 
+            $uuid = Uuid::uuid7()->toString();
+            $payload['id'] = $uuid;
+
             $isAppointmentAdded = $this->appointmentsModel->addNewAppointment($payload);
 
             if (!$isAppointmentAdded) {
-                ResponseHelper::sendErrorResponse("Failed to add new request appointment", 404);
-                exit;
+                return ResponseHelper::sendErrorResponse("Failed to add new request appointment", 404);
             }
 
             return ResponseHelper::sendSuccessResponse([], 'Successfully added new request appointment');
@@ -92,7 +96,7 @@ class AppointmentsController
         try {
             HTTPRequestValidator::validateDELETEParameter($this->acceptableParamsKeys, $params);
 
-            $appointmentID = (int) $params['id'];
+            $appointmentID = $params['id'];
             $isAppointmentDeleted = $this->appointmentsModel->deleteAppointmentByID($appointmentID);
 
             if (!$isAppointmentDeleted) {

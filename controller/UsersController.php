@@ -14,7 +14,7 @@ class UsersController
     private $usersModel;
     private $cookieManager;
     private $acceptableParamsKeys = ['id'];
-    private $acceptablePayloadKeys = ['firstName', 'lastName', 'email', 'phoneNumber', 'gender', 'password', 'address', 'region', 'province', 'city', 'barangay', 'validIDImageURL', 'selfieImageURL'];
+    private $acceptablePayloadKeys = ['id', 'firstName', 'lastName', 'email', 'phoneNumber', 'gender', 'password', 'address', 'region', 'province', 'city', 'barangay', 'validIDImageURL', 'selfieImageURL', 'role'];
 
     public function __construct($pdo)
     {
@@ -28,7 +28,7 @@ class UsersController
         try {
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $id = (int) $params['id'];
+            $id = $params['id'];
 
             $user = $this->usersModel->getUserByID($id);
 
@@ -82,7 +82,7 @@ class UsersController
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
             HTTPRequestValidator::validateGETParameter($this->acceptablePayloadKeys, $payload);
 
-            $userID = (int) $params['id'];
+            $userID = $params['id'];
 
             $isUserDataUpdated = $this->usersModel->updateUserData($userID, $payload);
 

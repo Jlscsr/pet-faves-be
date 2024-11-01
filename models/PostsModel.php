@@ -23,7 +23,7 @@ class PostsModel
         $this->pdo = $pdo;
     }
 
-    public function getAllPosts(string $status, int $offset, int $limit)
+    public function getAllPostsPetFeeds(string $status, int $offset, int $limit)
     {
         try {
             if ($this->cachedAllPosts === null) {
@@ -55,7 +55,7 @@ class PostsModel
                 SELECT p.*, u.id AS userID, u.firstName, u.lastName, u.selfieImageURL, u.province, u.city 
                 FROM " . self::PETS_TABLE . " p
                 JOIN users_tb u ON p.userOwnerID = u.id
-                WHERE p.approvalStatus = :approvalStatus AND p.userOwnerID IS NOT NULL
+                WHERE p.approvalStatus = :approvalStatus AND p.userOwnerID IS NOT NULL AND adoptionStatus = 0
                 ";
 
                 // Execute and merge all queries
@@ -169,11 +169,11 @@ class PostsModel
                     $statementEventPosts->execute();
                     $eventPosts = $statementEventPosts->fetchAll(PDO::FETCH_ASSOC);
                     $allPosts = array_merge($allPosts, $eventPosts);
-                } elseif ($typeOfPost === 'adoption') {
+                } elseif ($typeOfPost === 'post-adoption') {
                     $queryAdoptionPosts = "
                     SELECT p.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.province, u.city FROM " . self::PETS_TABLE . " p
                     JOIN users_tb u ON p.userOwnerID = u.id 
-                    WHERE p.approvalStatus = 'approved' AND p.userOwnerID IS NOT NULL
+                    WHERE p.approvalStatus = 'approved' AND p.userOwnerID IS NOT NULL AND adoptionStatus = 0
                 ";
 
                     $statementAdoptionPosts = $this->pdo->prepare($queryAdoptionPosts);
@@ -230,26 +230,140 @@ class PostsModel
         }
     }
 
+    public function getAllPostsByUserIDAndStatus(string $userID, string $status)
+    {
+        try {
+            $allPostsRequests = [];
+
+            $queryPosts = "SELECT * FROM " . self::POSTS_TABLE . " WHERE userID = :userID AND approvalStatus = :approvalStatus";
+
+            $mediaPosts = "SELECT * FROM " . self::MEDIA_POSTS_TABLE . " WHERE userID = :userID AND approvalStatus = :approvalStatus";
+
+            $eventPosts = "SELECT * FROM " . self::EVENT_POSTS_TABLE . " WHERE userID = :userID AND approvalStatus = :approvalStatus";
+
+            $statementPosts = $this->pdo->prepare($queryPosts);
+            $statementPosts->bindValue(':userID', $userID, PDO::PARAM_STR);
+            $statementPosts->bindValue(':approvalStatus', $status, PDO::PARAM_STR);
+            $statementPosts->execute();
+            $queryPosts = $statementPosts->fetchAll(PDO::FETCH_ASSOC);
+            $allPostsRequests = array_merge($allPostsRequests, $queryPosts);
+
+            $statementMediaPosts = $this->pdo->prepare($mediaPosts);
+            $statementMediaPosts->bindValue(':userID', $userID, PDO::PARAM_STR);
+            $statementMediaPosts->bindValue(':approvalStatus', $status, PDO::PARAM_STR);
+            $statementMediaPosts->execute();
+            $queryMediaPosts = $statementMediaPosts->fetchAll(PDO::FETCH_ASSOC);
+            $allPostsRequests = array_merge($allPostsRequests, $queryMediaPosts);
+
+            $statementEventPosts = $this->pdo->prepare($eventPosts);
+            $statementEventPosts->bindValue(':userID', $userID, PDO::PARAM_STR);
+            $statementEventPosts->bindValue(':approvalStatus', $status, PDO::PARAM_STR);
+            $statementEventPosts->execute();
+            $queryEventPosts = $statementEventPosts->fetchAll(PDO::FETCH_ASSOC);
+            $allPostsRequests = array_merge($allPostsRequests, $queryEventPosts);
+
+            usort($allPostsRequests, function ($a, $b) {
+                return strtotime($b['updatedAt']) - strtotime($a['updatedAt']);
+            });
+
+            return $allPostsRequests;
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function getAllPostsByIDAndTypeOfPost(string $id, string $typeOfPost)
+    {
+        try {
+            $table = '';
+
+            if ($typeOfPost === 'post') {
+                $table = self::POSTS_TABLE;
+            } else if ($typeOfPost === 'media') {
+                $table = self::MEDIA_POSTS_TABLE;
+            } else if ($typeOfPost === 'event') {
+                $table = self::EVENT_POSTS_TABLE;
+            } else {
+                $table = self::PETS_TABLE;
+            }
+
+            $query = "SELECT * FROM " . $table . " WHERE id = :id";
+
+            $statement = $this->pdo->prepare($query);
+            $statement->bindValue(':id', $id, PDO::PARAM_STR);
+
+            $statement->execute();
+
+            return $statement->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function getAllPosts()
+    {
+        try {
+            $query = "SELECT * FROM " . self::POSTS_TABLE;
+
+            $statement = $this->pdo->prepare($query);
+            $statement->execute();
+
+            return $statement->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function getAllMediaPosts()
+    {
+        try {
+            $query = "SELECT * FROM " . self::MEDIA_POSTS_TABLE;
+
+            $statement = $this->pdo->prepare($query);
+            $statement->execute();
+
+            return $statement->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function getAllEventPosts()
+    {
+        try {
+            $query = "SELECT * FROM " . self::EVENT_POSTS_TABLE;
+
+            $statement = $this->pdo->prepare($query);
+            $statement->execute();
+
+            return $statement->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
     public function addNewPost(array $payload)
     {
         try {
 
-            $userID = (int) $payload['userID'];
+            $id = $payload['id'];
+            $userID = $payload['userID'];
             $postDescription = $payload['postDescription'];
-            $approvalStatus = $payload['approvalStatus'];
+            $approvalStatus = $payload['status'];
             $postType = $payload['postType'];
 
-            $query = "INSERT INTO " . self::POSTS_TABLE . " (userID, postDescription, approvalStatus, postType) VALUES (:userID, :postDescription, :approvalStatus, :postType)";
+            $query = "INSERT INTO " . self::POSTS_TABLE . " (id, userID, postDescription, approvalStatus, postType) VALUES (:id, :userID, :postDescription, :approvalStatus, :postType)";
             $statement = $this->pdo->prepare($query);
 
-            $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
+            $statement->bindParam(':id', $id, PDO::PARAM_STR);
+            $statement->bindParam(':userID', $userID, PDO::PARAM_STR);
             $statement->bindParam(':postDescription', $postDescription, PDO::PARAM_STR);
             $statement->bindParam(':approvalStatus', $approvalStatus, PDO::PARAM_STR);
             $statement->bindParam(':postType', $postType, PDO::PARAM_STR);
 
             $statement->execute();
 
-            return $statement->rowCount() > 0;
+            return $id;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
@@ -258,30 +372,29 @@ class PostsModel
     public function addNewPostMedia(array $payload)
     {
         try {
-            $userID = (int) $payload['userID'];
+            $id = $payload['id'];
+            $userID = $payload['userID'];
             $postDescription = $payload['postDescription'];
             $mediaURL = $payload['mediaURL'] ?? null;
-            $approvalStatus = $payload['approvalStatus'];
+            $approvalStatus = $payload['status'];
             $postType = $payload['postType'];
             $mediaType = $payload['mediaType'];
 
-            $query = "INSERT INTO " . self::MEDIA_POSTS_TABLE . " (userID, postDescription, mediaURL, mediaType, approvalStatus, postType) VALUES (:userID, :postDescription, :mediaURL, :mediaType, :approvalStatus, :postType)";
+            $query = "INSERT INTO " . self::MEDIA_POSTS_TABLE . " (id, userID, postDescription, mediaURL, mediaType, approvalStatus, postType) VALUES (:id, :userID, :postDescription, :mediaURL, :mediaType, :approvalStatus, :postType)";
             $statement = $this->pdo->prepare($query);
 
-            $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
+            $statement->bindParam(':id', $id, PDO::PARAM_STR);
+            $statement->bindParam(':userID', $userID, PDO::PARAM_STR);
             $statement->bindParam(':postDescription', $postDescription, PDO::PARAM_STR);
             $statement->bindParam(':mediaURL', $mediaURL, PDO::PARAM_STR);
-            $statement->bindParam(':mediaType', $mediaType, PDO::PARAM_INT);
+            $statement->bindParam(':mediaType', $mediaType, PDO::PARAM_STR);
             $statement->bindParam(':approvalStatus', $approvalStatus, PDO::PARAM_STR);
             $statement->bindParam(':postType', $postType, PDO::PARAM_STR);
 
             $statement->execute();
 
-            if ($statement->rowCount() > 0) {
-                return [
-                    "postID" => $this->pdo->lastInsertId(),
-                ];
-            }
+
+            return $id;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
@@ -290,18 +403,20 @@ class PostsModel
     public function addNewEventPost(array $payload)
     {
         try {
-            $userID = (int) $payload['userID'];
+            $id = $payload['id'];
+            $userID = $payload['userID'];
             $postDescription = $payload['postDescription'];
-            $approvalStatus = $payload['approvalStatus'];
+            $approvalStatus = $payload['status'];
             $eventDate = $payload['eventDate'];
             $eventTime = $payload['eventTime'];
             $eventLocation = $payload['eventLocation'];
             $postType = $payload['postType'];
 
-            $query = "INSERT INTO " . self::EVENT_POSTS_TABLE . " (userID, postDescription, eventDate, eventTime, eventLocation, approvalStatus, postType) VALUES (:userID, :postDescription, :eventDate, :eventTime, :eventLocation, :approvalStatus, :postType)";
+            $query = "INSERT INTO " . self::EVENT_POSTS_TABLE . " (id, userID, postDescription, eventDate, eventTime, eventLocation, approvalStatus, postType) VALUES (:id, :userID, :postDescription, :eventDate, :eventTime, :eventLocation, :approvalStatus, :postType)";
             $statement = $this->pdo->prepare($query);
 
-            $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
+            $statement->bindParam(':id', $id, PDO::PARAM_STR);
+            $statement->bindParam(':userID', $userID, PDO::PARAM_STR);
             $statement->bindParam(':postDescription', $postDescription, PDO::PARAM_STR);
             $statement->bindParam(':eventDate', $eventDate, PDO::PARAM_STR);
             $statement->bindParam(':eventTime', $eventTime, PDO::PARAM_STR);
@@ -311,13 +426,13 @@ class PostsModel
 
             $statement->execute();
 
-            return $statement->rowCount() > 0;
+            return $id;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
     }
 
-    public function updatePostMedia(int $postID, string $mediaURL)
+    public function updatePostMedia(string $postID, string $mediaURL)
     {
         try {
             $query = "UPDATE " . self::MEDIA_POSTS_TABLE . " SET mediaURL = :mediaURL WHERE id = :postID";
@@ -332,7 +447,7 @@ class PostsModel
         }
     }
 
-    public function updatePostApprovalStatus(int $postID, string $status, string $postType)
+    public function updatePostApprovalStatus(string $postID, string $status, string $postType)
     {
         try {
 
@@ -349,8 +464,8 @@ class PostsModel
 
             $query = "UPDATE " . $table . " SET approvalStatus = :status WHERE id = :postID AND postType = :postType";
             $statement = $this->pdo->prepare($query);
+            $statement->bindParam(':postID', $postID, PDO::PARAM_STR);
             $statement->bindParam(':status', $status, PDO::PARAM_STR);
-            $statement->bindParam(':postID', $postID, PDO::PARAM_INT);
             $statement->bindParam(':postType', $postType, PDO::PARAM_STR);
             $statement->execute();
 

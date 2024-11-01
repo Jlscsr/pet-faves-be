@@ -71,12 +71,20 @@ class Route
                 'handler' => 'PostsController@addNewPost',
                 'middleware' => false
             ],
+            "api/posts/id/postType/:id/:typeOfPost" => [
+                'handler' => 'PostsController@getAllPostsByIDAndTypeOfPost',
+                'middleware' => false
+            ],
+            "api/posts/userID/:userID/:approvalStatus" => [
+                'handler' => 'PostsController@getAllPostsByUserIDAndStatus',
+                'middleware' => false
+            ],
             "api/posts/:typeOfPost" => [
                 'handler' => 'PostsController@getAllPostsByTypeOfPost',
                 'middleware' => false
             ],
             "api/posts/approvalStatus/:approvalStatus" => [
-                'handler' => 'PostsController@getAllPosts',
+                'handler' => 'PostsController@getAllPostsPetFeeds',
                 'middleware' => false
             ],
             /* Requests API Routes */
@@ -84,18 +92,27 @@ class Route
                 "handler" => "RequestsController@updateRequestStatus",
                 "middleware" => false
             ],
+            "api/requests/userOwnerID/id/:userOwnerID/:id" => [
+                "handler" => "RequestsController@getUserRequestByUserOwnerIDAndID",
+                "middleware" => false
+            ],
+            "api/requests/userID/status/:userID/:status" => [
+                "handler" => "RequestsController@getUserRequestByUserIDAndStatus",
+                "middleware" => false,
+            ],
+            "api/requests/userOwnerID/status/:userOwnerID/:status" => [
+                "handler" => "RequestsController@getAllRequestsByUserOwnerIDAndStatus",
+                "middleware" => false
+            ],
             "api/requests/status/:status" => [
                 "handler" => "RequestsController@getAllRequestsByStatus",
                 "middleware" => false
-            ],
-            "api/requests/typeOfRequest/:typeOfRequest" => [
-                "handler" => "RequestsController@getRequestByTypeofRequest"
             ],
             "api/requests/add" => [
                 "handler" => "RequestsController@addNewUserRequest",
                 "middleware" => false
             ],
-            "api/requests/userID/:userID/:id" => [
+            "api/requests/userID/id/:userID/:id" => [
                 "handler" => "RequestsController@getUserRequestByUserIDAndID",
                 "middleware" => false
             ],
@@ -112,23 +129,35 @@ class Route
                 "handler" => "PetsController@getAllPetsAgeCategories",
                 "middleware" => false,
             ],
-            "api/pets/label/:label" => [
-                "handler" => "PetsController@getAllPetsByLabel",
-                "middleware" => false
-            ],
             "api/pets/breeds/:petType" => [
                 "handler" => "PetsController@getAllPetBreedsByType",
+                "middleware" => false
+            ],
+            "api/pets/update/adoptionStatus/:id" => [
+                "handler" => "PetsController@updatePetAdoptionStatus",
+                "middleware" => false
+            ],
+            "api/pets/update/approvalStatus/:id" => [
+                "handler" => "PetsController@updatePetApprovalStatus",
                 "middleware" => false
             ],
             "api/pets/add" => [
                 "handler" => "PetsController@addNewPet",
                 "middleware" => false
             ],
-            "api/pets/:id" => [
+            "api/pets/id/adoptionStatus/:id/:adoptionStatus" => [
+                "handler" => "PetsController@getPetByIDAndAdoptionStatus",
+                "middleware" => false
+            ],
+            "api/pets/userID/approvalStatus/:userID/:approvalStatus" => [
+                "handler" => "PetsController@getAllPetsByUserIDAndApprovalStatus",
+                "middleware" => false
+            ],
+            "api/pets/id/:id" => [
                 "handler" => "PetsController@getPetByID",
                 "middleware" => false
             ],
-            "api/pets/types" => [
+            "api/pets/petTypes" => [
                 "handler" => "PetsController@getAllPetTypes",
                 "middleware" => false
             ],

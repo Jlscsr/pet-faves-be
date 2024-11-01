@@ -1,5 +1,7 @@
 <?php
 
+use Ramsey\Uuid\Uuid;
+
 use Helpers\ResponseHelper;
 
 use Validators\HTTPRequestValidator;
@@ -10,8 +12,8 @@ class NotificationsController
 {
     private $pdo;
     private $acceptableParamsKeys = ['id', 'status', 'userID'];
-    private $expectedPostPayloadKeys = ['userID', 'requestID', 'typeOfRequest', 'status'];
-    private $expectedPutPayloadKeys = ['status'];
+    private $expectedPostPayloadKeys = ['userID', 'requestID', 'postID', 'typeOfRequest', 'notificationStatus', 'requestStatus'];
+    private $expectedPutPayloadKeys = ['notificationStatus', 'requestStatus'];
 
     public function __construct($pdo)
     {
@@ -24,7 +26,7 @@ class NotificationsController
         try {
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $userID = (int) $params['userID'];
+            $userID = $params['userID'];
             $status =  $params['status'];
 
             $notificationsLists = $this->notificationsModel->getAllNotificationsByUserIDAndStatus($userID, $status);
@@ -45,6 +47,9 @@ class NotificationsController
         try {
             HTTPRequestValidator::validatePOSTPayload($this->expectedPostPayloadKeys, $payload);
 
+            $uuid = Uuid::uuid7()->toString();
+            $payload['id'] = $uuid;
+
             $isAddingNotifSuccess = $this->notificationsModel->addNewNotification($payload);
 
             if (!$isAddingNotifSuccess) {
@@ -62,11 +67,12 @@ class NotificationsController
         try {
             HTTPRequestValidator::validatePUTPayload($this->acceptableParamsKeys, $this->expectedPutPayloadKeys, $params, $payload);
 
-            $id = (int) $params['id'];
-            $userID = (int) $params['userID'];
-            $status = $payload['status'];
+            $id = $params['id'];
+            $userID = $params['userID'];
+            $notificationStatus = $payload['notificationStatus'];
+            $requestStatus = $payload['requestStatus'];
 
-            $isUpdatingNotifSuccess = $this->notificationsModel->updateNotificationStatus($id, $userID, $status);
+            $isUpdatingNotifSuccess = $this->notificationsModel->updateNotificationStatus($id, $userID, $notificationStatus, $requestStatus);
 
             if (!$isUpdatingNotifSuccess) {
                 return ResponseHelper::sendErrorResponse("Failed to update notification status", 400);

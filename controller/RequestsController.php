@@ -1,5 +1,7 @@
 <?php
 
+use Ramsey\Uuid\Uuid;
+
 use Helpers\ResponseHelper;
 
 use Validators\HTTPRequestValidator;
@@ -10,8 +12,8 @@ class RequestsController
 {
     private $pdo;
     private $requestsModel;
-    private $acceptableParamsKeys = ['id', 'status', 'typeOfRequest', 'userID'];
-    private $expectedPostPayloadKeys = ['userID', 'petID', 'typeOfRequest', 'status'];
+    private $acceptableParamsKeys = ['id', 'status', 'userID', 'typeOfPost', 'userOwnerID'];
+    private $expectedPostPayloadKeys = ['userID', 'petID', 'status', 'userOwnerID'];
 
     public function __construct($pdo)
     {
@@ -24,34 +26,15 @@ class RequestsController
         try {
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $id = (int) $params['id'];
+            $id = $params['id'];
 
-            $adoptionRequest = $this->requestsModel->getRequestByID($id);
+            $request = $this->requestsModel->getRequestByID($id);
 
-            if (!$adoptionRequest) {
+            if (!$request) {
                 return ResponseHelper::sendSuccessResponse([], 'No request found');
             }
 
-            return ResponseHelper::sendSuccessResponse($adoptionRequest, 'Request found');
-        } catch (RuntimeException $e) {
-            return ResponseHelper::sendErrorResponse($e->getMessage());
-        }
-    }
-
-    public function getRequestByTypeofRequest(array $params)
-    {
-        try {
-            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
-
-            $typeOfRequest = $params['typeOfRequest'];
-
-            $requestsLists = $this->requestsModel->getRequestByTypeofRequest($typeOfRequest);
-
-            if (!$requestsLists) {
-                return ResponseHelper::sendSuccessResponse([], 'No Requests found');
-            }
-
-            return ResponseHelper::sendSuccessResponse($requestsLists, 'Requests found');
+            return ResponseHelper::sendSuccessResponse($request, 'Request found');
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
@@ -76,20 +59,40 @@ class RequestsController
         }
     }
 
+    public function getAllRequestsByUserOwnerIDAndStatus($params)
+    {
+        try {
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
+
+            $userID = $params['userOwnerID'];
+            $status = $params['status'];
+
+            $requestsLists = $this->requestsModel->getAllRequestsByUserOwnerIDAndStatus($userID, $status);
+
+            if (!$requestsLists) {
+                return ResponseHelper::sendSuccessResponse([], 'No Requests found');
+            }
+
+            return ResponseHelper::sendSuccessResponse($requestsLists, 'Requests found');
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
     public function getUserRequestByUserID(array $params)
     {
         try {
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $userID = (int) $params['userID'];
+            $userID = $params['userID'];
 
-            $adoptionRequest = $this->requestsModel->getUserRequestByUserID($userID);
+            $requestsLists = $this->requestsModel->getUserRequestByUserID($userID);
 
-            if (!$adoptionRequest) {
+            if (!$requestsLists) {
                 return ResponseHelper::sendSuccessResponse([], 'No Request found');
             }
 
-            return ResponseHelper::sendSuccessResponse($adoptionRequest, 'Request found');
+            return ResponseHelper::sendSuccessResponse($requestsLists, 'Request found');
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
@@ -100,16 +103,56 @@ class RequestsController
         try {
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $id = (int) $params['id'];
-            $userID = (int) $params['userID'];
+            $id = $params['id'];
+            $userID = $params['userID'];
 
-            $adoptionRequest = $this->requestsModel->getUserRequestByUserIDAndID($userID, $id);
+            $request = $this->requestsModel->getUserRequestByUserIDAndID($userID, $id);
 
-            if (!$adoptionRequest) {
+            if (!$request) {
                 return ResponseHelper::sendSuccessResponse([], 'No Request found');
             }
 
-            return ResponseHelper::sendSuccessResponse($adoptionRequest, 'Request found');
+            return ResponseHelper::sendSuccessResponse($request, 'Request found');
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function getUserRequestByUserIDAndStatus(array $params)
+    {
+        try {
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
+
+            $userID = $params['userID'];
+            $status = $params['status'];
+
+            $request = $this->requestsModel->getUserRequestByUserIDAndStatus($userID, $status);
+
+            if (!$request) {
+                return ResponseHelper::sendSuccessResponse([], 'No Request found');
+            }
+
+            return ResponseHelper::sendSuccessResponse($request, 'Request found');
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function getUserRequestByUserOwnerIDAndID(array $params)
+    {
+        try {
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
+
+            $id = $params['id'];
+            $userOwnerID = $params['userOwnerID'];
+
+            $request = $this->requestsModel->getUserRequestByUserOwnerIDAndID($userOwnerID, $id);
+
+            if (!$request) {
+                return ResponseHelper::sendSuccessResponse([], 'No Request found');
+            }
+
+            return ResponseHelper::sendSuccessResponse($request, 'Request found');
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
@@ -119,6 +162,9 @@ class RequestsController
     {
         try {
             HTTPRequestValidator::validatePOSTPayload($this->expectedPostPayloadKeys, $payload);
+
+            $uuid = Uuid::uuid7()->toString();
+            $payload['id'] = $uuid;
 
             $response = $this->requestsModel->addNewUserRequest($payload);
 
@@ -137,7 +183,7 @@ class RequestsController
         try {
             HTTPRequestValidator::validatePUTPayload($this->acceptableParamsKeys, ['status'], $params, $payload);
 
-            $id = (int) $params['id'];
+            $id = $params['id'];
             $status = $payload['status'];
 
             $request = $this->requestsModel->updateRequestStatus($id, $status);

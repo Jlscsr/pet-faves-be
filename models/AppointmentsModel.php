@@ -12,6 +12,7 @@ use PDOException;
 class AppointmentsModel
 {
     private $pdo;
+    private $requestsModel;
 
     // Constants
     private const APPOINTMENTS_TABLE = 'appointments_tb';
@@ -19,6 +20,7 @@ class AppointmentsModel
     public function __construct($pdo)
     {
         $this->pdo = $pdo;
+        $this->requestsModel = new RequestsModel($pdo);
     }
 
     public function getAllAppointments()
@@ -36,7 +38,7 @@ class AppointmentsModel
         }
     }
 
-    public function getAppointmentByID(int $appointmentID)
+    public function getAppointmentByID(string $appointmentID)
     {
         try {
             $query = "SELECT * FROM " . self::APPOINTMENTS_TABLE . " WHERE id = :appointmentID";
@@ -51,7 +53,7 @@ class AppointmentsModel
         }
     }
 
-    public function getAppointmentByRequestID(int $requestID)
+    public function getAppointmentByRequestID(string $requestID)
     {
 
         $query = "SELECT * FROM " . self::APPOINTMENTS_TABLE . " WHERE requestID = :requestID";
@@ -69,9 +71,10 @@ class AppointmentsModel
 
     public function addNewAppointment(array $payload)
     {
-        $query = "INSERT INTO " . self::APPOINTMENTS_TABLE . " (userOwnerID, requestID, userID, petID,  appointmentDate, appointmentTime) VALUES (:userOwnerID, :requestID, :userID, :petID, :date, :time)";
+        $query = "INSERT INTO " . self::APPOINTMENTS_TABLE . " (id, userOwnerID, requestID, userID, petID,  appointmentDate, appointmentTime) VALUES (:id, :userOwnerID, :requestID, :userID, :petID, :date, :time)";
 
         $statement = $this->pdo->prepare($query);
+        $statement->bindValue(':id', $payload['id'], PDO::PARAM_INT);
         $statement->bindValue(':userOwnerID', $payload['userOwnerID'], PDO::PARAM_INT);
         $statement->bindValue(':requestID', $payload['requestID'], PDO::PARAM_INT);
         $statement->bindValue(':userID', $payload['userID'], PDO::PARAM_INT);
@@ -82,13 +85,17 @@ class AppointmentsModel
         try {
             $statement->execute();
 
+            if ($statement->rowCount() > 0) {
+                return $this->requestsModel->updateRequestStatus($payload['requestID'], 'on going process');
+            }
+
             return $statement->rowCount() > 0;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
     }
 
-    public function deleteRequestAppointmentByID(int $appointmentID)
+    public function deleteRequestAppointmentByID(string $appointmentID)
     {
         $query = "DELETE FROM " . self::APPOINTMENTS_TABLE . " WHERE id = :appointmentID";
         $statement = $this->pdo->prepare($query);

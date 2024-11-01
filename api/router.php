@@ -42,6 +42,7 @@ try {
 
     list($controller, $method) = explode('@', is_array($handler['handler']) ? $handler['handler']['handler'] : $handler['handler']);
 
+
     require_once dirname(__DIR__) . '/controller' . '/' . $controller . '.php';
 
     $controller = new $controller($pdo);

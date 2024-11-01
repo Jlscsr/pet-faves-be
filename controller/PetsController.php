@@ -1,5 +1,7 @@
 <?php
 
+use Ramsey\Uuid\Uuid;
+
 use Helpers\ResponseHelper;
 
 use Validators\HTTPRequestValidator;
@@ -9,7 +11,7 @@ use Models\PetsModel;
 class PetsController
 {
     private $petsModel;
-    private $acceptableParamsKeys = ['id', 'status', 'label', 'petType'];
+    private $acceptableParamsKeys = ['id', 'userID', 'approvalStatus', 'status', 'label', 'petType', 'adoptionStatus'];
     private $expectedPostPayloadKeys = ['userID', 'petName', 'petAge', 'petAgeCategory', 'petGender', 'petType', 'petBreed', 'petVacHistory', 'petHistory', 'petPhotoURL', 'adoptionStatus', 'approvalStatus', 'postType'];
 
     public function __construct($pdo)
@@ -62,7 +64,7 @@ class PetsController
         try {
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $petID = (int) $params['id'];
+            $petID = $params['id'];
 
             $pet = $this->petsModel->getPetByID($petID);
 
@@ -76,22 +78,41 @@ class PetsController
         }
     }
 
-    public function getAllPetsByLabel(array $params)
+    public function getPetByIDAndAdoptionStatus(array $params)
     {
         try {
-            HTTPRequestValidator::validateGETParams($this->acceptableParamsKeys, $params);
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $label = $params['label'];
-            $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 10;
-            $offset = isset($_GET['offset']) ? (int) $_GET['offset'] : 0;
+            $id = $params['id'];
+            $adoptionStatus = $params['adoptionStatus'];
 
-            $pets = $this->petsModel->getAllPetsByLabel($label, $limit, $offset);
+            $pet = $this->petsModel->getPetByIDAndAdoptionStatus($id, $adoptionStatus);
 
-            if (!$pets) {
-                return ResponseHelper::sendSuccessResponse([], 'No pets found');
+            if (!$pet) {
+                return ResponseHelper::sendSuccessResponse([], 'No pet found');
             }
 
-            return ResponseHelper::sendSuccessResponse($pets, 'Pets found');
+            return ResponseHelper::sendSuccessResponse($pet, 'Pet found');
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function getAllPetsByUserIDAndApprovalStatus(array $params)
+    {
+        try {
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
+
+            $userID = $params['userID'];
+            $approvalStatus = $params['approvalStatus'];
+
+            $pet = $this->petsModel->getAllPetsByUserIDAndApprovalStatus($userID, $approvalStatus);
+
+            if (!$pet) {
+                return ResponseHelper::sendSuccessResponse([], 'No pet found');
+            }
+
+            return ResponseHelper::sendSuccessResponse($pet, 'Pet found');
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
@@ -115,7 +136,7 @@ class PetsController
     public function getAllPetBreedsByType(array $params)
     {
         try {
-            HTTPRequestValidator::validateGETParams($this->acceptableParamsKeys, $params);
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
             $petType = $params['petType'];
 
@@ -152,13 +173,57 @@ class PetsController
         try {
             HTTPRequestValidator::validatePOSTPayload($this->expectedPostPayloadKeys, $payload);
 
-            $pet = $this->petsModel->addNewPet($payload);
+            $uuid = Uuid::uuid7()->toString();
+            $payload['id'] = $uuid;
 
-            if (!$pet) {
+            $response = $this->petsModel->addNewPet($payload);
+
+
+            if (!$response) {
                 return ResponseHelper::sendErrorResponse("Failed to add pet", 400);
             }
 
-            return ResponseHelper::sendSuccessResponse([], "Pet added successfully");
+            return ResponseHelper::sendSuccessResponse($response, "Pet added successfully");
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function updatePetAdoptionStatus($params, $payload)
+    {
+        try {
+            HTTPRequestValidator::validatePUTPayload($this->acceptableParamsKeys, ['adoptionStatus'], $params, $payload);
+
+            $petID = $params['id'];
+            $adoptionStatus = (int) $this->petsModel::ADOPTION_STATUS_MAP[$payload['adoptionStatus']];
+
+            $response = $this->petsModel->updatePetAdoptionStatus($petID, $adoptionStatus);
+
+            if (!$response) {
+                return ResponseHelper::sendErrorResponse("Failed to update post approval status", 400);
+            }
+
+            return ResponseHelper::sendSuccessResponse([], 'Successfully updated post approval status.');
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function updatePetApprovalStatus(array $params, array $payload)
+    {
+        try {
+            HTTPRequestValidator::validatePUTPayload($this->acceptableParamsKeys, ['status'], $params, $payload);
+
+            $postID = $params['id'];
+            $approvalStatus = $payload['status'];
+
+            $response = $this->petsModel->updatePetApprovalStatus($postID, $approvalStatus);
+
+            if (!$response) {
+                return ResponseHelper::sendErrorResponse("Failed to update post approval status", 400);
+            }
+
+            return ResponseHelper::sendSuccessResponse([], 'Successfully updated post approval status.');
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }

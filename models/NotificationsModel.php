@@ -18,16 +18,16 @@ class NotificationsModel
         $this->pdo = $pdo;
     }
 
-    public function getAllNotificationsByUserIDAndStatus(int $userID, string $status)
+    public function getAllNotificationsByUserIDAndStatus(string $userID, string $status)
     {
         try {
             $query = "SELECT * FROM " . self::NOTIFICATIONS_TABLE . "
             WHERE userID = :userID AND notificationStatus = :status 
-            ORDER BY id DESC";
+            AND requestStatus != 'pending' ORDER BY id DESC";
 
             $statement = $this->pdo->prepare($query);
 
-            $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
+            $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
             $statement->bindValue(':status', $status, PDO::PARAM_STR);
 
             $statement->execute();
@@ -41,44 +41,51 @@ class NotificationsModel
     public function addNewNotification(array $payload)
     {
         try {
-            $userID = (int) $payload['userID'];
-            $requestID = (int) $payload['requestID'];
+            $id = $payload['id'];
+            $userID = $payload['userID'];
+            $requestID = $payload['requestID'] ?? null;
+            $postID = $payload['postID'] ?? null;
             $typeOfRequest = $payload['typeOfRequest'];
-            $status = $payload['status'];
+            $notificationStatus = $payload['notificationStatus'];
+            $requestStatus = $payload['requestStatus'];
 
-            $existingNotifID = $this->checkIfNotificationExist($userID, $requestID, $typeOfRequest);
+            $existingNotifID = $this->checkIfNotificationExist($userID, $requestID, $postID, $typeOfRequest);
 
             if ($existingNotifID) {
-                return $this->updateNotificationStatus($existingNotifID, $userID, $status);
+                return $this->updateNotificationStatus($existingNotifID, $userID, $notificationStatus, $requestStatus);
             }
 
             // If there is no existing notification, insert a new one
-            $query = "INSERT INTO " . self::NOTIFICATIONS_TABLE . " (userID, requestID, typeOfRequest, notificationStatus) VALUES (:userID, :requestID, :typeOfRequest, :status)";
+            $query = "INSERT INTO " . self::NOTIFICATIONS_TABLE . " (id, userID, requestID, postID, typeOfRequest, notificationStatus, requestStatus) VALUES (:id, :userID, :requestID, :postID, :typeOfRequest, :notificationStatus, :requestStatus)";
 
             $statement = $this->pdo->prepare($query);
 
-            $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
-            $statement->bindValue(':requestID', $requestID, PDO::PARAM_INT);
+            $statement->bindValue(':id', $id, PDO::PARAM_STR);
+            $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
+            $statement->bindValue(':requestID', $requestID, PDO::PARAM_STR);
+            $statement->bindValue(':postID', $postID, PDO::PARAM_STR);
             $statement->bindValue(':typeOfRequest', $typeOfRequest, PDO::PARAM_STR);
-            $statement->bindValue(':status', $status, PDO::PARAM_STR);
+            $statement->bindValue(':notificationStatus', $notificationStatus, PDO::PARAM_STR);
+            $statement->bindValue(':requestStatus', $requestStatus, PDO::PARAM_STR);
+
 
             $statement->execute();
 
             return $statement->rowCount() > 0;
         } catch (PDOException $e) {
-            print_r($e->getMessage());
             throw new RuntimeException($e->getMessage());
         }
     }
 
-    public function updateNotificationStatus(int $id, int $userID, string $status)
+    public function updateNotificationStatus(string $id, string $userID, string $notificationStatus, string $requestStatus)
     {
-        $query = "UPDATE " . self::NOTIFICATIONS_TABLE . " SET notificationStatus = :status WHERE id = :id AND userID = :userID";
+        $query = "UPDATE " . self::NOTIFICATIONS_TABLE . " SET notificationStatus = :notificationStatus, requestStatus = :requestStatus WHERE id = :id AND userID = :userID";
 
         $statement = $this->pdo->prepare($query);
         $statement->bindValue(':id', $id, PDO::PARAM_INT);
         $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
-        $statement->bindValue(':status', $status, PDO::PARAM_STR);
+        $statement->bindValue(':notificationStatus', $notificationStatus, PDO::PARAM_STR);
+        $statement->bindValue(':requestStatus', $requestStatus, PDO::PARAM_STR);
 
         try {
             $statement->execute();
@@ -89,15 +96,27 @@ class NotificationsModel
         }
     }
 
-    private function checkIfNotificationExist(int $userID, int $requestID, string $typeOfRequest)
+    private function checkIfNotificationExist(string $userID, string | null $requestID, string | null $postID, string $typeOfRequest)
     {
         try {
 
-            $query = "SELECT * FROM " . self::NOTIFICATIONS_TABLE . " WHERE userID = :userID AND requestID = :requestID AND typeOfRequest = :typeOfRequest";
+            $query = null;
+
+            if ($requestID !== 0) {
+                $query .= "SELECT * FROM " . self::NOTIFICATIONS_TABLE . " WHERE userID = :userID AND requestID = :requestID AND typeOfRequest = :typeOfRequest";
+            } else {
+                $query .= "SELECT * FROM " . self::NOTIFICATIONS_TABLE . " WHERE userID = :userID AND postID = :postID AND typeOfRequest = :typeOfRequest";
+            }
+
             $statement = $this->pdo->prepare($query);
 
-            $statement->bindValue(':userID', $userID, PDO::PARAM_INT);
-            $statement->bindValue(':requestID', $requestID, PDO::PARAM_INT);
+            if ($requestID !== 0) {
+                $statement->bindValue(':requestID', $requestID, PDO::PARAM_STR);
+            } else {
+                $statement->bindValue(':postID', $postID, PDO::PARAM_STR);
+            }
+
+            $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
             $statement->bindValue(':typeOfRequest', $typeOfRequest, PDO::PARAM_STR);
 
             $statement->execute();
