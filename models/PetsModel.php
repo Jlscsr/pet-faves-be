@@ -4,7 +4,6 @@ namespace Models;
 
 use PDO;
 
-use InvalidArgumentException;
 use PDOException;
 use RuntimeException;
 
@@ -264,7 +263,7 @@ class PetsModel
             return $statement->rowCount() > 0;
         } catch (RuntimeException $e) {
             print_r($e->getMessage());
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            throw new RuntimeException($e->getMessage());
         }
     }
 
@@ -283,7 +282,7 @@ class PetsModel
             return $statement->rowCount() > 0;
         } catch (RuntimeException $e) {
             print_r($e->getMessage());
-            ResponseHelper::sendErrorResponse($e->getMessage());
+            throw new RuntimeException($e->getMessage());
         }
     }
 }

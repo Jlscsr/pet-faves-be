@@ -9,6 +9,23 @@ class Route
     public function __construct()
     {
         $this->routes = [
+            /* PetCare API */
+            'api/petCare/update/:id' => [
+                'handler' => 'PetCareController@updatePetCarePost',
+                'middleware' => false
+            ],
+            'api/petCare/add' => [
+                'handler' => 'PetCareController@addNewPetCarePost',
+                'middleware' => false
+            ],
+            "api/petCare/status/:status" => [
+                'handler' => 'PetCareController@getAllPetCarePostsByStatus',
+                'middleware' => false
+            ],
+            "api/petCare" => [
+                'handler' => 'PetCareController@getAllPetCarePosts',
+                'middleware' => false
+            ],
             /* Appointments API */
             "api/appointments/delete" => [
                 'handler' => "AppointmentsController@deleteAppointmentByID",

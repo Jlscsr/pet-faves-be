@@ -5,6 +5,7 @@ namespace Models;
 use RuntimeException;
 
 use PDO;
+use PDOException;
 
 class UsersModel
 {
