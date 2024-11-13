@@ -64,6 +64,11 @@ class AuthenticationController
 
             $response = $this->usersModel->getUserByEmail($email);
 
+
+            if (!isset($response['password'])) {
+                return ResponseHelper::sendErrorResponse('No email found on our database');
+            }
+
             $stored_password = $response['password'];
 
             if (!password_verify($password, $stored_password)) {
@@ -86,6 +91,24 @@ class AuthenticationController
             $this->cookieManager->setCookiHeader($token, $expiry_date);
 
             return ResponseHelper::sendSuccessResponse(['rl' => $response['role']], 'Logged In success', 201);
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function changePassword(array $payload)
+    {
+        try {
+            $email = $payload['email'];
+            $newPassword = $payload['newPassword'];
+            $oldPassword = $payload['oldPassword'];
+
+            $response = $this->usersModel->changePassword($email, $oldPassword, $newPassword);
+            if (!$response) {
+                return ResponseHelper::sendErrorResponse('Failed to change password', 400);
+            }
+
+            return ResponseHelper::sendSuccessResponse([], 'Password changed successfully', 201);
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }

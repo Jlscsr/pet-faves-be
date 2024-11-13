@@ -10,6 +10,10 @@ class Route
     {
         $this->routes = [
             /* PetCare API */
+            'api/petCare/delete/:id' => [
+                'handler' => 'PetCareController@deletePetCarePost',
+                'middleware' => 'false',
+            ],
             'api/petCare/update/:id' => [
                 'handler' => 'PetCareController@updatePetCarePost',
                 'middleware' => false
@@ -158,6 +162,14 @@ class Route
                 "handler" => "PetsController@updatePetApprovalStatus",
                 "middleware" => false
             ],
+            "api/pets/delete/:id" => [
+                "handler" => "PetsController@deletePet",
+                "middleware" => false
+            ],
+            "api/pets/update/:id" => [
+                "handler" => "PetsController@updatePetData",
+                "middleware" => false
+            ],
             "api/pets/add" => [
                 "handler" => "PetsController@addNewPet",
                 "middleware" => false
@@ -200,6 +212,10 @@ class Route
                 "middleware" => false
             ],
             /* Authentication API Routes */
+            "api/auth/changePassword" => [
+                "handler" => "AuthenticationController@changePassword",
+                "middleware" => false
+            ],
             "api/auth/validate" => [
                 "handler" => "AuthenticationController@validateToken",
                 "middleware" => false

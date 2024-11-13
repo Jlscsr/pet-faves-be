@@ -15,7 +15,7 @@ class PetsModel
         'available' => 0,
         'pending' => 1,
         'adopted' => 2,
-        'for approval' => 3
+        'not available' => 3
     ];
 
 
@@ -42,7 +42,17 @@ class PetsModel
 
             $statement->execute();
 
-            return $statement->fetchAll(PDO::FETCH_ASSOC);
+            $pets = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            if (empty($pets)) {
+                return [];
+            }
+
+            foreach ($pets as $key => $pet) {
+                $pets[$key]['adoptionStatus'] = array_search($pet['adoptionStatus'], self::ADOPTION_STATUS_MAP);
+            }
+
+            return $pets;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
@@ -54,7 +64,7 @@ class PetsModel
 
             $status = self::ADOPTION_STATUS_MAP[$status];
 
-            $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE adoptionStatus = :status";
+            $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE adoptionStatus = :status AND approvalStatus = 'approved'";
 
             if ($limit !== 0 || $offset !== 0) {
                 $query .= " LIMIT :limit OFFSET :offset";
@@ -191,8 +201,8 @@ class PetsModel
     {
         $userID = null;
 
-        if (isset($payload['userID'])) {
-            $userID = $payload['userID'];
+        if (isset($payload['userOwnerID'])) {
+            $userID = $payload['userOwnerID'];
         }
 
         $payload['adoptionStatus'] = self::ADOPTION_STATUS_MAP[$payload['adoptionStatus']];
@@ -204,6 +214,7 @@ class PetsModel
         $petGender = $payload['petGender'];
         $petType = $payload['petType'];
         $petBreed = $payload['petBreed'];
+        $petColor = $payload['petColor'];
         $petVacHistory = $payload['petVacHistory'];
         $petHistory = $payload['petHistory'];
         $petPhotoURL = $payload['petPhotoURL'];
@@ -212,19 +223,20 @@ class PetsModel
         $postType = $payload['postType'];
 
 
-        $query = "INSERT INTO " . self::PETS_TABLE . " (id, userOwnerID, petName, age, ageCategory, gender, petType, petBreed, petVacHistory, petHistory, petPhotoURL, adoptionStatus, approvalStatus, postType) VALUES (:id, :userID, :petName, :petAge, :petAgeCategory, :petGender, :petType, :petBreed, :petVacHistory, :petHistory, :petPhotoURL, :adoptionStatus, :approvalStatus, :postType)";
+        $query = "INSERT INTO " . self::PETS_TABLE . " (id, userOwnerID, petName, petAge, petAgeCategory, petGender, petType, petBreed, petColor,  petVacHistory, petHistory, petPhotoURL, adoptionStatus, approvalStatus, postType) VALUES (:id, :userOwnerID, :petName, :petAge, :petAgeCategory, :petGender, :petType, :petBreed, :petColor, :petVacHistory, :petHistory, :petPhotoURL, :adoptionStatus, :approvalStatus, :postType)";
 
         $statement = $this->pdo->prepare($query);
 
         $bindParams = [
             ':id' => $id,
-            ':userID' => $userID,
+            ':userOwnerID' => $userID,
             ':petName' => $petName,
             ':petAge' => $petAge,
             ':petAgeCategory' => $petAgeCategory,
             ':petGender' => $petGender,
             ':petType' => $petType,
             ':petBreed' => $petBreed,
+            ':petColor' => $petColor,
             ':petVacHistory' => $petVacHistory,
             ':petHistory' => $petHistory,
             ':petPhotoURL' => $petPhotoURL,
@@ -243,6 +255,35 @@ class PetsModel
             if ($statement->rowCount() > 0) {
                 return $payload['id'];
             }
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function updatePetData(string $petID, array $payload)
+    {
+        try {
+            $query = "UPDATE " . self::PETS_TABLE . " SET ";
+
+            foreach ($payload as $key => $value) {
+                if ($key === array_key_last($payload)) {
+                    $query .= $key . " = :" . $key . " WHERE id = :petID";
+                } else {
+                    $query .= $key . " = :" . $key . ", ";
+                }
+            }
+
+            $statement = $this->pdo->prepare($query);
+
+            foreach ($payload as $key => $value) {
+                $statement->bindValue(':' . $key, $value, PDO::PARAM_STR);
+            }
+
+            $statement->bindValue(':petID', $petID, PDO::PARAM_STR);
+
+            $statement->execute();
+
+            return $statement->rowCount() > 0;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
@@ -267,6 +308,7 @@ class PetsModel
         }
     }
 
+
     public function updatePetApprovalStatus(string $petID, string $status)
     {
         $query = "UPDATE " . self::PETS_TABLE . " SET approvalStatus = :status WHERE id = :petID";
@@ -282,6 +324,34 @@ class PetsModel
             return $statement->rowCount() > 0;
         } catch (RuntimeException $e) {
             print_r($e->getMessage());
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+    public function deletePet(string $petID)
+    {
+        $deletePetInAppointments = "DELETE FROM appointments_tb WHERE petID = :petID";
+
+        $statement = $this->pdo->prepare($deletePetInAppointments);
+        $statement->bindValue(':petID', $petID, PDO::PARAM_STR);
+
+        $statement->execute();
+
+        $deletePetInAdoptionRequests = "DELETE FROM adoption_requests_tb WHERE petID = :petID";
+
+        $statement = $this->pdo->prepare($deletePetInAdoptionRequests);
+        $statement->bindValue(':petID', $petID, PDO::PARAM_STR);
+        $statement->execute();
+
+        $query = "DELETE FROM " . self::PETS_TABLE . " WHERE id = :petID";
+
+        $statement = $this->pdo->prepare($query);
+        $statement->bindValue(':petID', $petID, PDO::PARAM_STR);
+
+        try {
+            $statement->execute();
+
+            return $statement->rowCount() > 0;
+        } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
     }

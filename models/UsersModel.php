@@ -66,6 +66,39 @@ class UsersModel
         }
     }
 
+    public function changePassword(string $email, string $oldPassword, string $newPassword)
+    {
+        try {
+            $query = 'SELECT password FROM ' . self::USERS_TABLE . ' WHERE email = :email';
+
+            $statement = $this->pdo->prepare($query);
+
+            $statement->bindValue(':email', $email, PDO::PARAM_STR);
+
+            $statement->execute();
+
+            $response = $statement->fetch(PDO::FETCH_ASSOC);
+
+            if (!password_verify($oldPassword, $response['password'])) {
+                throw new RuntimeException('Old password is incorrect');
+            }
+
+            $newPassword = password_hash($newPassword, PASSWORD_BCRYPT, ['cost' => 15]);
+
+            $query = 'UPDATE ' . self::USERS_TABLE . ' SET password = :newPassword WHERE email = :email';
+            $statement = $this->pdo->prepare($query);
+
+            $statement->bindValue(':email', $email, PDO::PARAM_STR);
+            $statement->bindValue(':newPassword', $newPassword, PDO::PARAM_STR);
+
+            $statement->execute();
+
+            return $statement->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
     public function addNewUser(array $userData)
     {
         try {

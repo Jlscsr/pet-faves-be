@@ -59,8 +59,9 @@ class PetCareModel
         $featuredImageURL = $payload['featuredImageURL'] ?? null;
         $description = $payload['description'];
         $content = $payload['content'];
+        $status = $payload['status'];
 
-        $query = "INSERT INTO " . self::PET_CARE_TABLE . " (id, title, category, featuredImageURL, description, content) VALUES (:id, :title, :category, :featuredImageURL, :description, :content)";
+        $query = "INSERT INTO " . self::PET_CARE_TABLE . " (id, title, category, featuredImageURL, description, content, status) VALUES (:id, :title, :category, :featuredImageURL, :description, :content, :status)";
 
         $statement = $this->pdo->prepare($query);
 
@@ -70,7 +71,8 @@ class PetCareModel
             ':category' => $category,
             'featuredImageURL' => $featuredImageURL,
             ':description' => $description,
-            ':content' => $content
+            ':content' => $content,
+            ':status' => $status
         ];
 
         foreach ($bindParams as $key => $value) {
@@ -108,6 +110,23 @@ class PetCareModel
             foreach ($payload as $key => $value) {
                 $statement->bindValue(':' . $key, $value, PDO::PARAM_STR);
             }
+
+            $statement->bindValue(':id', $id, PDO::PARAM_STR);
+
+            $statement->execute();
+
+            return $statement->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function deletePetCarePost(string $id)
+    {
+        try {
+            $query = "DELETE FROM " . self::PET_CARE_TABLE . " WHERE id = :id";
+
+            $statement = $this->pdo->prepare($query);
 
             $statement->bindValue(':id', $id, PDO::PARAM_STR);
 

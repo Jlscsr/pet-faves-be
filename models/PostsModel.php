@@ -31,28 +31,28 @@ class PostsModel
 
                 // Fetch posts, media, event, and pets with user data
                 $queryPosts = "
-                SELECT p.*, u.id AS userID, u.firstName, u.lastName, u.selfieImageURL, u.province, u.city 
+                SELECT p.*, u.id AS userID, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
                 FROM " . self::POSTS_TABLE . " p
                 JOIN users_tb u ON p.userID = u.id
                 WHERE p.approvalStatus = :approvalStatus
                 ";
 
                 $queryMediaPosts = "
-                SELECT mp.*, u.id AS userID, u.firstName, u.lastName, u.selfieImageURL, u.province, u.city 
+                SELECT mp.*, u.id AS userID, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
                 FROM " . self::MEDIA_POSTS_TABLE . " mp
                 JOIN users_tb u ON mp.userID = u.id
                 WHERE mp.approvalStatus = :approvalStatus
                 ";
 
                 $queryEventPosts = "
-                SELECT ep.*, u.id AS userID, u.firstName, u.lastName, u.selfieImageURL, u.province, u.city 
+                SELECT ep.*, u.id AS userID, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
                 FROM " . self::EVENT_POSTS_TABLE . " ep
                 JOIN users_tb u ON ep.userID = u.id
                 WHERE ep.approvalStatus = :approvalStatus
                 ";
 
                 $queryPets = "
-                SELECT p.*, u.id AS userID, u.firstName, u.lastName, u.selfieImageURL, u.province, u.city 
+                SELECT p.*, u.id AS userID, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
                 FROM " . self::PETS_TABLE . " p
                 JOIN users_tb u ON p.userOwnerID = u.id
                 WHERE p.approvalStatus = :approvalStatus AND p.userOwnerID IS NOT NULL AND adoptionStatus = 0
@@ -112,13 +112,16 @@ class PostsModel
                     'firstName' => $post['firstName'],
                     'lastName' => $post['lastName'],
                     'selfieImageURL' => $post['selfieImageURL'],
+                    'validIDImageURL' => $post['validIDImageURL'],
+                    'email' => $post['email'],
+                    'phoneNumber' => $post['phoneNumber'],
                     'province' => $post['province'],
                     'city' => $post['city'],
                 ];
                 $post['likes'] = !empty($likesData) ? $likesData : [];
 
                 // Optionally remove user-related keys from the top-level post
-                unset($post['userID'], $post['firstName'], $post['lastName'], $post['selfieImageURL'], $post['province'], $post['city']);
+                unset($post['userID'], $post['firstName'], $post['lastName'], $post['selfieImageURL'], $post['province'], $post['city'], $post['email'], $post['phoneNumber'], $post['validIDImageURL']);
             }
 
             return $pagedPosts;
@@ -136,19 +139,19 @@ class PostsModel
 
                 if ($typeOfPost === 'petUpdates') {
                     $queryPosts = "
-                    SELECT p.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.province, u.city FROM " . self::POSTS_TABLE . " p
+                    SELECT p.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city FROM " . self::POSTS_TABLE . " p
                     JOIN users_tb u ON p.userID = u.id 
                     WHERE p.approvalStatus = 'approved'
                 ";
 
                     $queryMediaPosts = "
-                    SELECT m.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.province, u.city FROM " . self::MEDIA_POSTS_TABLE . " m
+                    SELECT m.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city FROM " . self::MEDIA_POSTS_TABLE . " m
                     JOIN users_tb u ON m.userID = u.id 
                     WHERE m.approvalStatus = 'approved'
                 ";
 
                     $queryEventPosts = "
-                    SELECT e.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL,u.province, u.city FROM " . self::EVENT_POSTS_TABLE . " e
+                    SELECT e.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber,u.province, u.city FROM " . self::EVENT_POSTS_TABLE . " e
                     JOIN users_tb u ON e.userID = u.id 
                     WHERE e.approvalStatus = 'approved'
                 ";
@@ -171,7 +174,7 @@ class PostsModel
                     $allPosts = array_merge($allPosts, $eventPosts);
                 } elseif ($typeOfPost === 'post-adoption') {
                     $queryAdoptionPosts = "
-                    SELECT p.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.province, u.city FROM " . self::PETS_TABLE . " p
+                    SELECT p.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city FROM " . self::PETS_TABLE . " p
                     JOIN users_tb u ON p.userOwnerID = u.id 
                     WHERE p.approvalStatus = 'approved' AND p.userOwnerID IS NOT NULL AND adoptionStatus = 0
                 ";
@@ -200,12 +203,15 @@ class PostsModel
                         'firstName' => $post['firstName'],
                         'lastName' => $post['lastName'],
                         'selfieImageURL' => $post['selfieImageURL'],
+                        'validIDImageURL' => $post['validIDImageURL'],
+                        'email' => $post['email'],
+                        'phoneNumber' => $post['phoneNumber'],
                         'province' => $post['province'],
                         'city' => $post['city'],
                     ];
                     $post['likes'] = !empty($likesData) ? $likesData : [];
                     // Remove user details from top level
-                    unset($post['userId'], $post['firstName'], $post['lastName'], $post['selfieImageURL'], $post['province'], $post['city']);
+                    unset($post['userId'], $post['firstName'], $post['lastName'], $post['selfieImageURL'], $post['province'], $post['city'], $post['email'], $post['phoneNumber'], $post['validIDImageURL']);
                 }
 
                 // Sort combined results by createdAt in descending order

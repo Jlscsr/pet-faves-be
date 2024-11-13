@@ -13,7 +13,7 @@ class PetCareController
     private $pdo;
     private $petCareModel;
     private $acceptableParamsKeys = ['id', 'status'];
-    private $expectedPostPayloadKeys = ['title', 'category', 'featuredImageURL', 'description', 'content'];
+    private $expectedPostPayloadKeys = ['title', 'category', 'featuredImageURL', 'description', 'content', 'status'];
     private $acceptablePayloadKeys = ['title', 'category', 'featuredImageURL', 'description', 'content'];
 
     public function __construct($pdo)
@@ -28,10 +28,10 @@ class PetCareController
             $petCatePosts = $this->petCareModel->getAllPetCarePosts();
 
             if (!$petCatePosts) {
-                return ResponseHelper::sendSuccessResponse([], 'No pets found');
+                return ResponseHelper::sendSuccessResponse([], 'No posts found');
             }
 
-            return ResponseHelper::sendSuccessResponse($petCatePosts, 'Pets found');
+            return ResponseHelper::sendSuccessResponse($petCatePosts, 'Posts found');
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
@@ -47,10 +47,10 @@ class PetCareController
             $petCarePosts = $this->petCareModel->getAllPetCarePostsByStatus($status);
 
             if (!$petCarePosts) {
-                return ResponseHelper::sendSuccessResponse([], 'No pets found');
+                return ResponseHelper::sendSuccessResponse([], 'No posts found');
             }
 
-            return ResponseHelper::sendSuccessResponse($petCarePosts, 'Pets found');
+            return ResponseHelper::sendSuccessResponse($petCarePosts, 'Posts found');
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
@@ -68,10 +68,10 @@ class PetCareController
 
 
             if (!$response) {
-                return ResponseHelper::sendErrorResponse("Failed to add pet", 400);
+                return ResponseHelper::sendErrorResponse("Failed to add post", 400);
             }
 
-            return ResponseHelper::sendSuccessResponse($response, "Pet added successfully");
+            return ResponseHelper::sendSuccessResponse($response, "Post added successfully");
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
@@ -88,10 +88,29 @@ class PetCareController
             $response = $this->petCareModel->updatePetCarePost($id, $payload);
 
             if (!$response) {
-                return ResponseHelper::sendErrorResponse("Failed to update pet", 400);
+                return ResponseHelper::sendErrorResponse("Failed to update post", 400);
             }
 
-            return ResponseHelper::sendSuccessResponse([], "Pet updated successfully");
+            return ResponseHelper::sendSuccessResponse([], "Post updated successfully");
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function deletePetCarePost(array $params)
+    {
+        try {
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
+
+            $id = $params['id'];
+
+            $response = $this->petCareModel->deletePetCarePost($id);
+
+            if (!$response) {
+                return ResponseHelper::sendErrorResponse("Failed to delete post", 400);
+            }
+
+            return ResponseHelper::sendSuccessResponse([], "Post deleted successfully");
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }

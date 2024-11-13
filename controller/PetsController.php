@@ -12,7 +12,7 @@ class PetsController
 {
     private $petsModel;
     private $acceptableParamsKeys = ['id', 'userID', 'approvalStatus', 'status', 'label', 'petType', 'adoptionStatus'];
-    private $expectedPostPayloadKeys = ['userID', 'petName', 'petAge', 'petAgeCategory', 'petGender', 'petType', 'petBreed', 'petVacHistory', 'petHistory', 'petPhotoURL', 'adoptionStatus', 'approvalStatus', 'postType'];
+    private $expectedPostPayloadKeys = ['userOwnerID', 'petName', 'petAge', 'petAgeCategory', 'petColor', 'petGender', 'petType', 'petBreed', 'petVacHistory', 'petHistory', 'petPhotoURL', 'adoptionStatus', 'approvalStatus', 'postType'];
 
     public function __construct($pdo)
     {
@@ -189,6 +189,25 @@ class PetsController
         }
     }
 
+    public function updatePetData(array $params, array $payload)
+    {
+        try {
+            HTTPRequestValidator::validatePUTPayload($this->acceptableParamsKeys, $this->expectedPostPayloadKeys, $params, $payload);
+
+            $petID = $params['id'];
+
+            $response = $this->petsModel->updatePetData($petID, $payload);
+
+            if (!$response) {
+                return ResponseHelper::sendErrorResponse("Failed to update pet data", 400);
+            }
+
+            return ResponseHelper::sendSuccessResponse([], 'Successfully updated pet data.');
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
     public function updatePetAdoptionStatus($params, $payload)
     {
         try {
@@ -224,6 +243,25 @@ class PetsController
             }
 
             return ResponseHelper::sendSuccessResponse([], 'Successfully updated post approval status.');
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function deletePet(array $params)
+    {
+        try {
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
+
+            $petID = $params['id'];
+
+            $response = $this->petsModel->deletePet($petID);
+
+            if (!$response) {
+                return ResponseHelper::sendErrorResponse("Failed to delete pet", 400);
+            }
+
+            return ResponseHelper::sendSuccessResponse([], 'Pet deleted successfully');
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
