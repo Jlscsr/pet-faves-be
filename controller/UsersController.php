@@ -14,7 +14,7 @@ class UsersController
     private $usersModel;
     private $cookieManager;
     private $acceptableParamsKeys = ['id'];
-    private $acceptablePayloadKeys = ['id', 'firstName', 'lastName', 'email', 'phoneNumber', 'gender', 'password', 'address', 'region', 'province', 'city', 'barangay', 'validIDImageURL', 'selfieImageURL', 'role'];
+    private $acceptablePayloadKeys = ['id', 'firstName', 'lastName', 'email', 'phoneNumber', 'gender', 'password', 'address', 'region', 'province', 'city', 'barangay', 'validIDImageURL', 'selfieImageURL', 'role', 'age', 'job', 'lifeStyle', 'livingStatus', 'petCareTimeCommitment', 'budgetForPetCare'];
 
     public function __construct($pdo)
     {
