@@ -80,7 +80,6 @@ class UsersController
     {
         try {
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
-            HTTPRequestValidator::validateGETParameter($this->acceptablePayloadKeys, $payload);
 
             $userID = $params['id'];
 
