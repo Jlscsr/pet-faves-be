@@ -9,3 +9,4 @@ use App\API\Router;
 echo "Hello, World!3";
 $router = new Router();
 $router->handleRequest();
+echo "Hello, World!4";
