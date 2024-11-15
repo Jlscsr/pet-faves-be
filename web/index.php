@@ -6,10 +6,11 @@ echo "Hello, World!2";
 
 use App\API\Router;
 
-echo "Hello, World!3";
+// Get the environment variable
 $url = parse_url(getenv('ENVIRONMENT'));
 
-echo $url;
+// Print the entire parsed array (optional, for debugging)
+print_r($url);
 try {
     $router = new Router();
     $router->handleRequest();
