@@ -13,8 +13,6 @@ use App\Models\UsersModel;
 
 use App\Validators\HTTPRequestValidator;
 
-use App\Configs\EnvironmentLoader;
-
 use RuntimeException;
 
 
@@ -32,7 +30,6 @@ class AuthenticationController
         $this->usersModel = new UsersModel($pdo);
         $this->cookieManager = new CookieManager();
 
-        EnvironmentLoader::load();
         HeaderHelper::setResponseHeaders();
     }
 

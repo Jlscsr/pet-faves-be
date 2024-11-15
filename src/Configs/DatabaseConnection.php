@@ -2,8 +2,6 @@
 
 namespace App\Configs;
 
-use App\Configs\EnvironmentLoader;
-
 use PDO;
 use PDOException;
 
