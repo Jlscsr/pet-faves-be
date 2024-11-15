@@ -12,8 +12,6 @@ class DatabaseConnection
     public static function connect(): ?PDO
     {
 
-        print_r("Hello, World!3");
-
         try {
             $environment = parse_url(getenv('ENVIRONMENT'));
             $environment = $environment['path'];
