@@ -6,6 +6,11 @@ echo "Hello, World!2";
 
 use App\API\Router;
 
-echo $_GET['url'];
-$router = new Router();
-$router->handleRequest();
+echo "Hello, World!3";
+try {
+    $router = new Router();
+    $router->handleRequest();
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();  // Print the error message
+}
+echo "Hello, World!4";
