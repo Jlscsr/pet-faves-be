@@ -9,8 +9,8 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 try {
-    $uri = $_SERVER['REQUEST_URI'];  // Full URI including query string, e.g., "/api/pets?limit=6&offset=0"
-    $path = parse_url($uri, PHP_URL_PATH);  // Just the path, e.g., "/api/pets"
+    $uri = $_SERVER['REQUEST_URI'];
+    $path = parse_url($uri, PHP_URL_PATH);
 
     $router = new Router();
     $router->handleRequest($path);  // Pass the URL to your Router logic

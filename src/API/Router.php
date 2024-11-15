@@ -28,8 +28,6 @@ class Router
     public function handleRequest($url)
     {
 
-        error_log("Routing URL: $url");
-
         // Set headers
         HeaderHelper::SendPreflighthHeaders();
         HeaderHelper::setResponseHeaders();
