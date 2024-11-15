@@ -33,6 +33,7 @@ class Router
 
         // Get the URL from the query parameter
         $url = $_GET['url'] ?? '';
+        print_r($url);
         $request_method = strtoupper(trim($_SERVER['REQUEST_METHOD']));
 
         // Get the handler for the route
