@@ -1,4 +1,3 @@
-# Enable mod_rewrite to allow for friendly URLs (common for PHP frameworks)
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
