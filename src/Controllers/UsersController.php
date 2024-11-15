@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 use App\Helpers\JWTHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\CookieManager;
@@ -7,6 +9,8 @@ use App\Helpers\CookieManager;
 use App\Validators\HTTPRequestValidator;
 
 use App\Models\UsersModel;
+
+use RuntimeException;
 
 class UsersController
 {

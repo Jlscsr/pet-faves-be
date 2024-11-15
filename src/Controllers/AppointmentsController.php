@@ -1,12 +1,14 @@
 <?php
 
+namespace App\Controllers;
+
 use Ramsey\Uuid\Uuid;
 
 use App\Helpers\ResponseHelper;
-
 use App\Validators\HTTPRequestValidator;
-
 use App\Models\AppointmentsModel;
+
+use RuntimeException;
 
 class AppointmentsController
 {

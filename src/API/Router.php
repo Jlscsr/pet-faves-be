@@ -71,8 +71,8 @@ class Router
 
     private function processRequest($controller, $method, $handler, $request_method)
     {
-        require_once dirname(__DIR__) . '/controller/' . $controller . '.php';
-        $controller = new $controller($this->pdo);
+        $controllerClass = 'App\\Controllers\\' . $controller;
+        $controller = new $controllerClass($this->pdo);
 
         $payload = json_decode(file_get_contents('php://input'), true);
 

@@ -1,5 +1,7 @@
 <?php
 
+namespace Src\Controllers;
+
 use Ramsey\Uuid\Uuid;
 
 use App\Helpers\ResponseHelper;
@@ -8,9 +10,12 @@ use App\Validators\HTTPRequestValidator;
 
 use App\Models\NotificationsModel;
 
+use RuntimeException;
+
 class NotificationsController
 {
     private $pdo;
+    private $notificationsModel;
     private $acceptableParamsKeys = ['id', 'status', 'userID'];
     private $expectedPostPayloadKeys = ['userID', 'requestID', 'postID', 'typeOfRequest', 'notificationStatus', 'requestStatus'];
     private $expectedPutPayloadKeys = ['notificationStatus', 'requestStatus'];

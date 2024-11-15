@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 use Ramsey\Uuid\Uuid;
 
 use App\Models\PostsModel;
@@ -7,6 +9,8 @@ use App\Models\PostsModel;
 use App\Helpers\ResponseHelper;
 
 use App\Validators\HTTPRequestValidator;
+
+use RuntimeException;
 
 class PostsController
 {

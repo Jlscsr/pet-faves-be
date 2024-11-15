@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 use Ramsey\Uuid\Uuid;
 
 use App\Helpers\ResponseHelper;
@@ -7,6 +9,8 @@ use App\Helpers\ResponseHelper;
 use App\Validators\HTTPRequestValidator;
 
 use App\Models\PetCareModel;
+
+use RuntimeException;
 
 class PetCareController
 {

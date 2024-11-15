@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 use Ramsey\Uuid\Uuid;
 
 use App\Helpers\JWTHelper;
@@ -12,6 +14,8 @@ use App\Models\UsersModel;
 use App\Validators\HTTPRequestValidator;
 
 use App\Configs\EnvironmentLoader;
+
+use RuntimeException;
 
 
 class AuthenticationController
