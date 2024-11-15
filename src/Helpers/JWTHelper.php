@@ -16,7 +16,7 @@ class JWTHelper
 
     public function __construct()
     {
-        $this->secret_key = getenv('JWT_SECRET_KEY');
+        $$this->secret_key = getenv('JWT_SECRET_KEY');
         $this->hash_algorithm = getenv('JWT_HASH_ALGORITHM');
 
         EnvironmentLoader::load();
