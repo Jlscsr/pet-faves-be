@@ -1,10 +1,22 @@
+# Enable mod_rewrite to allow for friendly URLs (common for PHP frameworks)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Force HTTPS (Heroku-specific header handling)
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Prevent direct access to files and directories
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Fallback resource for non-file/directory requests (like route handling)
+    FallbackResource /index.php
+
+    # Route all /api/* requests to index.php with the url query string
+    RewriteCond %{REQUEST_URI} ^/api/ [NC]
+    RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+</IfModule>
+
+# Prevent directory listing
 Options -Indexes
-RewriteEngine On
-
-# Prevent direct access to files and directories
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-
-# Only route /api/* to index.php
-RewriteCond %{REQUEST_URI} ^/api/ [NC]
-RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
