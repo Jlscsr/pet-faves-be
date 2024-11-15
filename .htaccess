@@ -6,11 +6,5 @@ RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
-# Comment lang to prevent direct access to files and directories
-# Ensure that URLs under /api/ are routed to api/router.php
-# RewriteCond %{REQUEST_URI} ^/api/ [NC]
-# RewriteRule ^(.*)$ api/router.php?url=$1 [QSA,L,PT]
-
-# Optionally, redirect requests to public/index.php (if you use this as the main entry point)
-RewriteCond %{REQUEST_URI} !^/api/ [NC]
-RewriteRule ^(.*)$ web/index.php?url=$1 [QSA,L,PT]
+# Redirect all requests to web/index.php
+RewriteRule ^(.*)$ web/index.php?url=$1 [QSA,L]
