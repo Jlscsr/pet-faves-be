@@ -8,4 +8,6 @@ try {
     $router->handleRequest();
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage();  // Print the error message
+} catch (RuntimeException $e) {
+    echo "Error: " . $e->getMessage();  // Print the error message
 }
