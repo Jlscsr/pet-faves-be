@@ -7,7 +7,7 @@ use Firebase\JWT\Key;
 
 use App\Helpers\ResponseHelper;
 
-use App\Config\EnvironmentLoader;
+use App\Configs\EnvironmentLoader;
 
 class JWTHelper
 {

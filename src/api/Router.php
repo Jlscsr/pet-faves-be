@@ -2,7 +2,7 @@
 
 namespace App\API;
 
-use App\Config\DatabaseConnection;
+use App\Configs\DatabaseConnection;
 use App\Helpers\HeaderHelper;
 use App\Helpers\ResponseHelper;
 use App\API\Routes;

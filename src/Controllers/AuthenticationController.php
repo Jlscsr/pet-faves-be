@@ -11,7 +11,7 @@ use App\Models\UsersModel;
 
 use App\Validators\HTTPRequestValidator;
 
-use App\Config\EnvironmentLoader;
+use App\Configs\EnvironmentLoader;
 
 
 class AuthenticationController

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Config;
+namespace App\Configs;
 
-use App\Config\EnvironmentLoader;
+use App\Configs\EnvironmentLoader;
 
 use PDO;
 use PDOException;
