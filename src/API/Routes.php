@@ -242,7 +242,6 @@ class Routes
 
     public function get_route($url_request)
     {
-        print_r($url_request);
         try {
             foreach ($this->routes as $route => $handler) {
                 if ($route === $url_request) {

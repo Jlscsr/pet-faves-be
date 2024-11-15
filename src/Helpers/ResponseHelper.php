@@ -38,7 +38,7 @@ class ResponseHelper
      * @param int $status_code The HTTP status code to be set for the response. Default is 200.
      * @return void
      */
-    public static function sendSuccessResponse($data = [], $message, $status_code = 200)
+    public static function sendSuccessResponse($data = [], $message = 'Success', $status_code = 200)
     {
         ResponseHelper::sendJsonResponse($data, $message, 'success', $status_code);
     }
