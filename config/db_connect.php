@@ -14,10 +14,11 @@ function db_connect()
         $environment = $_ENV['ENVIRONMENT'];
 
         if ($environment == "production") {
-            $host = $_ENV['PROD_DB_HOST'];
-            $username = $_ENV['PROD_DB_USERNAME'];
-            $Password = $_ENV['PROD_DB_PASSWORD'];
-            $database = $_ENV['PROD_DB_NAME'];
+            $url = parse_url(getenv("JAWSDB_URL"));
+            $host = $url["host"];
+            $username = $url["user"];
+            $Password = $url["pass"];
+            $database = ltrim($url['path'], '/'); // Removes the leading slash from the database name
         } else {
             $host = $_ENV['DEV_DB_HOST'];
             $username = $_ENV['DEV_DB_USERNAME'];
