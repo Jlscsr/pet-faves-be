@@ -10,6 +10,8 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 try {
     $url = $_GET['url'] ?? '/';  // Capture the routed URL
+    $uri = $_SERVER['REQUEST_URI'];
+    echo "URI: $uri";  // Debug the URI
     echo "Routing URL: $url";  // Debug the captured URL
 
     $router = new Router();
