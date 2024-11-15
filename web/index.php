@@ -12,11 +12,8 @@ try {
     $uri = $_SERVER['REQUEST_URI'];  // Full URI including query string, e.g., "/api/pets?limit=6&offset=0"
     $path = parse_url($uri, PHP_URL_PATH);  // Just the path, e.g., "/api/pets"
 
-    echo "Full URI: " . $uri . "<br>";  // Outputs "/api/pets?limit=6&offset=0"
-    echo "Path: " . $path . "<br>";    // Outputs "/api/pets"
-
     $router = new Router();
-    $router->handleRequest($uri);  // Pass the URL to your Router logic
+    $router->handleRequest($path);  // Pass the URL to your Router logic
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage();
     echo "Error: " . $e->getMessage();
