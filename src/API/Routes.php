@@ -194,7 +194,7 @@ class Routes
                 "handler" => "PetsController@getAllPetTypes",
                 "middleware" => false
             ],
-            "api/pets/status/:status" => [
+            "/api/pets/status/:status" => [
                 "handler" => "PetsController@getAllPetsByAdoptionStatus",
                 "middleware" => false
             ],
