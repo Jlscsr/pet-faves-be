@@ -26,7 +26,6 @@ class Router
 
     public function handleRequest()
     {
-        echo "Hello, World!5";
         // Set headers
         HeaderHelper::SendPreflighthHeaders();
         HeaderHelper::setResponseHeaders();

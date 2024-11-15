@@ -11,8 +11,8 @@ class DatabaseConnection
 {
     public static function connect(): ?PDO
     {
-        require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
-        EnvironmentLoader::load();
+
+        print_r("Hello, World!3");
 
         try {
             $environment = parse_url(getenv('ENVIRONMENT'));
