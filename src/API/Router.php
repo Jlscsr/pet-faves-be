@@ -26,6 +26,8 @@ class Router
 
     public function handleRequest()
     {
+        print_r($_SERVER);
+
         // Set headers
         HeaderHelper::SendPreflighthHeaders();
         HeaderHelper::setResponseHeaders();
