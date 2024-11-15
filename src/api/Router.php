@@ -9,6 +9,7 @@ use App\API\Routes;
 
 use RuntimeException;
 
+
 class Router
 {
     private $pdo;
