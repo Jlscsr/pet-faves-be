@@ -8,6 +8,7 @@ use App\Helpers\ResponseHelper;
 use App\API\Routes;
 
 use RuntimeException;
+use Exception;
 
 
 class Router
@@ -26,7 +27,6 @@ class Router
 
     public function handleRequest()
     {
-
         // Set headers
         HeaderHelper::SendPreflighthHeaders();
         HeaderHelper::setResponseHeaders();
@@ -51,6 +51,8 @@ class Router
             list($controller, $method) = explode('@', is_array($handler['handler']) ? $handler['handler']['handler'] : $handler['handler']);
             $this->processRequest($controller, $method, $handler, $request_method);
         } catch (RuntimeException $e) {
+            ResponseHelper::sendErrorResponse($e->getMessage());
+        } catch (Exception $e) {
             ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }

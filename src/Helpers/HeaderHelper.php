@@ -25,10 +25,5 @@ class HeaderHelper
         header('Access-Control-Allow-Credentials: true');
         header('Content-Type: application/json');
         header("Access-Control-Expose-Headers: Content-Length");
-
-        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-            http_response_code(200);
-            exit();
-        }
     }
 }
