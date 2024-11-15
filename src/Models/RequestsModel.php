@@ -138,6 +138,49 @@ class RequestsModel
         }
     }
 
+    public function getAllReturnRequests()
+    {
+        $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE typeOfRequest = 'return'";
+
+        $statement = $this->pdo->prepare($query);
+
+        try {
+            $statement->execute();
+            $returnRequests = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            if (empty($returnRequests)) {
+                return [];
+            }
+
+            return $returnRequests;
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function getAllReturnRequestsByStatus(string $status)
+    {
+        try {
+            $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE typeOfRequest = 'return' AND status = :status";
+
+            $statement = $this->pdo->prepare($query);
+
+            $statement->bindValue(":status", $status, PDO::PARAM_STR);
+
+            $statement->execute();
+
+            $returnRequests = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            if (empty($returnRequests)) {
+                return [];
+            }
+
+            return $returnRequests;
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
     public function addNewUserRequest(array $payload)
     {
         try {
@@ -146,8 +189,9 @@ class RequestsModel
             $userOwnerID = $payload['userOwnerID'] ?? null;
             $petID = $payload['petID'] ?? null;
             $status = $payload['status'];
+            $typeOfRequest = $payload['typeOfRequest'] ?? null;
 
-            $query = "INSERT INTO " . self::ADOPTION_REQUESTS_TABLE . " (id, userID, userOwnerID, petID, status) VALUES (:id, :userID, :userOwnerID, :petID, :status)";
+            $query = "INSERT INTO " . self::ADOPTION_REQUESTS_TABLE . " (id, userID, userOwnerID, petID, status, typeOfRequest) VALUES (:id, :userID, :userOwnerID, :petID, :status, typeOfRequest)";
 
             $statement = $this->pdo->prepare($query);
             $statement->bindValue(':id', $id, PDO::PARAM_STR);
@@ -155,15 +199,24 @@ class RequestsModel
             $statement->bindValue(':userOwnerID', $userOwnerID, PDO::PARAM_STR);
             $statement->bindValue(':petID', $petID, PDO::PARAM_STR);
             $statement->bindValue(':status', $status, PDO::PARAM_STR);
+            $statement->bindValue(':typeOfRequest', $typeOfRequest, PDO::PARAM_STR);
 
             $statement->execute();
 
             $lastInsertedID = $id;
 
-            $updatePetAdoptionStatus = $this->petsModel->updatePetAdoptionStatus($petID, 1);
+            if ($typeOfRequest === 'return') {
+                $updatePetAdoptionStatus = $this->petsModel->updatePetAdoptionStatus($petID, 4);
 
-            if (!$updatePetAdoptionStatus) {
-                throw new RuntimeException("Failed to update pet adoption status");
+                if (!$updatePetAdoptionStatus) {
+                    throw new RuntimeException('Failed to Update pet adoption status');
+                }
+            } else {
+                $updatePetAdoptionStatus = $this->petsModel->updatePetAdoptionStatus($petID, 1);
+
+                if (!$updatePetAdoptionStatus) {
+                    throw new RuntimeException("Failed to update pet adoption status");
+                }
             }
 
             $selectQuery = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE id = :lastInsertedID";
@@ -192,7 +245,7 @@ class RequestsModel
             $statement = $this->pdo->prepare($query);
 
             $statement->bindValue(':id', $id, PDO::PARAM_INT);
-            $statement->bindValue(':status', $status, PDO::PARAM_INT);
+            $statement->bindValue(':status', $status, PDO::PARAM_STR);
 
             $statement->execute();
 

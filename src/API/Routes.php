@@ -113,6 +113,14 @@ class Routes
                 'middleware' => false
             ],
             /* Requests API Routes */
+            "/api/requests/return/status/:status" => [
+                "handler" => "RequestsController@getAllReturnRequestsByStatus",
+                "middleware" => false,
+            ],
+            "/api/requests/return" => [
+                "handler" => "RequestsController@getAllReturnRequests",
+                "middleware" => false,
+            ],
             "/api/requests/update/status/:id" => [
                 "handler" => "RequestsController@updateRequestStatus",
                 "middleware" => false

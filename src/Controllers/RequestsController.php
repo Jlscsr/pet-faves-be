@@ -17,7 +17,7 @@ class RequestsController
     private $pdo;
     private $requestsModel;
     private $acceptableParamsKeys = ['id', 'status', 'userID', 'typeOfPost', 'userOwnerID'];
-    private $expectedPostPayloadKeys = ['userID', 'petID', 'status', 'userOwnerID'];
+    private $expectedPostPayloadKeys = ['userID', 'petID', 'status', 'userOwnerID', 'typeOfRequest'];
 
     public function __construct($pdo)
     {
@@ -157,6 +157,37 @@ class RequestsController
             }
 
             return ResponseHelper::sendSuccessResponse($request, 'Request found');
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function getAllReturnRequests()
+    {
+        try {
+            $requestsLists = $this->requestsModel->getAllReturnRequests();
+
+            if (empty($requestsLists)) {
+                return ResponseHelper::sendSuccessResponse([], 'No Requests found');
+            }
+
+            return ResponseHelper::sendSuccessResponse($requestsLists, 'Requests found');
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function getAllReturnRequestsByStatus(array $params)
+    {
+        try {
+            $status = $params['status'];
+            $requests = $this->requestsModel->getAllReturnRequestsByStatus($status);
+
+            if (empty($requests)) {
+                return ResponseHelper::sendSuccessResponse([], 'No Return requests found');
+            }
+
+            return ResponseHelper::sendSuccessResponse($requests, 'Return requests found');
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
