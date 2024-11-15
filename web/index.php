@@ -8,7 +8,7 @@ use App\API\Router;
 
 echo "Hello, World!3";
 $url = parse_url(getenv('JAWSDB_URL'));
-echo "$url";
+var_dump("$url");
 try {
     $router = new Router();
     $router->handleRequest();
