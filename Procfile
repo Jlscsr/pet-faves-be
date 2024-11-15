@@ -1,1 +1,1 @@
-web: heroku-php-apache2 api/
+web: heroku-php-apache2 api/router.php
