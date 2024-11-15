@@ -7,10 +7,9 @@ echo "Hello, World!2";
 use App\API\Router;
 
 echo "Hello, World!3";
-$url = parse_url(getenv('JAWSDB_URL'));
-var_dump($url['user']);
-var_dump($url['pass']);
-var_dump($url['host']);
+$url = parse_url(getenv('ENVIRONMENT'));
+
+echo $url;
 try {
     $router = new Router();
     $router->handleRequest();
