@@ -34,8 +34,11 @@ class Router
         // Get the URL from the query parameter
         $request_method = strtoupper(trim($_SERVER['REQUEST_METHOD']));
 
-        // Get the handler for the route
         $handler = $this->routes->get_route($url);
+
+        if (!$handler) {
+            throw new RuntimeException("Route not found for URL: $url");
+        }
 
         // Check if middleware is required
         $middleware_required = isset($handler['middleware']) && is_array($handler['middleware']) && $handler['middleware']['required'];
@@ -45,8 +48,19 @@ class Router
                 $this->handleMiddleware($handler['middleware']['handler']);
             }
 
+            $handlerDefinition = is_array($handler['handler']) ? $handler['handler']['handler'] : $handler['handler'];
+
+            if (empty($handlerDefinition)) {
+                throw new RuntimeException("Handler not defined for route.");
+            }
+
+            list($controller, $method) = explode('@', $handlerDefinition);
+
+            if (empty($controller) || empty($method)) {
+                throw new RuntimeException("Invalid handler format. Expected 'Controller@method'.");
+            }
+
             // Get the controller and method
-            list($controller, $method) = explode('@', is_array($handler['handler']) ? $handler['handler']['handler'] : $handler['handler']);
             $this->processRequest($controller, $method, $handler, $request_method);
         } catch (RuntimeException $e) {
             ResponseHelper::sendErrorResponse($e->getMessage());
