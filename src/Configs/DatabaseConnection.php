@@ -11,16 +11,20 @@ class DatabaseConnection
 {
     public static function connect(): ?PDO
     {
+        require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
         EnvironmentLoader::load();
 
         try {
             $environment = $_ENV['ENVIRONMENT'];
 
             if ($environment == "production") {
-                $host = $_ENV['PROD_DB_HOST'];
-                $username = $_ENV['PROD_DB_USERNAME'];
-                $password = $_ENV['PROD_DB_PASSWORD'];
-                $database = $_ENV['PROD_DB_NAME'];
+                // Use the Heroku JawsDB URL directly
+                $url = parse_url(getenv('JAWSDB_URL'));
+
+                $host = $url['host'];
+                $username = $url['user'];
+                $password = $url['pass'];
+                $database = ltrim($url['path'], '/'); // Removes the leading slash from the database name
             } else {
                 $host = $_ENV['DEV_DB_HOST'];
                 $username = $_ENV['DEV_DB_USERNAME'];
