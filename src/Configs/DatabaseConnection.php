@@ -24,9 +24,9 @@ class DatabaseConnection
                 $database = ltrim($url['path'], '/'); // Removes the leading slash from the database name
             } else {
                 $host = $_ENV['DEV_DB_HOST'];
-                $username = $_ENV['DEV_DB_USERNAME'];
-                $password = $_ENV['DEV_DB_PASSWORD'];
-                $database = $_ENV['DEV_DB_NAME'];
+                $username = 'localhost';
+                $password = 'root';
+                $database = 'petfaves_db';
             }
 
             $dsn = "mysql:host=$host;dbname=$database";
