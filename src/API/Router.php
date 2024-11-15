@@ -25,15 +25,13 @@ class Router
         $this->routes = new Routes();
     }
 
-    public function handleRequest()
+    public function handleRequest($url)
     {
         // Set headers
         HeaderHelper::SendPreflighthHeaders();
         HeaderHelper::setResponseHeaders();
 
         // Get the URL from the query parameter
-        $url = $_GET['url'] ?? '';
-        print_r($url);
         $request_method = strtoupper(trim($_SERVER['REQUEST_METHOD']));
 
         // Get the handler for the route
