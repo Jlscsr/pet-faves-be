@@ -41,7 +41,7 @@ class CookieManager
      */
     public function resetCookieHeader()
     {
-        setcookie($this->cookie_name, '', 0, '/', '', $this->is_secure, $this->is_http_only);
+        setcookie($this->cookie_name, '', time() - 3600, '/', '', $this->is_secure, $this->is_http_only, ['SameSite' => 'None']);
     }
 
     /**
