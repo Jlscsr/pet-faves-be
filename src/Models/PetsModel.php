@@ -124,9 +124,6 @@ class PetsModel
         try {
             $status = self::ADOPTION_STATUS_MAP[$adoptionStatus];
 
-            print_r($petID);
-            print_r($status);
-
             $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE id = :petID AND adoptionStatus = :adoptionStatus";
             $statement = $this->pdo->prepare($query);
             $statement->bindValue(':petID', $petID, PDO::PARAM_STR);
