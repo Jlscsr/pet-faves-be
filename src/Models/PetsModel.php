@@ -13,10 +13,10 @@ class PetsModel
     private const PETS_TABLE = 'pets_tb';
     const ADOPTION_STATUS_MAP = [
         'available' => '0',
-        'pending' => 1,
-        'adopted' => 2,
-        'not available' => 3,
-        'returning' => 4,
+        'pending' => '1',
+        'adopted' => '2',
+        'not available' => '3',
+        'returning' => '4',
     ];
 
 
