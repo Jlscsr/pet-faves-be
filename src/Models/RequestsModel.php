@@ -40,6 +40,7 @@ class RequestsModel
 
     public function getAllRequestsByStatus(string $status)
     {
+        print_r($status);
         $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE status = :status AND userOwnerID IS NULL";
 
         $statement = $this->pdo->prepare($query);
