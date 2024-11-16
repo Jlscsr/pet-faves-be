@@ -292,10 +292,15 @@ class PetsModel
 
     public function updatePetAdoptionStatus(string $petID, string $status)
     {
+
+        if (!is_numeric($status)) {
+            $status = array_search($status, self::ADOPTION_STATUS_MAP);
+        }
+
         $query = "UPDATE " . self::PETS_TABLE . " SET adoptionStatus = :status WHERE id = :petID";
 
         $statement = $this->pdo->prepare($query);
-        $statement->bindValue(':status', $status, PDO::PARAM_STR);
+        $statement->bindValue(':status', $status, PDO::PARAM_INT);
         $statement->bindValue(':petID', $petID, PDO::PARAM_STR);
 
         try {
