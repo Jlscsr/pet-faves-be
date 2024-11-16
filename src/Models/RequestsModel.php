@@ -40,11 +40,12 @@ class RequestsModel
 
     public function getAllRequestsByStatus(string $status)
     {
-        print_r($status);
+        $formattedStatusString = str_replace("+", " ", $status);
+
         $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE status = :status AND userOwnerID IS NULL";
 
         $statement = $this->pdo->prepare($query);
-        $statement->bindValue(':status', $status, PDO::PARAM_STR);
+        $statement->bindValue(':status', $formattedStatusString, PDO::PARAM_STR);
 
         try {
             $statement->execute();
