@@ -16,7 +16,7 @@ class PetsModel
         'pending' => '1',
         'adopted' => '2',
         'not available' => '3',
-        'returning' => '4',
+        'return' => '4',
     ];
 
 
