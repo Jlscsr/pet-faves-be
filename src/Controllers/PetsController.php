@@ -90,9 +90,6 @@ class PetsController
             $id = $params['id'];
             $adoptionStatus = $params['adoptionStatus'];
 
-            print_r($id);
-            print_r($adoptionStatus);
-
             $pet = $this->petsModel->getPetByIDAndAdoptionStatus($id, $adoptionStatus);
 
             if (!$pet) {
