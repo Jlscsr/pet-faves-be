@@ -14,7 +14,7 @@ class AppointmentsController
 {
     private $appointmentsModel;
     private $acceptableParamsKeys = ['id', 'requestID'];
-    private $expectedPostPayloadKeys = ['requestID', 'userOwnerID', 'userID', 'petID', 'appointmentDate', 'appointmentTime'];
+    private $expectedPostPayloadKeys = ['requestID', 'userOwnerID', 'userID', 'petID', 'appointmentDate', 'appointmentTime', 'reason'];
 
     public function __construct($pdo)
     {

@@ -82,11 +82,13 @@ class AppointmentsModel
         $statement->bindValue(':date', $payload['appointmentDate'], PDO::PARAM_STR);
         $statement->bindValue(':time', $payload['appointmentTime'], PDO::PARAM_STR);
 
+        $reason = $payload['reason'] ?? 'n/a';
+
         try {
             $statement->execute();
 
             if ($statement->rowCount() > 0) {
-                return $this->requestsModel->updateRequestStatus($payload['requestID'], 'on going process');
+                return $this->requestsModel->updateRequestStatus($payload['requestID'], 'on going process', $reason);
             }
 
             return $statement->rowCount() > 0;
