@@ -12,7 +12,7 @@ class PetsModel
     private $pdo;
     private const PETS_TABLE = 'pets_tb';
     const ADOPTION_STATUS_MAP = [
-        'available' => 0,
+        'available' => '0',
         'pending' => 1,
         'adopted' => 2,
         'not available' => 3,
