@@ -218,7 +218,7 @@ class PetsController
             HTTPRequestValidator::validatePUTPayload($this->acceptableParamsKeys, ['adoptionStatus'], $params, $payload);
 
             $petID = $params['id'];
-            $adoptionStatus = (int) $this->petsModel::ADOPTION_STATUS_MAP[$payload['adoptionStatus']];
+            $adoptionStatus = (string) $this->petsModel::ADOPTION_STATUS_MAP[$payload['adoptionStatus']];
 
             $response = $this->petsModel->updatePetAdoptionStatus($petID, $adoptionStatus);
 

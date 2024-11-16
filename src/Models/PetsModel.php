@@ -293,10 +293,6 @@ class PetsModel
     public function updatePetAdoptionStatus(string $petID, string $status)
     {
 
-        if (!is_numeric($status)) {
-            $status = array_search($status, self::ADOPTION_STATUS_MAP);
-        }
-
         print_r($status);
 
         $query = "UPDATE " . self::PETS_TABLE . " SET adoptionStatus = :status WHERE id = :petID";
