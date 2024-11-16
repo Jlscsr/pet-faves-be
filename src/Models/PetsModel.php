@@ -293,9 +293,6 @@ class PetsModel
     public function updatePetAdoptionStatus(string $petID, string $status)
     {
 
-        print_r($status);
-        print_r($petID);
-
         $query = "UPDATE " . self::PETS_TABLE . " SET adoptionStatus = :status WHERE id = :petID";
 
         $statement = $this->pdo->prepare($query);
