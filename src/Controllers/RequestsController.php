@@ -220,7 +220,7 @@ class RequestsController
 
             $id = $params['id'];
             $status = $payload['status'];
-            $reason = $payload['reason'] || 'n/a';
+            $reason = $payload['reason'] ?? 'n/a';
 
             print_r($reason);
 
