@@ -22,9 +22,9 @@ class DatabaseConnection
                 $password = $url['pass'];
                 $database = ltrim($url['path'], '/'); // Removes the leading slash from the database name
             } else {
-                $host = $_ENV['DEV_DB_HOST'];
-                $username = 'localhost';
-                $password = 'root';
+                $host = '127.0.0.1';
+                $username = 'root';
+                $password = '';
                 $database = 'petfaves_db';
             }
 

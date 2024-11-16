@@ -1,7 +1,8 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Force HTTPS (Heroku-specific header handling)
+    # Check if the environment is production (Heroku)
+    RewriteCond %{ENV:ENVIRONMENT} production
     RewriteCond %{HTTP:X-Forwarded-Proto} !https
     RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
@@ -12,7 +13,7 @@
     # Fallback resource for non-file/directory requests (like route handling)
     FallbackResource /index.php
 
-    # Route all /api/* requests to index.php with the url query string
+    # Route all /api/* requests to index.php with the URL query string
     RewriteCond %{REQUEST_URI} ^/api/ [NC]
     RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
 </IfModule>
