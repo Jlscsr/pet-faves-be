@@ -16,7 +16,7 @@ class RequestsController
 {
     private $pdo;
     private $requestsModel;
-    private $acceptableParamsKeys = ['id', 'status', 'userID', 'typeOfPost', 'userOwnerID'];
+    private $acceptableParamsKeys = ['id', 'status', 'userID', 'typeOfPost', 'userOwnerID', 'reason'];
     private $expectedPostPayloadKeys = ['userID', 'petID', 'status', 'userOwnerID', 'typeOfRequest'];
 
     public function __construct($pdo)
@@ -220,8 +220,11 @@ class RequestsController
 
             $id = $params['id'];
             $status = $payload['status'];
+            $reason = $payload['reason'] || 'n/a';
 
-            $request = $this->requestsModel->updateRequestStatus($id, $status);
+            print_r($reason);
+
+            $request = $this->requestsModel->updateRequestStatus($id, $status, $reason);
 
             if (!$request) {
                 return ResponseHelper::sendErrorResponse("Failed to update request", 400);

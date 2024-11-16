@@ -246,14 +246,18 @@ class RequestsModel
         }
     }
 
-    public function updateRequestStatus(string $id, string $status)
+    public function updateRequestStatus(string $id, string $status, string $reason)
     {
         try {
-            $query = "UPDATE " . self::ADOPTION_REQUESTS_TABLE . " SET status = :status WHERE id = :id";
+
+            print_r($reason);
+
+            $query = "UPDATE " . self::ADOPTION_REQUESTS_TABLE . " SET status = :status, reason = :reason WHERE id = :id";
             $statement = $this->pdo->prepare($query);
 
             $statement->bindValue(':id', $id, PDO::PARAM_INT);
             $statement->bindValue(':status', $status, PDO::PARAM_STR);
+            $statement->bindValue(':reason', $reason, PDO::PARAM_STR);
 
             $statement->execute();
 
