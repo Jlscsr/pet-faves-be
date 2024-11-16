@@ -250,8 +250,6 @@ class RequestsModel
     {
         try {
 
-            print_r($reason);
-
             $query = "UPDATE " . self::ADOPTION_REQUESTS_TABLE . " SET status = :status, reason = :reason WHERE id = :id";
             $statement = $this->pdo->prepare($query);
 

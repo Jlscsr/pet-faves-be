@@ -222,8 +222,6 @@ class RequestsController
             $status = $payload['status'];
             $reason = $payload['reason'] ?? 'n/a';
 
-            print_r($reason);
-
             $request = $this->requestsModel->updateRequestStatus($id, $status, $reason);
 
             if (!$request) {
