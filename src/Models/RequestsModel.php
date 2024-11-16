@@ -191,7 +191,7 @@ class RequestsModel
             $status = $payload['status'];
             $typeOfRequest = $payload['typeOfRequest'] ?? null;
 
-            $query = "INSERT INTO " . self::ADOPTION_REQUESTS_TABLE . " (id, userID, userOwnerID, petID, status, typeOfRequest) VALUES (:id, :userID, :userOwnerID, :petID, :status, typeOfRequest)";
+            $query = "INSERT INTO " . self::ADOPTION_REQUESTS_TABLE . " (id, userID, userOwnerID, petID, status, typeOfRequest) VALUES (:id, :userID, :userOwnerID, :petID, :status, :typeOfRequest)";
 
             $statement = $this->pdo->prepare($query);
             $statement->bindValue(':id', $id, PDO::PARAM_STR);
