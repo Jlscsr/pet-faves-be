@@ -15,7 +15,8 @@ class PetsModel
         'available' => 0,
         'pending' => 1,
         'adopted' => 2,
-        'not available' => 3
+        'not available' => 3,
+        'returning' => 4,
     ];
 
 
@@ -122,6 +123,9 @@ class PetsModel
     {
         try {
             $status = self::ADOPTION_STATUS_MAP[$adoptionStatus];
+
+            print_r($petID);
+            print_r($status);
 
             $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE id = :petID AND adoptionStatus = :adoptionStatus";
             $statement = $this->pdo->prepare($query);
