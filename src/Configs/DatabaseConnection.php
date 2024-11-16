@@ -11,8 +11,7 @@ class DatabaseConnection
     {
 
         try {
-            $environment = parse_url(getenv('ENVIRONMENT'));
-            $environment = $environment['path'];
+            $environment = 'development';
 
             if ($environment == "production") {
                 // Use the Heroku JawsDB URL directly
