@@ -58,11 +58,13 @@ class RequestsModel
 
     public function getAllRequestsByUserOwnerIDAndStatus(string $userOwnerID, string $status)
     {
+        $formattedStatusString = str_replace("+", " ", $status);
+
         $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE userOwnerID = :userOwnerID AND status = :status";
 
         $statement = $this->pdo->prepare($query);
         $statement->bindValue(':userOwnerID', $userOwnerID, PDO::PARAM_STR);
-        $statement->bindValue(':status', $status, PDO::PARAM_STR);
+        $statement->bindValue(':status', $formattedStatusString, PDO::PARAM_STR);
 
         try {
             $statement->execute();
@@ -109,11 +111,13 @@ class RequestsModel
     public function getUserRequestByUserIDAndStatus(string $userID, string $status)
     {
         try {
+            $formattedStatusString = str_replace("+", " ", $status);
+
             $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE userID = :userID AND status = :status";
 
             $statement = $this->pdo->prepare($query);
             $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
-            $statement->bindValue(':status', $status, PDO::PARAM_STR);
+            $statement->bindValue(':status', $formattedStatusString, PDO::PARAM_STR);
 
             $statement->execute();
 
@@ -163,11 +167,13 @@ class RequestsModel
     public function getAllReturnRequestsByStatus(string $status)
     {
         try {
+            $formattedStatusString = str_replace("+", " ", $status);
+
             $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE typeOfRequest = 'return' AND status = :status";
 
             $statement = $this->pdo->prepare($query);
 
-            $statement->bindValue(":status", $status, PDO::PARAM_STR);
+            $statement->bindValue(":status", $formattedStatusString, PDO::PARAM_STR);
 
             $statement->execute();
 
