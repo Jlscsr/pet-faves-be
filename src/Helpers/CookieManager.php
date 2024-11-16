@@ -41,20 +41,7 @@ class CookieManager
      */
     public function resetCookieHeader()
     {
-        setcookie(
-            $this->cookie_name,
-            '',
-            time() - 3600, // Set expiration in the past to delete the cookie
-            '/',
-            '',
-            false, // Not using the legacy secure flag (handled in options array)
-            false, // Not using the legacy HttpOnly flag (handled in options array)
-            [
-                'secure' => $this->is_secure,  // Use HTTPS only
-                'httponly' => $this->is_http_only, // Prevent access via JavaScript
-                'samesite' => 'None' // Set SameSite attribute to None
-            ]
-        );
+        setcookie($this->cookie_name, '', time() - 3600, '/', '', $this->is_secure, $this->is_http_only, ['samesite' => 'None']);
     }
 
     /**
