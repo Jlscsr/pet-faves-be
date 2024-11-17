@@ -11,12 +11,12 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
 
-    # Fallback resource for non-file/directory requests
-    FallbackResource /index.php
-
-    # Route all /api/* requests to index.php with the url query string
+    # Route all /api/* requests to index.php with the URL as a query string
     RewriteCond %{REQUEST_URI} ^/api/ [NC]
     RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+
+    # Fallback for non-file/directory requests
+    FallbackResource /index.php
 </IfModule>
 
 # Prevent directory listing
