@@ -16,7 +16,7 @@ class RequestsController
 {
     private $pdo;
     private $requestsModel;
-    private $acceptableParamsKeys = ['id', 'status', 'userID', 'typeOfPost', 'userOwnerID', 'reason'];
+    private $acceptableParamsKeys = ['id', 'status', 'userID', 'typeOfRequest', 'userOwnerID', 'reason'];
     private $expectedPostPayloadKeys = ['userID', 'petID', 'status', 'userOwnerID', 'typeOfRequest'];
 
     public function __construct($pdo)
@@ -44,16 +44,17 @@ class RequestsController
         }
     }
 
-    public function getAllRequestsByStatus(array $params)
+    public function getAllRequestsByStatusAndTypeOfRequest(array $params)
     {
         try {
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
             $status = $params['status'];
+            $typeOfRequest = $params['typeOfRequest'];
 
-            $requestsLists = $this->requestsModel->getAllRequestsByStatus($status);
+            $requestsLists = $this->requestsModel->getAllRequestsByStatusAndTypeOfRequest($status, $typeOfRequest);
 
-            if (!$requestsLists) {
+            if (empty($requestsLists)) {
                 return ResponseHelper::sendSuccessResponse([], 'No Requests found');
             }
 
@@ -83,14 +84,15 @@ class RequestsController
         }
     }
 
-    public function getUserRequestByUserID(array $params)
+    public function getUserRequestByUserIDAndTypeOfRequest(array $params)
     {
         try {
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
             $userID = $params['userID'];
+            $typeOfRequest = $params['typeOfRequest'];
 
-            $requestsLists = $this->requestsModel->getUserRequestByUserID($userID);
+            $requestsLists = $this->requestsModel->getUserRequestByUserIDAndTypeOfRequest($userID, $typeOfRequest);
 
             if (!$requestsLists) {
                 return ResponseHelper::sendSuccessResponse([], 'No Request found');
@@ -223,6 +225,26 @@ class RequestsController
             $reason = $payload['reason'] ?? 'n/a';
 
             $request = $this->requestsModel->updateRequestStatus($id, $status, $reason);
+
+            if (!$request) {
+                return ResponseHelper::sendErrorResponse("Failed to update request", 400);
+            }
+
+            return ResponseHelper::sendSuccessResponse($request, "Request updated successfully");
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function updateRequestTypeOfRequest(array $params, array $payload)
+    {
+        try {
+            HTTPRequestValidator::validatePUTPayload($this->acceptableParamsKeys, ['typeOfRequest'], $params, $payload);
+
+            $id = $params['id'];
+            $typeOfRequest = $payload['typeOfRequest'];
+
+            $request = $this->requestsModel->updateRequestTypeOfRequest($id, $typeOfRequest);
 
             if (!$request) {
                 return ResponseHelper::sendErrorResponse("Failed to update request", 400);

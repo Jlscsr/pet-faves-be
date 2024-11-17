@@ -31,6 +31,8 @@ class PetCareController
         try {
             $petCatePosts = $this->petCareModel->getAllPetCarePosts();
 
+
+
             if (!$petCatePosts) {
                 return ResponseHelper::sendSuccessResponse([], 'No posts found');
             }

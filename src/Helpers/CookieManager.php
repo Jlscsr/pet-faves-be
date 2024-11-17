@@ -12,7 +12,7 @@ class CookieManager
 
     public function __construct()
     {
-        $this->is_secure = true;
+        $this->is_secure = $_SERVER['REQUEST_SCHEME'] === 'https';
         $this->is_http_only = true;
         $this->cookie_name = 'pfvs_acc_tk';
     }
@@ -41,7 +41,7 @@ class CookieManager
      */
     public function resetCookieHeader()
     {
-        setcookie($this->cookie_name, '', time() - 3600, '/', '', $this->is_secure, $this->is_http_only, ['samesite' => 'None']);
+        setcookie($this->cookie_name, '', time() - 3600, '/', '', $this->is_secure, $this->is_http_only,);
     }
 
     /**

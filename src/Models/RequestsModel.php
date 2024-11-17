@@ -38,19 +38,25 @@ class RequestsModel
         }
     }
 
-    public function getAllRequestsByStatus(string $status)
+    public function getAllRequestsByStatusAndTypeOfRequest(string $status, string $typeOfRequest)
     {
         $formattedStatusString = str_replace("+", " ", $status);
 
-        $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE status = :status AND userOwnerID IS NULL";
+        $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE status = :status AND typeOfRequest = :typeOfRequest AND userOwnerID IS NULL";
 
         $statement = $this->pdo->prepare($query);
         $statement->bindValue(':status', $formattedStatusString, PDO::PARAM_STR);
+        $statement->bindValue(':typeOfRequest', $typeOfRequest, PDO::PARAM_STR);
 
         try {
             $statement->execute();
+            $requests = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-            return $statement->fetchAll(PDO::FETCH_ASSOC);
+            if (empty($requests)) {
+                return [];
+            }
+
+            return $requests;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
@@ -92,17 +98,23 @@ class RequestsModel
         }
     }
 
-    public function getUserRequestByUserID(string $userID)
+    public function getUserRequestByUserIDAndTypeOfRequest(string $userID, string $typeOfRequest)
     {
-        $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE userID = :userID";
+        $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE userID = :userID AND typeOfRequest = :typeOfRequest";
 
         $statement = $this->pdo->prepare($query);
         $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
+        $statement->bindValue(':typeOfRequest', $typeOfRequest, PDO::PARAM_STR);
 
         try {
             $statement->execute();
+            $requests = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-            return $statement->fetchAll(PDO::FETCH_ASSOC);
+            if (empty($requests)) {
+                return [];
+            }
+
+            return $requests;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
@@ -256,6 +268,25 @@ class RequestsModel
             $statement->bindValue(':id', $id, PDO::PARAM_INT);
             $statement->bindValue(':status', $status, PDO::PARAM_STR);
             $statement->bindValue(':reason', $reason, PDO::PARAM_STR);
+
+            $statement->execute();
+
+            $lastUpdatedID = $this->getRequestByID($id);
+
+            return $lastUpdatedID;
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function updateRequestTypeOfRequest(string $id, string $typeOfRequest)
+    {
+        try {
+            $query = "UPDATE " . self::ADOPTION_REQUESTS_TABLE . " SET typeOfRequest = :typeOfRequest WHERE id = :id";
+            $statement = $this->pdo->prepare($query);
+
+            $statement->bindValue(':id', $id, PDO::PARAM_STR);
+            $statement->bindValue(':typeOfRequest', $typeOfRequest, PDO::PARAM_STR);
 
             $statement->execute();
 

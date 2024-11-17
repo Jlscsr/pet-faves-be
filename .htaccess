@@ -1,22 +1,19 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Force HTTPS only for production environment
+    # Force HTTPS only for production
     RewriteCond %{ENV:ENVIRONMENT} production
     RewriteCond %{HTTP:X-Forwarded-Proto} !https
-    RewriteCond %{HTTP_HOST} !^localhost [NC]  # Allow localhost to bypass HTTPS
     RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-    # Prevent direct access to files and directories
+    # Route /api/* requests to /web/index.php
+    RewriteCond %{REQUEST_URI} ^/api/ [NC]
+    RewriteRule ^ web/index.php?url=$1 [QSA,L]
+
+    # Fallback for all other non-file and non-directory requests
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-
-    # Route all /api/* requests to index.php with the URL as a query string
-    RewriteCond %{REQUEST_URI} ^/api/ [NC]
-    RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
-
-    # Fallback for non-file/directory requests
-    FallbackResource /index.php
+    RewriteRule ^ web/index.php [L]
 </IfModule>
 
 # Prevent directory listing

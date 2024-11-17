@@ -1,8 +1,5 @@
 <?php
 
-print_r($_SERVER);
-return;
-
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 use App\API\Router;

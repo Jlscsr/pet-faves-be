@@ -71,6 +71,12 @@ class AppointmentsModel
 
     public function addNewAppointment(array $payload)
     {
+        $existingRequestID = $this->getAppointmentByRequestID($payload['requestID']);
+
+        if ($existingRequestID) {
+            $this->updateAppointment($existingRequestID['id'], $payload);
+        }
+
         $query = "INSERT INTO " . self::APPOINTMENTS_TABLE . " (id, userOwnerID, requestID, userID, petID,  appointmentDate, appointmentTime) VALUES (:id, :userOwnerID, :requestID, :userID, :petID, :date, :time)";
 
         $statement = $this->pdo->prepare($query);
@@ -82,14 +88,30 @@ class AppointmentsModel
         $statement->bindValue(':date', $payload['appointmentDate'], PDO::PARAM_STR);
         $statement->bindValue(':time', $payload['appointmentTime'], PDO::PARAM_STR);
 
-        $reason = $payload['reason'] ?? 'n/a';
-
         try {
             $statement->execute();
 
-            if ($statement->rowCount() > 0) {
-                return $this->requestsModel->updateRequestStatus($payload['requestID'], 'on going process', $reason);
-            }
+            return $statement->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function updateAppointment(int $appointmentID, array $payload)
+    {
+        $query = "UPDATE " . self::APPOINTMENTS_TABLE . " SET userOwnerID = :userOwnerID, requestID = :requestID, userID = :userID, petID = :petID, appointmentDate = :date, appointmentTime = :time WHERE id = :appointmentID";
+
+        $statement = $this->pdo->prepare($query);
+        $statement->bindValue(':appointmentID', $appointmentID, PDO::PARAM_STR);
+        $statement->bindValue(':userOwnerID', $payload['userOwnerID'], PDO::PARAM_STR);
+        $statement->bindValue(':requestID', $payload['requestID'], PDO::PARAM_STR);
+        $statement->bindValue(':userID', $payload['userID'], PDO::PARAM_STR);
+        $statement->bindValue(':petID', $payload['petID'], PDO::PARAM_STR);
+        $statement->bindValue(':date', $payload['appointmentDate'], PDO::PARAM_STR);
+        $statement->bindValue(':time', $payload['appointmentTime'], PDO::PARAM_STR);
+
+        try {
+            $statement->execute();
 
             return $statement->rowCount() > 0;
         } catch (PDOException $e) {

@@ -121,6 +121,10 @@ class Routes
                 "handler" => "RequestsController@getAllReturnRequests",
                 "middleware" => false,
             ],
+            "/api/requests/update/typeOfRequest/:id" => [
+                "handler" => "RequestsController@updateRequestTypeOfRequest",
+                "middleware" => false
+            ],
             "/api/requests/update/status/:id" => [
                 "handler" => "RequestsController@updateRequestStatus",
                 "middleware" => false
@@ -137,8 +141,8 @@ class Routes
                 "handler" => "RequestsController@getAllRequestsByUserOwnerIDAndStatus",
                 "middleware" => false
             ],
-            "/api/requests/status/:status" => [
-                "handler" => "RequestsController@getAllRequestsByStatus",
+            "/api/requests/status/typeOfRequest/:status/:typeOfRequest" => [
+                "handler" => "RequestsController@getAllRequestsByStatusAndTypeOfRequest",
                 "middleware" => false
             ],
             "/api/requests/add" => [
@@ -149,8 +153,8 @@ class Routes
                 "handler" => "RequestsController@getUserRequestByUserIDAndID",
                 "middleware" => false
             ],
-            "/api/requests/userID/:userID" => [
-                "handler" => "RequestsController@getUserRequestByUserID",
+            "/api/requests/userID/typeOfRequest/:userID/:typeOfRequest" => [
+                "handler" => "RequestsController@getUserRequestByUserIDAndTypeOfRequest",
                 "middleware" => false
             ],
             "/api/requests/:id" => [
