@@ -26,8 +26,12 @@ class PetCareModel
             $statement = $this->pdo->prepare($query);
 
             $statement->execute();
+            $blogs = $statement->fetchAll(PDO::FETCH_ASSOC);
+            if (empty($blogs)) {
+                return [];
+            }
 
-            return $statement->fetchAll(PDO::FETCH_ASSOC);
+            return $blogs;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
@@ -43,8 +47,13 @@ class PetCareModel
             $statement->bindValue(':status', $status, PDO::PARAM_STR);
 
             $statement->execute();
+            $blogs = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-            return $statement->fetchAll(PDO::FETCH_ASSOC);
+            if (empty($blogs)) {
+                return [];
+            }
+
+            return $blogs;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }

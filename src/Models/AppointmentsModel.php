@@ -74,7 +74,7 @@ class AppointmentsModel
         $existingRequestID = $this->getAppointmentByRequestID($payload['requestID']);
 
         if ($existingRequestID) {
-            $this->updateAppointment($existingRequestID['id'], $payload);
+            return $this->updateAppointment($existingRequestID['id'], $payload);
         }
 
         $query = "INSERT INTO " . self::APPOINTMENTS_TABLE . " (id, userOwnerID, requestID, userID, petID,  appointmentDate, appointmentTime) VALUES (:id, :userOwnerID, :requestID, :userID, :petID, :date, :time)";
@@ -97,7 +97,7 @@ class AppointmentsModel
         }
     }
 
-    public function updateAppointment(int $appointmentID, array $payload)
+    public function updateAppointment(string $appointmentID, array $payload)
     {
         $query = "UPDATE " . self::APPOINTMENTS_TABLE . " SET userOwnerID = :userOwnerID, requestID = :requestID, userID = :userID, petID = :petID, appointmentDate = :date, appointmentTime = :time WHERE id = :appointmentID";
 

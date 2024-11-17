@@ -53,10 +53,7 @@ class PostsModel
 
                 $queryPets = "
                 SELECT p.*, u.id AS userID, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
-                FROM " . self::PETS_TABLE . " p
-                JOIN users_tb u ON p.userOwnerID = u.id
-                WHERE p.approvalStatus = :approvalStatus AND p.userOwnerID IS NOT NULL AND adoptionStatus = 0
-                ";
+                FROM " . self::PETS_TABLE . " p JOIN users_tb u ON p.userOwnerID = u.id WHERE p.approvalStatus = :approvalStatus AND p.userOwnerID IS NOT NULL";
 
                 // Execute and merge all queries
                 $statementPosts = $this->pdo->prepare($queryPosts);
@@ -101,7 +98,7 @@ class PostsModel
                 WHERE postID = :postId AND postType = :postType";
 
                 $statementLikes = $this->pdo->prepare($queryLikes);
-                $statementLikes->bindParam(':postId', $postId, PDO::PARAM_INT);
+                $statementLikes->bindParam(':postId', $postId, PDO::PARAM_STR);
                 $statementLikes->bindParam(':postType', $postType, PDO::PARAM_STR);
                 $statementLikes->execute();
                 $likesData = $statementLikes->fetchAll(PDO::FETCH_ASSOC);

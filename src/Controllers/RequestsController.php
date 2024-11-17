@@ -52,6 +52,7 @@ class RequestsController
             $status = $params['status'];
             $typeOfRequest = $params['typeOfRequest'];
 
+
             $requestsLists = $this->requestsModel->getAllRequestsByStatusAndTypeOfRequest($status, $typeOfRequest);
 
             if (empty($requestsLists)) {

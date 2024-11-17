@@ -41,6 +41,7 @@ class RequestsModel
     public function getAllRequestsByStatusAndTypeOfRequest(string $status, string $typeOfRequest)
     {
         $formattedStatusString = str_replace("+", " ", $status);
+        $formattedStatusString = str_replace("%20", " ", $formattedStatusString);
 
         $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE status = :status AND typeOfRequest = :typeOfRequest AND userOwnerID IS NULL";
 

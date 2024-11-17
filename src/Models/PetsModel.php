@@ -97,8 +97,18 @@ class PetsModel
             $statement->bindValue(':approvalStatus', $approvalStatus, PDO::PARAM_STR);
 
             $statement->execute();
+            $pets = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-            return $statement->fetchAll(PDO::FETCH_ASSOC);
+            if (empty($pets)) {
+                return [];
+            }
+
+            $pets = array_map(function ($pet) {
+                $pet['adoptionStatus'] = array_search($pet['adoptionStatus'], self::ADOPTION_STATUS_MAP);
+                return $pet;
+            }, $pets);
+
+            return $pets;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }

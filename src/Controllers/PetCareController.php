@@ -29,15 +29,13 @@ class PetCareController
     public function getAllPetCarePosts()
     {
         try {
-            $petCatePosts = $this->petCareModel->getAllPetCarePosts();
+            $petCarePosts = $this->petCareModel->getAllPetCarePosts();
 
-
-
-            if (!$petCatePosts) {
-                return ResponseHelper::sendSuccessResponse([], 'No posts found');
+            if (empty($petCarePosts)) {
+                return ResponseHelper::sendSuccessResponse([], 'No blogs found');
             }
 
-            return ResponseHelper::sendSuccessResponse($petCatePosts, 'Posts found');
+            return ResponseHelper::sendSuccessResponse($petCarePosts, 'Blogs found');
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
@@ -52,7 +50,7 @@ class PetCareController
 
             $petCarePosts = $this->petCareModel->getAllPetCarePostsByStatus($status);
 
-            if (!$petCarePosts) {
+            if (empty($petCarePosts)) {
                 return ResponseHelper::sendSuccessResponse([], 'No posts found');
             }
 
