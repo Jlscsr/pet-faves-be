@@ -11,11 +11,13 @@ class DatabaseConnection
     {
 
         try {
-            $environment = 'development';
+            $environment = 'production';
 
             if ($environment == "production") {
                 // Use the Heroku JawsDB URL directly
                 $url = parse_url(getenv('JAWSDB_URL'));
+
+                print_r($url);
 
                 $host = $url['host'];
                 $username = $url['user'];
