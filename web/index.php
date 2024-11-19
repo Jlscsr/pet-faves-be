@@ -13,8 +13,6 @@ try {
     $path = parse_url($uri, PHP_URL_PATH);
     $query = parse_url($uri, PHP_URL_QUERY);
 
-    print_r($query);
-
     $router = new Router();
     $router->handleRequest($query);
 } catch (Exception $e) {
