@@ -8,7 +8,7 @@ class HeaderHelper
     {
         if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
             header("Referrer-Policy: no-referrer");
-            header('Access-Control-Allow-Origin: http://localhost:5173');
+            header('Access-Control-Allow-Origin: https://pet-faves-2c3c8.web.app');
             header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
             header("Access-Control-Allow-Headers: Referrer, Content-Type, Authorization");
             header("Access-Control-Allow-Credentials: true");
@@ -21,7 +21,7 @@ class HeaderHelper
     public static function setResponseHeaders()
     {
         header("Referrer-Policy: no-referrer");
-        header("Access-Control-Allow-Origin: http://localhost:5173");
+        header("Access-Control-Allow-Origin: https://pet-faves-2c3c8.web.app");
         header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
         header("Access-Control-Allow-Headers: Referrer, Content-Type, Authorization");
         header('Access-Control-Allow-Credentials: true');
