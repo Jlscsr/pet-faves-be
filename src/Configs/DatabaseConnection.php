@@ -17,8 +17,6 @@ class DatabaseConnection
                 // Use the Heroku JawsDB URL directly
                 $url = parse_url(getenv('JAWSDB_URL'));
 
-                print_r($url);
-
                 $host = $url['host'];
                 $username = $url['user'];
                 $password = $url['pass'];

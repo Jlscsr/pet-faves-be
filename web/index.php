@@ -11,9 +11,12 @@ error_reporting(E_ALL);
 try {
     $uri = $_SERVER['REQUEST_URI'];
     $path = parse_url($uri, PHP_URL_PATH);
+    $query = parse_url($uri, PHP_URL_QUERY);
+
+    print_r($query);
 
     $router = new Router();
-    $router->handleRequest($path);  // Pass the URL to your Router logic
+    $router->handleRequest($query);
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage();
     echo "Error: " . $e->getMessage();
