@@ -27,18 +27,7 @@ class PetsController
     {
         try {
 
-            $limit;
-            $offset;
-
-            if(isset($_GET['limit']) && isset($_GET['offset'])){
-                $limit = (int) $_GET['limit'];
-                $offset = (int) $_GET['offset'];
-            }else{
-                $limit = 0;
-                $offset = 0;
-            }
-
-            $pets = $this->petsModel->getAllPets($limit, $offset);
+            $pets = $this->petsModel->getAllPets();
 
             if (!$pets) {
                 return ResponseHelper::sendSuccessResponse([], 'No pets found');
@@ -55,17 +44,9 @@ class PetsController
         try {
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            if(isset($_GET['limit']) && isset($_GET['offset'])){
-                $limit = (int) $_GET['limit'];
-                $offset = (int) $_GET['offset'];
-            }else{
-                $limit = 0;
-                $offset = 0;
-            }
-
             $status = $params['status'];
 
-            $pets = $this->petsModel->getAllPetsByAdoptionStatus($status, $limit, $offset);
+            $pets = $this->petsModel->getAllPetsByAdoptionStatus($status);
 
             if (!$pets) {
                 return ResponseHelper::sendSuccessResponse([], 'No pets found');

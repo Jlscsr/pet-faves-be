@@ -23,7 +23,7 @@ class PostsModel
         $this->pdo = $pdo;
     }
 
-    public function getAllPostsPetFeeds(string $status, int $offset, int $limit)
+    public function getAllPostsPetFeeds(string $status)
     {
         try {
             if ($this->cachedAllPosts === null) {
@@ -53,7 +53,9 @@ class PostsModel
 
                 $queryPets = "
                 SELECT p.*, u.id AS userID, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
-                FROM " . self::PETS_TABLE . " p JOIN users_tb u ON p.userOwnerID = u.id WHERE p.approvalStatus = :approvalStatus AND p.userOwnerID IS NOT NULL";
+                FROM " . self::PETS_TABLE . " p 
+                JOIN users_tb u ON p.userOwnerID = u.id 
+                WHERE p.approvalStatus = :approvalStatus AND p.userOwnerID IS NOT NULL";
 
                 // Execute and merge all queries
                 $statementPosts = $this->pdo->prepare($queryPosts);
@@ -84,13 +86,8 @@ class PostsModel
                 $this->cachedAllPosts = $allPosts; // Store in cache for future use
             }
 
-            if ($limit > 0) {
-                $pagedPosts = array_slice($this->cachedAllPosts, $offset, $limit);
-            } else {
-                $pagedPosts = array_slice($this->cachedAllPosts, $offset); // Fetch all posts
-            }
-
-            foreach ($pagedPosts as &$post) {
+            // Add likes and user data to each post
+            foreach ($this->cachedAllPosts as &$post) {
                 $postId = $post['id'];
                 $postType = $post['postType'];
                 $queryLikes = "
@@ -121,13 +118,14 @@ class PostsModel
                 unset($post['userID'], $post['firstName'], $post['lastName'], $post['selfieImageURL'], $post['province'], $post['city'], $post['email'], $post['phoneNumber'], $post['validIDImageURL']);
             }
 
-            return $pagedPosts;
+            return $this->cachedAllPosts;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
     }
 
-    public function getAllPostsByTypeOfPost(string $typeOfPost, int $offset, int $limit)
+
+    public function getAllPostsByTypeOfPost(string $typeOfPost)
     {
         try {
             // Check if cached posts exist for the given status
@@ -136,26 +134,28 @@ class PostsModel
 
                 if ($typeOfPost === 'petUpdates') {
                     $queryPosts = "
-                    SELECT p.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city FROM " . self::POSTS_TABLE . " p
-                    JOIN users_tb u ON p.userID = u.id 
-                    WHERE p.approvalStatus = 'approved'
+                SELECT p.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
+                FROM " . self::POSTS_TABLE . " p
+                JOIN users_tb u ON p.userID = u.id 
+                WHERE p.approvalStatus = 'approved'
                 ";
 
                     $queryMediaPosts = "
-                    SELECT m.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city FROM " . self::MEDIA_POSTS_TABLE . " m
-                    JOIN users_tb u ON m.userID = u.id 
-                    WHERE m.approvalStatus = 'approved'
+                SELECT m.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
+                FROM " . self::MEDIA_POSTS_TABLE . " m
+                JOIN users_tb u ON m.userID = u.id 
+                WHERE m.approvalStatus = 'approved'
                 ";
 
                     $queryEventPosts = "
-                    SELECT e.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber,u.province, u.city FROM " . self::EVENT_POSTS_TABLE . " e
-                    JOIN users_tb u ON e.userID = u.id 
-                    WHERE e.approvalStatus = 'approved'
+                SELECT e.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
+                FROM " . self::EVENT_POSTS_TABLE . " e
+                JOIN users_tb u ON e.userID = u.id 
+                WHERE e.approvalStatus = 'approved'
                 ";
 
                     // Execute and merge all three queries
                     $statementPosts = $this->pdo->prepare($queryPosts);
-
                     $statementPosts->execute();
                     $posts = $statementPosts->fetchAll(PDO::FETCH_ASSOC);
                     $allPosts = array_merge($allPosts, $posts);
@@ -171,9 +171,10 @@ class PostsModel
                     $allPosts = array_merge($allPosts, $eventPosts);
                 } elseif ($typeOfPost === 'post-adoption') {
                     $queryAdoptionPosts = "
-                    SELECT p.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city FROM " . self::PETS_TABLE . " p
-                    JOIN users_tb u ON p.userOwnerID = u.id 
-                    WHERE p.approvalStatus = 'approved' AND p.userOwnerID IS NOT NULL AND adoptionStatus = 0
+                SELECT p.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
+                FROM " . self::PETS_TABLE . " p
+                JOIN users_tb u ON p.userOwnerID = u.id 
+                WHERE p.approvalStatus = 'approved' AND p.userOwnerID IS NOT NULL AND adoptionStatus = 0
                 ";
 
                     $statementAdoptionPosts = $this->pdo->prepare($queryAdoptionPosts);
@@ -186,8 +187,8 @@ class PostsModel
                     $postId = $post['id'];
                     $postType = $post['postType'];
                     $queryLikes = "
-                    SELECT * FROM posts_likes_tb
-                    WHERE postID = :postId AND postType = :postType";
+                SELECT * FROM posts_likes_tb
+                WHERE postID = :postId AND postType = :postType";
 
                     $statementLikes = $this->pdo->prepare($queryLikes);
                     $statementLikes->bindParam(':postId', $postId, PDO::PARAM_INT);
@@ -216,22 +217,16 @@ class PostsModel
                     return strtotime($b['createdAt']) - strtotime($a['createdAt']);
                 });
 
-                // Cache the combined results for the current status
+                // Cache the combined results for the current typeOfPost
                 $this->cachedAllPostsByStatus[$typeOfPost] = $allPosts; // Store in cache
             }
 
-            // Apply limit and offset on cached posts
-            if ($limit > 0) {
-                $pagedPosts = array_slice($this->cachedAllPostsByStatus[$typeOfPost], $offset, $limit);
-            } else {
-                $pagedPosts = array_slice($this->cachedAllPostsByStatus[$typeOfPost], $offset); // Fetch all posts
-            }
-
-            return $pagedPosts; // Return the limited and offset posts
+            return $this->cachedAllPostsByStatus[$typeOfPost]; // Return all cached posts
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
     }
+
 
     public function getAllPostsByUserIDAndStatus(string $userID, string $status)
     {

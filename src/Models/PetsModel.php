@@ -17,6 +17,11 @@ class PetsModel
         'adopted' => '2',
         'not available' => '3',
         'return' => '4',
+        '0' => 'available',
+        '1' => 'pending',
+        '2' => 'adopted',
+        '3' => 'not available',
+        '4' => 'return',
     ];
 
 
@@ -25,21 +30,12 @@ class PetsModel
         $this->pdo = $pdo;
     }
 
-    public function getAllPets(int $limit, int $offset)
+    public function getAllPets()
     {
         try {
             $query = "SELECT * FROM " . self::PETS_TABLE;
 
-            if ($limit !== 0 || $offset !== 0) {
-                $query .= " LIMIT :limit OFFSET :offset";
-            }
-
             $statement = $this->pdo->prepare($query);
-
-            if ($limit !== 0 || $offset !== 0) {
-                $statement->bindValue(':limit', $limit, PDO::PARAM_STR);
-                $statement->bindValue(':offset', $offset, PDO::PARAM_STR);
-            }
 
             $statement->execute();
 
@@ -59,7 +55,7 @@ class PetsModel
         }
     }
 
-    public function getAllPetsByAdoptionStatus(string $status, int $limit, int $offset)
+    public function getAllPetsByAdoptionStatus(string $status)
     {
         try {
 
@@ -67,21 +63,22 @@ class PetsModel
 
             $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE adoptionStatus = :status AND approvalStatus = 'approved'";
 
-            if ($limit !== 0 || $offset !== 0) {
-                $query .= " LIMIT :limit OFFSET :offset";
-            }
-
             $statement = $this->pdo->prepare($query);
             $statement->bindValue(':status', $status, PDO::PARAM_STR);
 
-            if ($limit !== 0 || $offset !== 0) {
-                $statement->bindValue(':limit', $limit, PDO::PARAM_STR);
-                $statement->bindValue(':offset', $offset, PDO::PARAM_STR);
-            }
-
             $statement->execute();
 
-            return $statement->fetchAll(PDO::FETCH_ASSOC);
+            $pets = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            if (empty($pets)) {
+                return [];
+            }
+
+            foreach ($pets as $key => $pet) {
+                $pets[$key]['adoptionStatus'] = array_search($pet['adoptionStatus'], self::ADOPTION_STATUS_MAP);
+            }
+
+            return $pets;
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
@@ -274,6 +271,7 @@ class PetsModel
     public function updatePetData(string $petID, array $payload)
     {
         try {
+            $payload['adoptionStatus'] = self::ADOPTION_STATUS_MAP[(string) $payload['adoptionStatus']];
             $query = "UPDATE " . self::PETS_TABLE . " SET ";
 
             foreach ($payload as $key => $value) {

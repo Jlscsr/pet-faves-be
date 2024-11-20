@@ -43,10 +43,8 @@ class PostsController
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
             $approvalStatus = $params['approvalStatus'];
-            $limit = (int) $_GET['limit'] ?? 0;
-            $offset = (int) $_GET['offset'] ?? 0;
 
-            $response = $this->postsModel->getAllPostsPetFeeds($approvalStatus, $offset, $limit);
+            $response = $this->postsModel->getAllPostsPetFeeds($approvalStatus);
 
             if (!$response) {
                 return ResponseHelper::sendSuccessResponse([], "No posts found.");
@@ -65,10 +63,8 @@ class PostsController
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
             $typeOfPost = $params['typeOfPost'] ?? '';
-            $limit = (int) $_GET['limit'] ?? 0;
-            $offset = (int) $_GET['offset'] ?? 0;
 
-            $response = $this->postsModel->getAllPostsByTypeOfPost($typeOfPost, $offset, $limit);
+            $response = $this->postsModel->getAllPostsByTypeOfPost($typeOfPost);
 
             if (!$response) {
                 return ResponseHelper::sendSuccessResponse([], "No posts found.");
