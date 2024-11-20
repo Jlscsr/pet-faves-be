@@ -26,8 +26,17 @@ class PetsController
     public function getAllPets()
     {
         try {
-            $limit = (int) $_GET['limit'] ?? 0;
-            $offset = (int) $_GET['offset'] ?? 0;
+
+            $limit;
+            $offset;
+
+            if(isset($_GET['limit']) && isset($_GET['offset'])){
+                $limit = (int) $_GET['limit'];
+                $offset = (int) $_GET['offset'];
+            }else{
+                $limit = 0;
+                $offset = 0;
+            }
 
             $pets = $this->petsModel->getAllPets($limit, $offset);
 
@@ -46,8 +55,13 @@ class PetsController
         try {
             HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
 
-            $limit = (int) $_GET['limit'] ?? 0;
-            $offset = (int) $_GET['offset'] ?? 0;
+            if(isset($_GET['limit']) && isset($_GET['offset'])){
+                $limit = (int) $_GET['limit'];
+                $offset = (int) $_GET['offset'];
+            }else{
+                $limit = 0;
+                $offset = 0;
+            }
 
             $status = $params['status'];
 
