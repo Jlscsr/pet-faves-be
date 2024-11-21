@@ -174,7 +174,7 @@ class PostsModel
                 SELECT p.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
                 FROM " . self::PETS_TABLE . " p
                 JOIN users_tb u ON p.userOwnerID = u.id
-                WHERE p.approvalStatus = 'approved' AND p.userOwnerID IS NOT NULL AND adoptionStatus = '0'
+                WHERE p.approvalStatus = 'approved' AND p.userOwnerID IS NOT NULL AND p.adoptionStatus = '0'
                 ";
 
                     $statementAdoptionPosts = $this->pdo->prepare($queryAdoptionPosts);
