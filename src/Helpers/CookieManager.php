@@ -9,6 +9,7 @@ class CookieManager
     private $is_secure;
     private $is_http_only;
     private $cookie_name;
+    private $samesite;
 
     public function __construct()
     {
@@ -34,7 +35,7 @@ class CookieManager
             'domain' => 'serene-chamber-22766-e2c42f887fde.herokuapp.com',  // Specify the domain if needed
             'secure' => $this->is_secure,  // Set Secure for HTTPS requests only
             'httponly' => $this->is_http_only,
-            'samesite' => $this->sameSite,
+            'samesite' => $this->samesite,
         ]);
     }
 
