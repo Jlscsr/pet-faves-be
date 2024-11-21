@@ -29,12 +29,12 @@ class CookieManager
     public function setCookiHeader(string $token, string $expiry_date)
     {
         self::resetCookieHeader();
-        setcookie($this->cookieName, $token, [
-            'expires' => $expiryDate,
+        setcookie($this->cookie_name, $token, [
+            'expires' => $expiry_date,
             'path' => '/',
             'domain' => 'serene-chamber-22766-e2c42f887fde.herokuapp.com',  // Specify the domain if needed
-            'secure' => $this->isSecure,  // Set Secure for HTTPS requests only
-            'httponly' => $this->isHttpOnly,
+            'secure' => $this->is_secure,  // Set Secure for HTTPS requests only
+            'httponly' => $this->is_http_only,
             'samesite' => $this->sameSite,
         ]);
     }
