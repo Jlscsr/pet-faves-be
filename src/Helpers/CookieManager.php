@@ -28,7 +28,7 @@ class CookieManager
      */
     public function setCookiHeader(string $token, string $expiry_date)
     {
-        self::resetCookieHeader();
+        $this->resetCookieHeader();
         setcookie($this->cookie_name, $token, [
             'expires' => $expiry_date,
             'path' => '/',
