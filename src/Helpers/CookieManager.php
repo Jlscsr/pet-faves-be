@@ -12,7 +12,6 @@ class CookieManager
 
     public function __construct()
     {
-        print_r($_SERVER['HTTP_X_FORWARDED_PROTO']);
         $this->is_secure = $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' ? true : false;
         $this->is_http_only = true;
         $this->cookie_name = 'pfvs_acc_tk';
