@@ -136,7 +136,7 @@ class PostsModel
                     $queryPosts = "
                 SELECT p.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
                 FROM " . self::POSTS_TABLE . " p
-                JOIN users_tb u ON p.userID = u.id 
+                JOIN users_tb u ON p.userID = u.id
                 WHERE p.approvalStatus = 'approved'
                 ";
 
@@ -171,10 +171,10 @@ class PostsModel
                     $allPosts = array_merge($allPosts, $eventPosts);
                 } elseif ($typeOfPost === 'post-adoption') {
                     $queryAdoptionPosts = "
-                SELECT p.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
+                SELECT p.*, u.id AS userId, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city
                 FROM " . self::PETS_TABLE . " p
-                JOIN users_tb u ON p.userOwnerID = u.id 
-                WHERE p.approvalStatus = 'approved' AND p.userOwnerID IS NOT NULL AND adoptionStatus = 0
+                JOIN users_tb u ON p.userOwnerID = u.id
+                WHERE p.approvalStatus = 'approved' AND p.userOwnerID IS NOT NULL
                 ";
 
                     $statementAdoptionPosts = $this->pdo->prepare($queryAdoptionPosts);

@@ -9,10 +9,10 @@ class CookieManager
     private $is_secure;
     private $is_http_only;
     private $cookie_name;
+    private $samesite;
 
     public function __construct()
     {
-        print_r($_SERVER['HTTP_X_FORWARDED_PROTO']);
         $this->is_secure = $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' ? true : false;
         $this->is_http_only = true;
         $this->cookie_name = 'pfvs_acc_tk';
@@ -28,14 +28,14 @@ class CookieManager
      */
     public function setCookiHeader(string $token, string $expiry_date)
     {
-        self::resetCookieHeader();
-        setcookie($this->cookieName, $token, [
-            'expires' => $expiryDate,
+        $this->resetCookieHeader();
+        setcookie($this->cookie_name, $token, [
+            'expires' => $expiry_date,
             'path' => '/',
             'domain' => 'serene-chamber-22766-e2c42f887fde.herokuapp.com',  // Specify the domain if needed
-            'secure' => $this->isSecure,  // Set Secure for HTTPS requests only
-            'httponly' => $this->isHttpOnly,
-            'samesite' => $this->sameSite,
+            'secure' => $this->is_secure,  // Set Secure for HTTPS requests only
+            'httponly' => $this->is_http_only,
+            'samesite' => $this->samesite,
         ]);
     }
 
