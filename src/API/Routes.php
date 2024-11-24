@@ -13,6 +13,11 @@ class Routes
     public function __construct()
     {
         $this->routes = [
+            /* Reports API */
+            '/api/reports'  => [
+                'handler' => 'ReportsController@getAllReports',
+                'middleware' => false
+            ],
             /* PetCare API */
             '/api/petCare/delete/:id' => [
                 'handler' => 'PetCareController@deletePetCarePost',
