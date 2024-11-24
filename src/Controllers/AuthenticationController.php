@@ -21,7 +21,7 @@ class AuthenticationController
     private $jwt;
     private $usersModel;
     private $cookieManager;
-    private $expectedRegisterPayload = ['firstName', 'lastName', 'email', 'password'];
+    private $expectedRegisterPayload = ['firstName', 'lastName', 'email', 'password', 'phoneNumber'];
     private $expectedloginPayloadKeys = ['email', 'password'];
 
     public function __construct($pdo)

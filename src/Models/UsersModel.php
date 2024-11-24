@@ -113,11 +113,12 @@ class UsersModel
             $firstName = $userData['firstName'];
             $lastName = $userData['lastName'];
             $email = $userData['email'];
+            $phoneNumber = $userData['phoneNumber'];
             $password = $userData['password'];
             $role = 'customer';
 
 
-            $query = "INSERT INTO " . self::USERS_TABLE . " (id, firstName, lastName, email, phoneNumber, password, address, region, province, city, barangay, validIDImageURL, selfieImageURL, role) VALUES (:id, :firstName, :lastName, :email, '', :password, '', '', '', '', '', '', '', :role)";
+            $query = "INSERT INTO " . self::USERS_TABLE . " (id, firstName, lastName, email, phoneNumber, password, address, region, province, city, barangay, validIDImageURL, selfieImageURL, role) VALUES (:id, :firstName, :lastName, :email, :phoneNumber, :password, '', '', '', '', '', '', '', :role)";
 
             $statement = $this->pdo->prepare($query);
 
@@ -126,6 +127,7 @@ class UsersModel
                 ':firstName' => $firstName,
                 ':lastName' => $lastName,
                 ':email' => $email,
+                ':phoneNumber' => $phoneNumber,
                 ':password' => $password,
                 ':role' => $role
             ];
