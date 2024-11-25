@@ -17,7 +17,8 @@ class HeaderHelper
             /*  if (in_array($origin, self::$allowedOrigins)) {
                 header("Access-Control-Allow-Origin: $origin");
             } */
-            header("Access-Control-Allow-Origin: http://localhost:5173");
+            // header("Access-Control-Allow-Origin: http://localhost:5173");
+            header("Access-Control-Allow-Origin: https://pet-faves-2c3c8.web.app");
             header("Referrer-Policy: no-referrer");
             header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
             header("Access-Control-Allow-Headers: Referrer, Content-Type, Authorization");
@@ -37,7 +38,8 @@ class HeaderHelper
             header("Access-Control-Allow-Origin: $origin");
         } */
 
-        header("Access-Control-Allow-Origin: http://localhost:5173");
+        // header("Access-Control-Allow-Origin: http://localhost:5173");
+        header("Access-Control-Allow-Origin: https://pet-faves-2c3c8.web.app");
         header("Referrer-Policy: no-referrer");
         header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
         header("Access-Control-Allow-Headers: Referrer, Content-Type, Authorization");
