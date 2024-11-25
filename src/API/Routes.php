@@ -13,6 +13,11 @@ class Routes
     public function __construct()
     {
         $this->routes = [
+            /* Donations API */
+            '/api/donations/add' => [
+                'handler' => 'DonationsController@addNewDonation',
+                'middleware' => false
+            ],
             /* Reports API */
             '/api/reports'  => [
                 'handler' => 'ReportsController@getAllReports',

@@ -19,6 +19,7 @@ class ReportsModel
     private const POSTS_TABLE = 'posts_tb';
     private const POSTS_MEDIA_TABLE = 'media_posts_tb';
     private const POSTS_EVENT_TABLE = 'event_posts_tb';
+    private const DONATIONS_TABLE = 'donations_tb';
 
     public function __construct($pdo)
     {
@@ -37,6 +38,7 @@ class ReportsModel
             $totalMediaPostsQuery = "SELECT COUNT(*) as totalMediaPosts FROM " . self::POSTS_MEDIA_TABLE . " WHERE approvalStatus = 'pending'";
             $totalEventPostsQuery = "SELECT COUNT(*) as totalEventPosts FROM " . self::POSTS_EVENT_TABLE . " WHERE approvalStatus = 'pending'";
             $totalPostAdoptionRequestsQuery = "SELECT COUNT(*) as totalPostAdoptionRequests FROM " . self::PETS_TABLE . " WHERE approvalStatus = 'pending'";
+            $totalDonationsQuery = "SELECT SUM(donationAmount) as totalAmountDonations, COUNT(*) as totalDonators FROM " . self::DONATIONS_TABLE;
 
             $totalPetsStatement = $this->pdo->prepare($totalPetsQuery);
             $totalAdoptedPetsStatement = $this->pdo->prepare($totalAdoptedPetsQuery);
@@ -46,6 +48,7 @@ class ReportsModel
             $totalMediaPostsStatement = $this->pdo->prepare($totalMediaPostsQuery);
             $totalEventPostsStatement = $this->pdo->prepare($totalEventPostsQuery);
             $totalPostAdoptionRequestsStatement = $this->pdo->prepare($totalPostAdoptionRequestsQuery);
+            $totalDonationsStatement = $this->pdo->prepare($totalDonationsQuery);
 
             $totalPetsStatement->execute();
             $totalAdoptedPetsStatement->execute();
@@ -55,6 +58,7 @@ class ReportsModel
             $totalMediaPostsStatement->execute();
             $totalEventPostsStatement->execute();
             $totalPostAdoptionRequestsStatement->execute();
+            $totalDonationsStatement->execute();
 
             $totalPets = $totalPetsStatement->fetch(PDO::FETCH_ASSOC);
             $totalAdoptedPets = $totalAdoptedPetsStatement->fetch(PDO::FETCH_ASSOC);
@@ -64,6 +68,7 @@ class ReportsModel
             $totalMediaPosts = $totalMediaPostsStatement->fetch(PDO::FETCH_ASSOC);
             $totalEventPosts = $totalEventPostsStatement->fetch(PDO::FETCH_ASSOC);
             $totalPostAdoptionRequests = $totalPostAdoptionRequestsStatement->fetch(PDO::FETCH_ASSOC);
+            $donationsData = $totalDonationsStatement->fetch(PDO::FETCH_ASSOC);
 
             $totalPets = $totalPets['totalPets'];
             $totalAdoptedPets = $totalAdoptedPets['totalAdoptedPets'];
@@ -73,6 +78,8 @@ class ReportsModel
             $totalMediaPosts = $totalMediaPosts['totalMediaPosts'];
             $totalEventPosts = $totalEventPosts['totalEventPosts'];
             $totalPostAdoptionRequests = $totalPostAdoptionRequests['totalPostAdoptionRequests'];
+            $totalDonations = $donationsData['totalAmountDonations'];
+            $totalDonators = $donationsData['totalDonators'];
 
             return [
                 'totalPets' => $totalPets,
@@ -83,7 +90,9 @@ class ReportsModel
                 'totalPostsRequests' => $totalPostsRequests,
                 'totalMediaPostsRequests' => $totalMediaPosts,
                 'totalEventPostsRequests' => $totalEventPosts,
-                'totalAdoptionPostsRequests' => $totalPostAdoptionRequests
+                'totalAdoptionPostsRequests' => $totalPostAdoptionRequests,
+                'totalDonations' => $totalDonations,
+                'totalDonators' => $totalDonators
             ];
         } catch (PDOException $e) {
             throw new RuntimeException('Error fetching total pets: ' . $e->getMessage());

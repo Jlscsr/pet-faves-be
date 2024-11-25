@@ -13,10 +13,10 @@ class CookieManager
 
     public function __construct()
     {
-        $this->is_secure = $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' ? true : false;
+        // $this->is_secure = $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' ? true : false;
         $this->is_http_only = true;
         $this->cookie_name = 'pfvs_acc_tk';
-        $this->samesite = $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' ? 'None' : 'Strict';
+        // $this->samesite = $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' ? 'None' : 'Strict';
     }
 
     /**
@@ -28,16 +28,20 @@ class CookieManager
      */
     public function setCookiHeader(string $token, string $expiry_date)
     {
-        // domain: serene-chamber-22766-e2c42f887fde.herokuapp.com
         $this->resetCookieHeader();
-        setcookie($this->cookie_name, $token, [
+
+        /* For deployment */
+        /* setcookie($this->cookie_name, $token, [
             'expires' => $expiry_date,
             'path' => '/',
-            'domain' => 'serene-chamber-22766-e2c42f887fde.herokuapp.com',  // Specify the domain if needed
-            'secure' => $this->is_secure,  // Set Secure for HTTPS requests only
+            'domain' => 'serene-chamber-22766-e2c42f887fde.herokuapp.com',
+            'secure' => $this->is_secure,
             'httponly' => $this->is_http_only,
             'samesite' => $this->samesite,
-        ]);
+        ]); */
+
+        /* For Localhosting */
+        setcookie($this->cookie_name, $token, $expiry_date, '/', '', false, $this->is_http_only);
     }
 
     /**
@@ -52,7 +56,7 @@ class CookieManager
      */
     public function resetCookieHeader()
     {
-        setcookie($this->cookie_name, '', time() - 3600, '/', '', $this->is_secure, $this->is_http_only,);
+        setcookie($this->cookie_name, '', time() - 3600, '/', '', false, $this->is_http_only);
     }
 
     /**
