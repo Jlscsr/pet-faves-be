@@ -13,10 +13,13 @@ class CookieManager
 
     public function __construct()
     {
-        // $this->is_secure = $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' ? true : false;
+        // Comment if running in localhost, uncomment if not
+        $this->is_secure = $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' ? true : false;
+        $this->samesite = $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' ? 'None' : 'Strict';
+
+        /* ---- */
         $this->is_http_only = true;
         $this->cookie_name = 'pfvs_acc_tk';
-        // $this->samesite = $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' ? 'None' : 'Strict';
     }
 
     /**
@@ -31,17 +34,17 @@ class CookieManager
         $this->resetCookieHeader();
 
         /* For deployment */
-        /* setcookie($this->cookie_name, $token, [
+        setcookie($this->cookie_name, $token, [
             'expires' => $expiry_date,
             'path' => '/',
             'domain' => 'serene-chamber-22766-e2c42f887fde.herokuapp.com',
             'secure' => $this->is_secure,
             'httponly' => $this->is_http_only,
             'samesite' => $this->samesite,
-        ]); */
+        ]);
 
         /* For Localhosting */
-        setcookie($this->cookie_name, $token, $expiry_date, '/', '', false, $this->is_http_only);
+        // setcookie($this->cookie_name, $token, $expiry_date, '/', '', false, $this->is_http_only);
     }
 
     /**
