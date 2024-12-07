@@ -18,7 +18,6 @@ class UsersController
     private $usersModel;
     private $cookieManager;
     private $acceptableParamsKeys = ['id'];
-    private $acceptablePayloadKeys = ['id', 'firstName', 'lastName', 'email', 'phoneNumber', 'gender', 'password', 'address', 'region', 'province', 'city', 'barangay', 'validIDImageURL', 'selfieImageURL', 'role', 'age', 'job', 'lifeStyle', 'livingStatus', 'petCareTimeCommitment', 'budgetForPetCare'];
 
     public function __construct($pdo)
     {
@@ -34,15 +33,15 @@ class UsersController
 
             $id = $params['id'];
 
-            $user = $this->usersModel->getUserByID($id);
+            $response = $this->usersModel->getUserByID($id);
 
-            if (!$user) {
-                return ResponseHelper::sendSuccessResponse([], "User not found");
+            if ($response['status' === 'failed']) {
+                return ResponseHelper::sendSuccessResponse([], $response['message']);
             }
 
-            unset($user['password']);
+            unset($response['data']['password']);
 
-            return ResponseHelper::sendSuccessResponse($user, 'User found');
+            return ResponseHelper::sendSuccessResponse($response['data'], 'User found');
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
@@ -52,8 +51,6 @@ class UsersController
     public function getUserByEmail()
     {
         try {
-            $this->cookieManager->validateCookiePressence();
-
             $token = $this->cookieManager->extractAccessTokenFromCookieHeader();
 
             if (!$this->jwt->validateToken($token)) {
@@ -65,16 +62,16 @@ class UsersController
 
             $email = $decodedData->email;
 
-            $user = $this->usersModel->getUserByEmail($email);
+            $response = $this->usersModel->getUserByEmail($email);
 
-            if (!$user) {
+            if ($response['status'] === 'failed') {
                 $this->cookieManager->resetCookieHeader();
-                return ResponseHelper::sendUnauthorizedResponse('Invalid token');
+                return ResponseHelper::sendUnauthorizedResponse($response['message']);
             }
 
-            unset($user['password']);
+            unset($response['data']['password']);
 
-            return ResponseHelper::sendSuccessResponse($user, 'User found');
+            return ResponseHelper::sendSuccessResponse($response['data'], 'User found');
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
@@ -87,10 +84,10 @@ class UsersController
 
             $userID = $params['id'];
 
-            $isUserDataUpdated = $this->usersModel->updateUserData($userID, $payload);
+            $response = $this->usersModel->updateUserData($userID, $payload);
 
-            if (!$isUserDataUpdated) {
-                return ResponseHelper::sendErrorResponse("User not found", 404);
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendErrorResponse($response['message']);
             }
 
             return ResponseHelper::sendSuccessResponse([], 'User data updated successfully');

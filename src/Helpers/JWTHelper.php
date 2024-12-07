@@ -5,8 +5,9 @@ namespace App\Helpers;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-use App\Helpers\ResponseHelper;
-// use App\Configs\EnvironmentLoader;
+use RuntimeException;
+
+use App\Configs\EnvironmentLoader;
 
 
 class JWTHelper
@@ -16,7 +17,7 @@ class JWTHelper
 
     public function __construct()
     {
-        // EnvironmentLoader::load();
+        EnvironmentLoader::load();
         $this->secret_key = getenv('JWT_SECRET_KEY') ?: $_ENV['JWT_SECRET_KEY'];
         $this->hash_algorithm = getenv('JWT_HASH_ALGORITHM') ?: $_ENV['JWT_HASH_ALGORITHM'];
     }
@@ -58,20 +59,22 @@ class JWTHelper
      * @throws \Firebase\JWT\SignatureInvalidException If the token signature is invalid.
      * @return bool Returns true if the token is valid, false otherwise.
      */
-    public function validateToken(string $token)
+    public function validateToken(string $token): array | bool
     {
         try {
             $data = $this->decodeJWTData($token);
             $expiry_date = $data->expiry_date;
 
             if ($expiry_date < time()) {
-                return false;
+                return [
+                    'status' => 'failed',
+                    'message' => 'Token Expired. Please Login again.'
+                ];
             }
 
             return true;
         } catch (\Firebase\JWT\SignatureInvalidException $e) {
-            ResponseHelper::sendUnauthorizedResponse('Invalid Token Signature');
-            exit;
+            throw new RuntimeException('Invalid Token Signature');
         }
     }
 }

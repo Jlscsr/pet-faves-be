@@ -271,6 +271,8 @@ class PetsModel
     public function updatePetData(string $petID, array $payload)
     {
         try {
+            print_r($payload);
+            print_r($petID);
             $payload['adoptionStatus'] = self::ADOPTION_STATUS_MAP[(string) $payload['adoptionStatus']];
             $query = "UPDATE " . self::PETS_TABLE . " SET ";
 
@@ -292,7 +294,11 @@ class PetsModel
 
             $statement->execute();
 
-            return $statement->rowCount() > 0;
+            if ($statement->rowCount() === 0) {
+                return ['status' => 'failed', 'message' => 'No changes made'];
+            }
+
+            return ['status' => 'success', 'message' => 'Pet data updated successfully'];
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }

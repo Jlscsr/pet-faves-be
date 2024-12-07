@@ -3,26 +3,24 @@
 namespace App\Controllers;
 
 use Ramsey\Uuid\Uuid;
+use RuntimeException;
 
 use App\Helpers\JWTHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\HeaderHelper;
 use App\Helpers\CookieManager;
+use App\Helpers\EmailHelper;
+
+use App\Validators\AuthenticationValidators\LoginFieldsValidator;
+use App\Validators\AuthenticationValidators\RegisterFieldsValidator;
 
 use App\Models\UsersModel;
-
-use App\Validators\HTTPRequestValidator;
-
-use RuntimeException;
-
 
 class AuthenticationController
 {
     private $jwt;
     private $usersModel;
     private $cookieManager;
-    private $expectedRegisterPayload = ['firstName', 'lastName', 'email', 'password', 'phoneNumber'];
-    private $expectedloginPayloadKeys = ['email', 'password'];
 
     public function __construct($pdo)
     {
@@ -36,22 +34,30 @@ class AuthenticationController
     public function register(array $payload)
     {
         try {
-            HTTPRequestValidator::validatePOSTPayload($this->expectedRegisterPayload, $payload);
+            $sanitizedPayload = RegisterFieldsValidator::validateAndSanitizeFields($payload);
+
+            if (self::checkForEmailExistence($sanitizedPayload['email'])) return;
 
             $uuid = Uuid::uuid7()->toString();
-            $payload['id'] = $uuid;
+            $sanitizedPayload['id'] = $uuid;
 
-            $password = $payload['password'];
+            $password = $sanitizedPayload['password'];
             $hashed_password = password_hash($password, PASSWORD_BCRYPT, ['cost' => 15]);
-            $payload['password'] = $hashed_password;
+            $sanitizedPayload['password'] = $hashed_password;
 
-            $isRegisterSuccess = $this->usersModel->addNewUser($payload);
+            $response = $this->usersModel->addNewUser($sanitizedPayload);
 
-            if (!$isRegisterSuccess) {
-                return ResponseHelper::sendErrorResponse('Failed to register user', 400);
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendErrorResponse($response['message']);
             }
 
-            return ResponseHelper::sendSuccessResponse([], 'User registered successfully', 201);
+            $emailHelper = new EmailHelper();
+            $emailHelper->sendEmailForAccountVerification($sanitizedPayload['email'], 'PetFaves | Account Activation', $response['data']['activationCode']);
+
+            return ResponseHelper::sendSuccessResponse(
+                ['activationToken' => $response['data']['activationToken']],
+                $response['message']
+            );
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
@@ -60,45 +66,111 @@ class AuthenticationController
     public function login(array $payload)
     {
         try {
-            HTTPRequestValidator::validatePOSTPayload($this->expectedloginPayloadKeys, $payload);
+            $sanitizedPayload = LoginFieldsValidator::validateAndSanitizeFields($payload);
 
-            $email = $payload['email'];
-            $password = $payload['password'];
+            $email = $sanitizedPayload['email'];
+            $password = $sanitizedPayload['password'];
 
             $response = $this->usersModel->getUserByEmail($email);
 
-
-            if (!isset($response['password'])) {
-                return ResponseHelper::sendErrorResponse('No email found on our database');
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendErrorResponse('Invalid Email or Password');
             }
 
-            $stored_password = $response['password'];
+            $stored_password = $response['data']['password'];
 
             if (!password_verify($password, $stored_password)) {
                 return ResponseHelper::sendErrorResponse('Incorrect Password');
             }
 
-            // 5hrs expiry time for token
-            $expiry_date = time() + (5 * 3600);
+            // Check first if the user account is verified
+            if (!$response['data']['isVerified']) {
+                return ResponseHelper::sendSuccessResponse([], 'Account not verified');
+            }
 
-            $to_be_tokenized = [
-                "id" => $response['id'],
-                'email' => $response['email'],
-                'password' => $response['password'],
-                'rl' => $response['role'],
-                'expiry_date' => $expiry_date
-            ];
+            self::setCookie($response['data']);
 
-            $token = $this->jwt->encodeDataToJWT($to_be_tokenized);
-
-            $this->cookieManager->setCookiHeader($token, $expiry_date);
-
-            return ResponseHelper::sendSuccessResponse(['rl' => $response['role']], 'Logged In success', 201);
+            return ResponseHelper::sendSuccessResponse(['role' => $response['data']['role']], 'Logged In success', 201);
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
+    public function verifyAccount(array $payload)
+    {
+        try {
+            $activationToken = $payload['activationToken'];
+            $activationCode = $payload['activationCode'];
+
+            $response = $this->usersModel->verifyAccount($activationToken, $activationCode);
+
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendErrorResponse($response['message']);
+            }
+
+            return ResponseHelper::sendSuccessResponse([], $response['message']);
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function resendVerificationEmail(array $payload)
+    {
+        try {
+            $email = $payload['email'];
+
+            $response = $this->usersModel->resendVerificationEmail($email);
+
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendErrorResponse($response['message']);
+            }
+
+            $emailHelper = new EmailHelper();
+            $emailHelper->sendEmailForAccountVerification($email, 'PetFaves | Account Activation', $response['data']['activationCode']);
+
+            return ResponseHelper::sendSuccessResponse($response['data'], $response['message']);
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function forgotPassword(array $payload)
+    {
+        try {
+            $email = $payload['email'];
+
+            $response = $this->usersModel->forgotPassword($email);
+
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendErrorResponse($response['message']);
+            }
+
+            $emailHelper = new EmailHelper();
+            $emailHelper->sendEmailForPasswordReset($email, 'PetFaves | Password Reset', $response['data']['resetToken']);
+
+            return ResponseHelper::sendSuccessResponse([], $response['message']);
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function resetPassword(array $payload)
+    {
+        try {
+            $newPassword = $payload['newPassword'];
+            $resetToken = $payload['resetToken'];
+
+            $response = $this->usersModel->resetPassword($resetToken, $newPassword);
+
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendErrorResponse($response['message']);
+            }
+
+            return ResponseHelper::sendSuccessResponse([], $response['message']);
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
     public function changePassword(array $payload)
     {
         try {
@@ -107,11 +179,11 @@ class AuthenticationController
             $oldPassword = $payload['oldPassword'];
 
             $response = $this->usersModel->changePassword($email, $oldPassword, $newPassword);
-            if (!$response) {
-                return ResponseHelper::sendErrorResponse('Failed to change password', 400);
-            }
 
-            return ResponseHelper::sendSuccessResponse([], 'Password changed successfully', 201);
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendErrorResponse($response['message']);
+            }
+            return ResponseHelper::sendSuccessResponse([], $response['message']);
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
@@ -126,7 +198,7 @@ class AuthenticationController
     public function validateToken()
     {
 
-        $this->cookieManager->validateCookiePressence();
+        $this->cookieManager->validateCookiePresence();
 
         $token = $this->cookieManager->extractAccessTokenFromCookieHeader();
 
@@ -137,6 +209,37 @@ class AuthenticationController
 
         $decodedData = $this->jwt->decodeJWTData($token);
 
-        return ResponseHelper::sendSuccessResponse(['rl' => $decodedData->rl], 'Token is valid', 200);
+        return ResponseHelper::sendSuccessResponse(['role' => $decodedData->role], 'Token is valid', 200);
+    }
+
+
+    private function checkForEmailExistence(string $email): bool
+    {
+        $response = $this->usersModel->getUserByEmail($email);
+
+        if ($response['status'] === 'success') {
+            ResponseHelper::sendErrorResponse('Email already exists', 400);
+            return true;
+        }
+
+        return false;
+    }
+
+    private function setCookie($response)
+    {
+        // 5hrs expiry time for token
+        $expiryDate = time() + (5 * 3600);
+
+        $toBeTokenized = [
+            "id" => $response['id'],
+            'email' => $response['email'],
+            'password' => $response['password'],
+            'role' => $response['role'],
+            'expiry_date' => $expiryDate
+        ];
+
+        $token = $this->jwt->encodeDataToJWT($toBeTokenized);
+
+        $this->cookieManager->setCookiHeader($token, $expiryDate);
     }
 }

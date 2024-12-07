@@ -197,8 +197,8 @@ class PetsController
 
             $response = $this->petsModel->updatePetData($petID, $payload);
 
-            if (!$response) {
-                return ResponseHelper::sendErrorResponse("Failed to update pet data", 400);
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendErrorResponse("Failed to update pet data");
             }
 
             return ResponseHelper::sendSuccessResponse([], 'Successfully updated pet data.');

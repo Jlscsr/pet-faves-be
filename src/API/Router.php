@@ -2,14 +2,15 @@
 
 namespace App\API;
 
-use App\Configs\DatabaseConnection;
-use App\Helpers\HeaderHelper;
-use App\Helpers\ResponseHelper;
-use App\API\Routes;
-
 use RuntimeException;
 use Exception;
 
+use App\Configs\DatabaseConnection;
+
+use App\Helpers\HeaderHelper;
+use App\Helpers\ResponseHelper;
+
+use App\API\Routes;
 
 class Router
 {
@@ -21,35 +22,34 @@ class Router
         // Connect to the database
         $this->pdo = DatabaseConnection::connect();
 
+        // Set the headers
+        HeaderHelper::SendPreflighthHeaders();
+        HeaderHelper::setResponseHeaders();
+
         // Initialize route
         $this->routes = new Routes();
     }
 
     public function handleRequest($url)
     {
-
-        // Set headers
-        HeaderHelper::SendPreflighthHeaders();
-        HeaderHelper::setResponseHeaders();
-
-        // Get the URL from the query parameter
-        $request_method = strtoupper(trim($_SERVER['REQUEST_METHOD']));
-
-        $handler = $this->routes->get_route($url);
-
-        if (!$handler) {
-            throw new RuntimeException("Route not found for URL: $url");
-        }
-
-        // Check if middleware is required
-        $middleware_required = isset($handler['middleware']) && is_array($handler['middleware']) && $handler['middleware']['required'];
-
         try {
-            if ($middleware_required) {
-                $this->handleMiddleware($handler['middleware']['handler']);
+            // Get the URL from the query parameter
+            $request_method = strtoupper(trim($_SERVER['REQUEST_METHOD']));
+
+            $handler = $this->routes->getRoute($url);
+
+            if (!$handler) {
+                throw new RuntimeException("Route not found for URL: $url");
             }
 
-            $handlerDefinition = is_array($handler['handler']) ? $handler['handler']['handler'] : $handler['handler'];
+            // Check if middleware is required
+            $middleware_required = $handler->middleware;
+
+            if ($middleware_required) {
+                $this->handleMiddleware($handler->requiredRole);
+            }
+
+            $handlerDefinition = $handler->handler;
 
             if (empty($handlerDefinition)) {
                 throw new RuntimeException("Handler not defined for route.");
@@ -65,57 +65,60 @@ class Router
             $this->processRequest($controller, $method, $handler, $request_method);
         } catch (RuntimeException $e) {
             ResponseHelper::sendErrorResponse($e->getMessage());
-        } catch (Exception $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
-    private function handleMiddleware($middleware)
+    private function handleMiddleware($requiredRole)
     {
         try {
-            require_once dirname(__DIR__) . '/middleware/' . $middleware . '.php';
-            $is_valid = new $middleware();
+            $midllewareClass = 'App\\Middlewares\\RequestMiddleware';
+            $middleware = new $midllewareClass($requiredRole);
 
-            if (!$is_valid) {
-                ResponseHelper::sendUnauthorizedResponse('Invalid Token or User is not authorized');
-                return;
+            $response = $middleware->getResponse();
+
+            if ($response['status'] === 'failed') {
+                ResponseHelper::sendUnauthorizedResponse($response['message']);
+                exit;
             }
         } catch (RuntimeException $e) {
-            ResponseHelper::sendErrorResponse($e->getMessage());
-            return;
+            return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
     private function processRequest($controller, $method, $handler, $request_method)
     {
-        $controllerClass = 'App\\Controllers\\' . $controller;
-        $controller = new $controllerClass($this->pdo);
+        try {
+            $controllerClass = 'App\\Controllers\\' . $controller;
+            $controller = new $controllerClass($this->pdo);
 
-        $payload = json_decode(file_get_contents('php://input'), true);
+            $payload = json_decode(file_get_contents('php://input'), true);
 
-        switch ($request_method) {
-            case 'GET':
-                $this->handleGet($controller, $method, $handler);
-                break;
-            case 'POST':
-                $this->handlePost($controller, $method, $handler, $payload);
-                break;
-            case 'PUT':
-                $this->handlePut($controller, $method, $handler, $payload);
-                break;
-            case 'DELETE':
-                $this->handleDelete($controller, $method, $handler);
-                break;
-            default:
-                ResponseHelper::sendErrorResponse('Invalid Request Method', 400);
-                break;
+            switch ($request_method) {
+                case 'GET':
+                    $this->handleGet($controller, $method, $handler);
+                    break;
+                case 'POST':
+                    $this->handlePost($controller, $method, $handler, $payload);
+                    break;
+                case 'PUT':
+                    $this->handlePut($controller, $method, $handler, $payload);
+                    break;
+                case 'DELETE':
+                    $this->handleDelete($controller, $method, $handler);
+                    break;
+                default:
+                    ResponseHelper::sendErrorResponse('Invalid Request Method', 400);
+                    break;
+            }
+        } catch (Exception $e) {
+            ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
     private function handleGet($controller, $method, $handler)
     {
-        if (isset($handler['params'])) {
-            $controller->$method($handler['params']);
+        if (property_exists($handler, 'params')) {
+            $controller->$method($handler->params);
         } else {
             $controller->$method();
         }
@@ -124,12 +127,11 @@ class Router
     private function handlePost($controller, $method, $handler, $payload)
     {
         if ($payload === null) {
-            ResponseHelper::sendErrorResponse("Invalid payload or payload is empty", 400);
-            return;
+            return ResponseHelper::sendErrorResponse("Invalid payload or payload is empty", 400);
         }
 
-        if (isset($handler['params'])) {
-            $controller->$method($handler['params'], $payload);
+        if (property_exists($handler, 'params') && !empty($handler->params)) {
+            $controller->$method($handler->params, $payload);
             return;
         } else {
             $controller->$method($payload);
@@ -139,15 +141,14 @@ class Router
     private function handlePut($controller, $method, $handler, $payload)
     {
         if ($payload === null) {
-            ResponseHelper::sendErrorResponse("Invalid payload or payload is empty", 400);
-            return;
+            return ResponseHelper::sendErrorResponse("Invalid payload or payload is empty", 400);
         }
 
-        $controller->$method($handler['params'], $payload);
+        $controller->$method($handler->params, $payload);
     }
 
     private function handleDelete($controller, $method, $handler)
     {
-        $controller->$method($handler['params']);
+        $controller->$method($handler->params);
     }
 }

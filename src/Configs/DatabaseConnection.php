@@ -11,17 +11,20 @@ class DatabaseConnection
     {
 
         try {
-            $environment = 'production';
+            $environment = 'development';
 
             if ($environment == "production") {
-                // Use the Heroku JawsDB URL directly
+
+                // FOR DEPLOYED APPLICATION
                 $url = parse_url(getenv('JAWSDB_URL'));
 
                 $host = $url['host'];
                 $username = $url['user'];
                 $password = $url['pass'];
-                $database = ltrim($url['path'], '/'); // Removes the leading slash from the database name
+                $database = ltrim($url['path'], '/');
             } else {
+
+                /* FOR LOCAL HOSTING */
                 $host = '127.0.0.1';
                 $username = 'root';
                 $password = '';
