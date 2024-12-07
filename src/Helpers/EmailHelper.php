@@ -152,7 +152,7 @@ class EmailHelper
                 <div class="container">
                     <h1>Reset Your Password</h1>
                     <p>Click the link below to reset your password:</p>
-                    <a class="link" href="https://localhost:5173/resetPassword?token=' . $token . '">Reset Password</a>
+                    <a class="link" href="https://pet-faves-2c3c8.web.app/resetPassword?token=' . $token . '">Reset Password</a>
                     <p>If you did not request this, please ignore this email.</p>
                     <div class="footer">© 2024 PetFaves. All Rights Reserved.</div>
                 </div>
