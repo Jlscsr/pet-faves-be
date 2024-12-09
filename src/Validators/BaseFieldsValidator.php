@@ -42,6 +42,10 @@ abstract class BaseFieldsValidator implements ValidateInputFieldsInterface
     public static function validateFieldsPattern(array $fields): array
     {
         foreach (static::$payloadRules as $key => $value) {
+            if (empty($value['format'])) {
+                continue;
+            }
+
             if (!preg_match($value['format'], $fields[$key])) {
                 throw new RuntimeException($value['message'], 400);
             }

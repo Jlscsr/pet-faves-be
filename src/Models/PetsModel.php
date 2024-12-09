@@ -209,12 +209,11 @@ class PetsModel
     {
         $userID = null;
 
-        if (isset($payload['userOwnerID'])) {
+        if (isset($payload['userOwnerID']) && $payload['userOwnerID'] !== null) {
             $userID = $payload['userOwnerID'];
         }
 
         $payload['adoptionStatus'] = self::ADOPTION_STATUS_MAP[$payload['adoptionStatus']];
-
         $id = $payload['id'];
         $petName = $payload['petName'];
         $petAge = $payload['petAge'];
@@ -260,9 +259,11 @@ class PetsModel
         try {
             $statement->execute();
 
-            if ($statement->rowCount() > 0) {
-                return $payload['id'];
+            if ($statement->rowCount() === 0) {
+                return ['status' => 'failed', 'message' => 'Failed to add new pet'];
             }
+
+            return ['status' => 'success', 'message' => 'New pet added successfully', 'data' => $payload['id']];
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }

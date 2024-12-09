@@ -10,12 +10,12 @@ class LoginFieldsValidator extends BaseFieldsValidator
     protected static array $payloadRules = [
         'email' => [
             'format' => '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
-            'message' => 'Please enter a valid email address in the format example@domain.com',
+            'message' => 'Email: Please enter a valid email address in the format example@domain.com',
             'required' => true
         ],
         'password' => [
             'format' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/',
-            'message' => 'Password must contain at least one uppercase letter, one lowercase letter, one number, and be at least 8 characters long',
+            'message' => 'Password: Password must contain at least one uppercase letter, one lowercase letter, one number, and be at least 8 characters long',
             'required' => true
         ],
     ];

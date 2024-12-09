@@ -2,8 +2,6 @@
 
 namespace App\Helpers;
 
-use App\Helpers\ResponseHelper;
-
 class CookieManager
 {
     private $is_secure;

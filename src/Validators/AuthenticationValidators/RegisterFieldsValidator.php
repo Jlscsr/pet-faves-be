@@ -11,27 +11,27 @@ class RegisterFieldsValidator extends BaseFieldsValidator
     protected static array $payloadRules = [
         'firstName' => [
             'format' => '/^[a-zA-Z\s-]{2,50}$/',
-            'message' => 'First name must only contain letters, spaces, or hyphens and be between 2 and 50 characters long.',
+            'message' => 'FirstName: First name must only contain letters, spaces, or hyphens and be between 2 and 50 characters long.',
             'required' => true,
         ],
         'lastName' => [
             'format' => '/^[a-zA-Z\s-]{2,50}$/',
-            'message' => 'Last name must only contain letters, spaces, or hyphens and be between 2 and 50 characters long.',
+            'message' => 'LastName: Last name must only contain letters, spaces, or hyphens and be between 2 and 50 characters long.',
             'required' => true,
         ],
         'email' => [
             'format' => '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
-            'message' => 'Please enter a valid email address in the format example@domain.com.',
+            'message' => 'Email: Please enter a valid email address in the format example@domain.com.',
             'required' => true,
         ],
         'password' => [
             'format' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/',
-            'message' => 'Password must contain at least one uppercase letter, one lowercase letter, one number, and be at least 8 characters long.',
+            'message' => 'Password: Password must contain at least one uppercase letter, one lowercase letter, one number, and be at least 8 characters long.',
             'required' => true,
         ],
         'phoneNumber' => [
             'format' => '/^09[0-9]{9}$/',
-            'message' => 'Phone number must start with 09 and contain exactly 11 digits.',
+            'message' => 'PhoneNumber: Phone number must start with 09 and contain exactly 11 digits.',
             'required' => true,
         ],
     ];

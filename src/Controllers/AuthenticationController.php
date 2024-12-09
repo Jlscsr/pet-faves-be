@@ -74,13 +74,13 @@ class AuthenticationController
             $response = $this->usersModel->getUserByEmail($email);
 
             if ($response['status'] === 'failed') {
-                return ResponseHelper::sendErrorResponse('Invalid Email or Password');
+                return ResponseHelper::sendErrorResponse('Email: Invalid Email or Password');
             }
 
             $stored_password = $response['data']['password'];
 
             if (!password_verify($password, $stored_password)) {
-                return ResponseHelper::sendErrorResponse('Incorrect Password');
+                return ResponseHelper::sendErrorResponse('Password: Incorrect Password');
             }
 
             // Check first if the user account is verified
@@ -218,7 +218,7 @@ class AuthenticationController
         $response = $this->usersModel->getUserByEmail($email);
 
         if ($response['status'] === 'success') {
-            ResponseHelper::sendErrorResponse('Email already exists', 400);
+            ResponseHelper::sendErrorResponse('Email: Email already exists', 400);
             return true;
         }
 

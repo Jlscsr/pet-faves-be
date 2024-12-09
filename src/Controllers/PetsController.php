@@ -8,6 +8,8 @@ use App\Helpers\ResponseHelper;
 
 use App\Validators\HTTPRequestValidator;
 
+use App\Validators\PetsValidators\AddNewPetsFieldValidator;
+
 use App\Models\PetsModel;
 
 use RuntimeException;
@@ -170,19 +172,18 @@ class PetsController
     public function addNewPet(array $payload)
     {
         try {
-            HTTPRequestValidator::validatePOSTPayload($this->expectedPostPayloadKeys, $payload);
+            $sanitizedPayload = AddNewPetsFieldValidator::validateAndSanitizeFields($payload);
 
             $uuid = Uuid::uuid7()->toString();
-            $payload['id'] = $uuid;
+            $sanitizedPayload['id'] = $uuid;
 
-            $response = $this->petsModel->addNewPet($payload);
+            $response = $this->petsModel->addNewPet($sanitizedPayload);
 
-
-            if (!$response) {
-                return ResponseHelper::sendErrorResponse("Failed to add pet", 400);
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendErrorResponse($response['message'], 400);
             }
 
-            return ResponseHelper::sendSuccessResponse($response, "Pet added successfully");
+            return ResponseHelper::sendSuccessResponse($response['data'], $response['message']);
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
