@@ -73,7 +73,10 @@ class Routes
 
         // Group Routes for Requests API
         $this->group('/api/requests', function () {
-            $this->add('/add', 'RequestsController@addNewUserRequest');
+            $this->add('/add', 'RequestsController@addNewUserRequest')
+                ->middleware(true)
+                ->requiredRole('customer');
+
             $this->add('/userID/id/:userID/:id', 'RequestsController@getUserRequestByUserIDAndID');
             $this->add('/userID/typeOfRequest/:userID/:typeOfRequest', 'RequestsController@getUserRequestByUserIDAndTypeOfRequest');
             $this->add('/status/typeOfRequest/:status/:typeOfRequest', 'RequestsController@getAllRequestsByStatusAndTypeOfRequest');

@@ -35,11 +35,14 @@ class UsersController
 
             $response = $this->usersModel->getUserByID($id);
 
-            if ($response['status' === 'failed']) {
+            if ($response['status'] === 'failed') {
                 return ResponseHelper::sendSuccessResponse([], $response['message']);
             }
 
             unset($response['data']['password']);
+            unset($response['data']['activationCode']);
+            unset($response['data']['resetToken']);
+            unset($response['data']['activationToken']);
 
             return ResponseHelper::sendSuccessResponse($response['data'], 'User found');
         } catch (RuntimeException $e) {
@@ -70,6 +73,10 @@ class UsersController
             }
 
             unset($response['data']['password']);
+            unset($response['data']['password']);
+            unset($response['data']['activationCode']);
+            unset($response['data']['resetToken']);
+            unset($response['data']['activationToken']);
 
             return ResponseHelper::sendSuccessResponse($response['data'], 'User found');
         } catch (RuntimeException $e) {

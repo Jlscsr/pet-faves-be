@@ -199,6 +199,7 @@ class RequestsController
     public function addNewUserRequest(array $payload)
     {
         try {
+            // TODO: Change this validator to the new one
             HTTPRequestValidator::validatePOSTPayload($this->expectedPostPayloadKeys, $payload);
 
             $uuid = Uuid::uuid7()->toString();
@@ -206,11 +207,11 @@ class RequestsController
 
             $response = $this->requestsModel->addNewUserRequest($payload);
 
-            if (!$response) {
-                return ResponseHelper::sendErrorResponse("Failed to add pet", 400);
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendErrorResponse("Failed to add new request");
             }
 
-            return ResponseHelper::sendSuccessResponse($response, "New Request added successfully");
+            return ResponseHelper::sendSuccessResponse($response['data'], "New Request added successfully");
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }

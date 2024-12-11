@@ -232,12 +232,6 @@ class RequestsModel
                 if (!$updatePetAdoptionStatus) {
                     throw new RuntimeException('Failed to Update pet adoption status');
                 }
-            } else {
-                $updatePetAdoptionStatus = $this->petsModel->updatePetAdoptionStatus($petID, 1);
-
-                if (!$updatePetAdoptionStatus) {
-                    throw new RuntimeException("Failed to update pet adoption status");
-                }
             }
 
             $selectQuery = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE id = :lastInsertedID";
@@ -250,7 +244,11 @@ class RequestsModel
                 // Fetch the last inserted data
                 $lastInsertedData = $selectStatement->fetch(PDO::FETCH_ASSOC);
 
-                return $lastInsertedData;
+                if (empty($lastInsertedData)) {
+                    return ['status' => 'failed', 'message' => 'Failed to fetch last inserted data'];
+                }
+
+                return ['status' => 'success', 'message' => 'Successfully added new user request', 'data' => $lastInsertedData];
             } catch (PDOException $e) {
                 throw new RuntimeException($e->getMessage());
             }
