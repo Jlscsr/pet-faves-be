@@ -27,7 +27,7 @@ class AddNewPetsFieldValidator extends BaseFieldsValidator
         'userOwnerID' => [
             'format' => '', // Only numeric values
             'message' => '',
-            'required' => true,
+            'required' => false,
         ],
         'petName' => [
             'format' => '/^[a-zA-Z\s\-]+$/', // Letters, spaces, and hyphens
