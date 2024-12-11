@@ -70,7 +70,7 @@ class AddNewPetsFieldValidator extends BaseFieldsValidator
             'required' => true,
         ],
         'petHistory' => [
-            'format' => '/^[a-zA-Z0-9\s,.\-]+$/', // Letters, numbers, spaces, commas, dots, and hyphens
+            'format' => '/^[a-zA-Z0-9\s,.\-;]+$/', // Letters, numbers, spaces, commas, dots, and hyphens
             'message' => 'PetHistory: Pet History can only contain letters, numbers, spaces, commas, dots, and hyphens.',
             'required' => false, // Optional field
         ],
