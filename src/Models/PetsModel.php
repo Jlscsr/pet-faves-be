@@ -331,13 +331,14 @@ class PetsModel
     }
 
 
-    public function updatePetApprovalStatus(string $petID, string $status)
+    public function updatePetApprovalStatus(string $petID, string $status, string $reason)
     {
-        $query = "UPDATE " . self::PETS_TABLE . " SET approvalStatus = :status WHERE id = :petID";
+        $query = "UPDATE " . self::PETS_TABLE . " SET approvalStatus = :status, reason = :reason WHERE id = :petID";
 
         $statement = $this->pdo->prepare($query);
         $statement->bindValue(':status', $status, PDO::PARAM_STR);
         $statement->bindValue(':petID', $petID, PDO::PARAM_STR);
+        $statement->bindValue(':reason', $reason, PDO::PARAM_STR);
 
         try {
 

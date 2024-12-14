@@ -234,8 +234,9 @@ class PetsController
 
             $postID = $params['id'];
             $approvalStatus = $payload['status'];
+            $reason = $payload['reason'] ?? 'n/a';
 
-            $response = $this->petsModel->updatePetApprovalStatus($postID, $approvalStatus);
+            $response = $this->petsModel->updatePetApprovalStatus($postID, $approvalStatus, $reason);
 
             if (!$response) {
                 return ResponseHelper::sendErrorResponse("Failed to update post approval status", 400);

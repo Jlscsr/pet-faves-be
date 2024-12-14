@@ -57,6 +57,20 @@ class RequestsModel
                 return ['status' => 'failed', 'message' => 'No requests found'];
             }
 
+            foreach ($requests as $key => $request) {
+                $query = "SELECT * FROM appointments_tb WHERE requestID = :requestID";
+
+                $statement = $this->pdo->prepare($query);
+
+                $statement->bindValue(':requestID', $request['id'], PDO::PARAM_STR);
+
+                $statement->execute();
+
+                $appointments = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+                $requests[$key]['appointmentData'] = $appointments ?? [];
+            }
+
             return ['status' => 'success', 'message' => 'Successfully fetched all requests', 'data' => $requests];
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
@@ -217,7 +231,7 @@ class RequestsModel
             $statement = $this->pdo->prepare($query);
             $statement->bindValue(':id', $id, PDO::PARAM_STR);
             $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
-            $statement->bindValue(':userOwnerID', $userOwnerID, PDO::PARAM_STR);
+            $statement->bindValue(':userOwnerID', $userOwnerID, PDO::PARAM_NULL);
             $statement->bindValue(':petID', $petID, PDO::PARAM_STR);
             $statement->bindValue(':status', $status, PDO::PARAM_STR);
             $statement->bindValue(':typeOfRequest', $typeOfRequest, PDO::PARAM_STR);

@@ -445,7 +445,7 @@ class PostsModel
         }
     }
 
-    public function updatePostApprovalStatus(string $postID, string $status, string $postType)
+    public function updatePostApprovalStatus(string $postID, string $status, string $postType, $reason)
     {
         try {
 
@@ -460,11 +460,12 @@ class PostsModel
             }
 
 
-            $query = "UPDATE " . $table . " SET approvalStatus = :status WHERE id = :postID AND postType = :postType";
+            $query = "UPDATE " . $table . " SET approvalStatus = :status, reason = :reason WHERE id = :postID AND postType = :postType";
             $statement = $this->pdo->prepare($query);
             $statement->bindParam(':postID', $postID, PDO::PARAM_STR);
             $statement->bindParam(':status', $status, PDO::PARAM_STR);
             $statement->bindParam(':postType', $postType, PDO::PARAM_STR);
+            $statement->bindParam(':reason', $reason, PDO::PARAM_STR);
             $statement->execute();
 
             return $statement->rowCount() > 0;

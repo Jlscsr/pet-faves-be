@@ -109,7 +109,9 @@ class Routes
             $this->add('/update/id/:id', 'PetsController@updatePetData')
                 ->middleware(true)
                 ->requiredRole('admin');
-            $this->add('/update/approvalStatus/:id', 'PetsController@updatePetApprovalStatus');
+            $this->add('/update/approvalStatus/:id', 'PetsController@updatePetApprovalStatus')
+                ->middleware(true)
+                ->requiredRole('admin');
             $this->add('/update/adoptionStatus/:id', 'PetsController@updatePetAdoptionStatus');
             $this->add('/breeds/:petType', 'PetsController@getAllPetBreedsByType');
             $this->add('/ageCategories', 'PetsController@getAllPetsAgeCategories');

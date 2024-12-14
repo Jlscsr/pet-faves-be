@@ -205,8 +205,9 @@ class PostsController
             $postID = $params['postID'];
             $approvalStatus = $payload['status'];
             $postType = $params['postType'];
+            $reason = $payload['reason'] ?? 'n/a';
 
-            $response = $this->postsModel->updatePostApprovalStatus($postID, $approvalStatus, $postType);
+            $response = $this->postsModel->updatePostApprovalStatus($postID, $approvalStatus, $postType, $reason);
 
             if (!$response) {
                 return ResponseHelper::sendErrorResponse("Failed to update post approval status", 400);
