@@ -73,17 +73,25 @@ class Routes
 
         // Group Routes for Requests API
         $this->group('/api/requests', function () {
+            $this->add('/multiple/cancel', 'RequestsController@cancelMultitpleRequests')
+                ->middleware(true)
+                ->requiredRole('admin');
+
             $this->add('/add', 'RequestsController@addNewUserRequest')
                 ->middleware(true)
                 ->requiredRole('customer');
 
             $this->add('/userID/id/:userID/:id', 'RequestsController@getUserRequestByUserIDAndID');
             $this->add('/userID/typeOfRequest/:userID/:typeOfRequest', 'RequestsController@getUserRequestByUserIDAndTypeOfRequest');
-            $this->add('/status/typeOfRequest/:status/:typeOfRequest', 'RequestsController@getAllRequestsByStatusAndTypeOfRequest');
+            $this->add('/status/typeOfRequest/:status/:typeOfRequest', 'RequestsController@getAllRequestsByStatusAndTypeOfRequest')
+                ->middleware(true)
+                ->requiredRole('admin');
             $this->add('/userOwnerID/status/:userOwnerID/:status', 'RequestsController@getAllRequestsByUserOwnerIDAndStatus');
             $this->add('/userID/status/:userID/:status', 'RequestsController@getUserRequestByUserIDAndStatus');
             $this->add('/userOwnerID/id/:userOwnerID/:id', 'RequestsController@getUserRequestByUserOwnerIDAndID');
-            $this->add('/update/status/:id', 'RequestsController@updateRequestStatus');
+            $this->add('/update/status/:id', 'RequestsController@updateRequestStatus')
+                ->middleware(true)
+                ->requiredRole('both');
             $this->add('/update/typeOfRequest/:id', 'RequestsController@updateRequestTypeOfRequest');
             $this->add('/return', 'RequestsController@getAllReturnRequests');
             $this->add('/return/status/:status', 'RequestsController@getAllReturnRequestsByStatus');

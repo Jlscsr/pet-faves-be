@@ -46,6 +46,13 @@ class PetsModel
             }
 
             foreach ($pets as $key => $pet) {
+                // Decode fields that were sanitized
+                $pets[$key]['petName'] = htmlspecialchars_decode($pet['petName'], ENT_QUOTES);
+                $pets[$key]['petType'] = htmlspecialchars_decode($pet['petType'], ENT_QUOTES);
+                $pets[$key]['petBreed'] = htmlspecialchars_decode($pet['petBreed'], ENT_QUOTES);
+                $pets[$key]['petHistory'] = htmlspecialchars_decode($pet['petHistory'], ENT_QUOTES);
+
+                // Map adoption status
                 $pets[$key]['adoptionStatus'] = array_search($pet['adoptionStatus'], self::ADOPTION_STATUS_MAP);
             }
 
@@ -54,6 +61,7 @@ class PetsModel
             throw new RuntimeException($e->getMessage());
         }
     }
+
 
     public function getAllPetsByAdoptionStatus(string $status)
     {
@@ -260,7 +268,7 @@ class PetsModel
             $statement->execute();
 
             if ($statement->rowCount() === 0) {
-                return ['status' => 'failed', 'message' => 'Failed to add new pet'];
+                return ['status' => 'failed', 'message' => 'Error: Failed to add new pet'];
             }
 
             return ['status' => 'success', 'message' => 'New pet added successfully', 'data' => $payload['id']];
@@ -272,8 +280,6 @@ class PetsModel
     public function updatePetData(string $petID, array $payload)
     {
         try {
-            print_r($payload);
-            print_r($petID);
             $payload['adoptionStatus'] = self::ADOPTION_STATUS_MAP[(string) $payload['adoptionStatus']];
             $query = "UPDATE " . self::PETS_TABLE . " SET ";
 
@@ -320,7 +326,6 @@ class PetsModel
 
             return $statement->rowCount() > 0;
         } catch (RuntimeException $e) {
-            print_r($e->getMessage());
             throw new RuntimeException($e->getMessage());
         }
     }
@@ -340,7 +345,6 @@ class PetsModel
 
             return $statement->rowCount() > 0;
         } catch (RuntimeException $e) {
-            print_r($e->getMessage());
             throw new RuntimeException($e->getMessage());
         }
     }

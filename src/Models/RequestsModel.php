@@ -43,7 +43,7 @@ class RequestsModel
         $formattedStatusString = str_replace("+", " ", $status);
         $formattedStatusString = str_replace("%20", " ", $formattedStatusString);
 
-        $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE status = :status AND typeOfRequest = :typeOfRequest AND userOwnerID IS NULL";
+        $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE status = :status AND typeOfRequest = :typeOfRequest AND userOwnerID IS NULL OR userOwnerID = ''";
 
         $statement = $this->pdo->prepare($query);
         $statement->bindValue(':status', $formattedStatusString, PDO::PARAM_STR);
@@ -54,10 +54,10 @@ class RequestsModel
             $requests = $statement->fetchAll(PDO::FETCH_ASSOC);
 
             if (empty($requests)) {
-                return [];
+                return ['status' => 'failed', 'message' => 'No requests found'];
             }
 
-            return $requests;
+            return ['status' => 'success', 'message' => 'Successfully fetched all requests', 'data' => $requests];
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
@@ -292,6 +292,46 @@ class RequestsModel
             $lastUpdatedID = $this->getRequestByID($id);
 
             return $lastUpdatedID;
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function cancelMultitpleRequests($payload)
+    {
+        try {
+            $reason = $payload['reason'] ?? 'n/a';
+            $status = $payload['status'] ?? 'cancelled';
+            $requestIDs = $payload['requestIDs'];
+
+            // Create the list of named placeholders for the IN clause
+            $placeholders = array_map(function ($index) {
+                return ":requestID_$index";
+            }, range(0, count($requestIDs) - 1));
+
+            // Build the query with named placeholders
+            $query = "UPDATE " . self::ADOPTION_REQUESTS_TABLE . " 
+                  SET status = :status, reason = :reason 
+                  WHERE id IN (" . implode(',', $placeholders) . ")";
+
+            $statement = $this->pdo->prepare($query);
+
+            // Bind the status and reason
+            $statement->bindValue(':status', $status, PDO::PARAM_STR);
+            $statement->bindValue(':reason', $reason, PDO::PARAM_STR);
+
+            // Bind the request IDs using named parameters
+            foreach ($requestIDs as $index => $requestID) {
+                $statement->bindValue(":requestID_$index", $requestID, PDO::PARAM_INT);
+            }
+
+            $statement->execute();
+
+            if ($statement->rowCount() === 0) {
+                return ['status' => 'failed', 'message' => 'Failed to cancel requests'];
+            }
+
+            return ['status' => 'success', 'message' => 'Successfully cancelled requests'];
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }

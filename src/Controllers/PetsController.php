@@ -18,7 +18,6 @@ class PetsController
 {
     private $petsModel;
     private $acceptableParamsKeys = ['id', 'userID', 'approvalStatus', 'status', 'label', 'petType', 'adoptionStatus'];
-    private $expectedPostPayloadKeys = ['userOwnerID', 'petName', 'petAge', 'petAgeCategory', 'petColor', 'petGender', 'petType', 'petBreed', 'petVacHistory', 'petHistory', 'petPhotoURL', 'adoptionStatus', 'approvalStatus', 'postType'];
 
     public function __construct($pdo)
     {
@@ -192,11 +191,11 @@ class PetsController
     public function updatePetData(array $params, array $payload)
     {
         try {
-            HTTPRequestValidator::validatePUTPayload($this->acceptableParamsKeys, $this->expectedPostPayloadKeys, $params, $payload);
+            $sanitizedPayload = AddNewPetsFieldValidator::validateAndSanitizeFields($payload);
 
             $petID = $params['id'];
 
-            $response = $this->petsModel->updatePetData($petID, $payload);
+            $response = $this->petsModel->updatePetData($petID, $sanitizedPayload);
 
             if ($response['status'] === 'failed') {
                 return ResponseHelper::sendErrorResponse("Failed to update pet data");

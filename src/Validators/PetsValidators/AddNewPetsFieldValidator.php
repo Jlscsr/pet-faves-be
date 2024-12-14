@@ -30,15 +30,16 @@ class AddNewPetsFieldValidator extends BaseFieldsValidator
             'required' => false,
         ],
         'petName' => [
-            'format' => '/^[a-zA-Z\s\-]+$/', // Letters, spaces, and hyphens
+            'format' => '/^[a-zA-Z\s\-\.]+$/', // Letters, spaces, and hyphens
             'message' => 'PetName: Pet Name can only contain letters, spaces, or hyphens (e.g., "Buddy" or "Buddy-Smith").',
             'required' => true,
         ],
         'petAge' => [
-            'format' => '',
-            'message' => '',
+            'format' => '/^(\d+(-\d+)?)\s*(week|month|year)s?\s*old$/i',
+            'message' => 'PetAge: Pet age must be a number, a range, or a number followed by "week(s) old", "month(s) old", or "year(s) old" (e.g., "3", "3-4", "3 weeks old", "1 month old", "4 years old").',
             'required' => true,
         ],
+
         'petAgeCategory' => [
             'format' => '/^(baby|young|adult)$/i', // Specific keywords
             'message' => 'PetAgeCategory: Pet Age Category must be one of the following: "baby", "young", or "adult".',
@@ -55,7 +56,7 @@ class AddNewPetsFieldValidator extends BaseFieldsValidator
             'required' => true,
         ],
         'petBreed' => [
-            'format' => '/^[a-zA-Z\s\-]+$/', // Letters, spaces, and hyphens
+            'format' => '/^[a-zA-Z\s\-\/]+$/', // Letters, spaces, and hyphens
             'message' => 'PetBreed: Pet Breed can only contain letters, spaces, or hyphens (e.g., "Golden Retriever").',
             'required' => true,
         ],
@@ -65,14 +66,14 @@ class AddNewPetsFieldValidator extends BaseFieldsValidator
             'required' => true,
         ],
         'petVacHistory' => [
-            'format' => '/^\d{4}-\d{2}-\d{2}$/', // YYYY-MM-DD date format
-            'message' => 'PetVacHistory: Pet Vaccination History must be a valid date in YYYY-MM-DD format (e.g., "2023-11-01").',
+            'format' => '/^(N\/A|\d{4}-\d{2}-\d{2})$/', // Either "N/A" or YYYY-MM-DD date format
+            'message' => 'PetVacHistory: Pet Vaccination History must be a valid date in YYYY-MM-DD format (e.g., "2023-11-01") or "N/A".',
             'required' => true,
         ],
         'petHistory' => [
-        'format' => '/^[a-zA-Z0-9\s,.\-;]+$/', // Letters, numbers, spaces, commas, dots, hyphens, and semicolons
-        'message' => 'PetHistory: Pet History can only contain letters, numbers, spaces, commas, dots, hyphens, and semicolons.',
-        'required' => false,
+            'format' => '/^[a-zA-Z0-9\s,.\-;\'()\/]+$/', // Added apostrophes and parentheses
+            'message' => 'PetHistory: Pet History can only contain letters, numbers, spaces, commas, dots, hyphens, semicolons, apostrophes, and parentheses.',
+            'required' => false,
         ],
         'petPhotoURL' => [
             'format' => '',

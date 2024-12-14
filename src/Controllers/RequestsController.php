@@ -47,19 +47,16 @@ class RequestsController
     public function getAllRequestsByStatusAndTypeOfRequest(array $params)
     {
         try {
-            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
-
             $status = $params['status'];
             $typeOfRequest = $params['typeOfRequest'];
 
+            $response = $this->requestsModel->getAllRequestsByStatusAndTypeOfRequest($status, $typeOfRequest);
 
-            $requestsLists = $this->requestsModel->getAllRequestsByStatusAndTypeOfRequest($status, $typeOfRequest);
-
-            if (empty($requestsLists)) {
-                return ResponseHelper::sendSuccessResponse([], 'No Requests found');
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendSuccessResponse([], $response['message']);
             }
 
-            return ResponseHelper::sendSuccessResponse($requestsLists, 'Requests found');
+            return ResponseHelper::sendSuccessResponse($response['data'], $response['message']);
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
@@ -233,6 +230,22 @@ class RequestsController
             }
 
             return ResponseHelper::sendSuccessResponse($request, "Request updated successfully");
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function cancelMultitpleRequests(array $payload)
+    {
+        try {
+
+            $response = $this->requestsModel->cancelMultitpleRequests($payload);
+
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendErrorResponse("Failed to cancel requests");
+            }
+
+            return ResponseHelper::sendSuccessResponse([], "Requests cancelled successfully");
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
