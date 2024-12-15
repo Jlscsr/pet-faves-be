@@ -56,6 +56,9 @@ class Routes
 
         // Group Routes for Posts API
         $this->group('/api/posts', function () {
+            $this->add('/delete/id/postType/:postID/:postType', 'PostsController@deletePostByIdAndPostType')
+                ->middleware(true)
+                ->requiredRole('both');
             $this->add('/interaction/delete/:postID/:userID', 'PostsInteractionController@deletePostInteraction');
             $this->add('/interaction/add', 'PostsInteractionController@addNewPostInteraction');
             $this->add('/approvalStatus/update/:postType/:postID', 'PostsController@updatePostApprovalStatus');

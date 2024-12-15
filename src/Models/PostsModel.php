@@ -473,4 +473,40 @@ class PostsModel
             throw new RuntimeException($e->getMessage());
         }
     }
+
+    public function deletePostByIdAndPostType(string $postID, string $postType)
+    {
+        try {
+            $table = null;
+
+            if ($postType === 'event') {
+                $table = self::EVENT_POSTS_TABLE;
+            } else if ($postType === 'media') {
+                $table = self::MEDIA_POSTS_TABLE;
+            } else if ($postType === 'post') {
+                $table = self::POSTS_TABLE;
+            } else {
+                $table = self::PETS_TABLE;
+            }
+
+            $query = "DELETE FROM " . $table . " WHERE id = :postID";
+            $statement = $this->pdo->prepare($query);
+            $statement->bindParam(':postID', $postID, PDO::PARAM_STR);
+            $statement->execute();
+
+            if ($statement->rowCount() === 0) {
+                return [
+                    'status' => 'failed',
+                    'message' => 'Post not found.'
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'message' => 'Post deleted successfully.'
+            ];
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
 }

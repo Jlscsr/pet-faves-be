@@ -218,4 +218,24 @@ class PostsController
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
+
+    public function deletePostByIdAndPostType(array $params)
+    {
+        try {
+            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
+
+            $postID = $params['postID'];
+            $postType = $params['postType'];
+
+            $response = $this->postsModel->deletePostByIdAndPostType($postID, $postType);
+
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendErrorResponse($response['message']);
+            }
+
+            return ResponseHelper::sendSuccessResponse([], 'Successfully deleted post.');
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
 }
