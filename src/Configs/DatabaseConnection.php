@@ -11,7 +11,7 @@ class DatabaseConnection
     {
 
         try {
-            $environment = 'production';
+            $environment = 'development';
 
             if ($environment == "production") {
 
@@ -37,7 +37,12 @@ class DatabaseConnection
                 PDO::ATTR_EMULATE_PREPARES => false,
             ];
 
-            return new PDO($dsn, $username, $password, $options);
+            $pdo = new PDO($dsn, $username, $password, $options);
+
+            // Set the timezone for the session
+            $pdo->exec("SET time_zone = '+08:00'");
+
+            return $pdo;
         } catch (PDOException $e) {
             die("Database Connection failed: " . $e->getMessage());
         }

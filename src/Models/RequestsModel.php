@@ -184,7 +184,25 @@ class RequestsModel
 
             $statement->execute();
 
-            return $statement->fetch(PDO::FETCH_ASSOC);
+            $request = $statement->fetch(PDO::FETCH_ASSOC);
+
+            if (empty($request)) {
+                return ['status' => 'failed', 'message' => 'No request found'];
+            }
+
+            $query = "SELECT * FROM appointments_tb WHERE requestID = :requestID";
+
+            $statement = $this->pdo->prepare($query);
+
+            $statement->bindValue(':requestID', $request['id'], PDO::PARAM_STR);
+
+            $statement->execute();
+
+            $appointments = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            $request['appointmentData'] = $appointments[0] ?? [];
+
+            return ['status' => 'success', 'message' => 'Successfully fetched all requests', 'data' => $request];
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
@@ -371,6 +389,28 @@ class RequestsModel
             }
 
             return ['status' => 'success', 'message' => 'Successfully cancelled requests'];
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
+    public function checkIfUserAlreadyRequestedPet(string $userID, string $petID)
+    {
+        try {
+            $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE userID = :userID AND petID = :petID";
+            $statement = $this->pdo->prepare($query);
+            $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
+            $statement->bindValue(':petID', $petID, PDO::PARAM_STR);
+
+            $statement->execute();
+
+            $request = $statement->fetch(PDO::FETCH_ASSOC);
+
+            if (!empty($request)) {
+                return ['status' => 'failed', 'message' => 'User already requested pet'];
+            }
+
+            return ['status' => 'success', 'message' => 'User has not requested pet'];
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }

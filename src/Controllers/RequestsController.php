@@ -110,13 +110,13 @@ class RequestsController
             $id = $params['id'];
             $userID = $params['userID'];
 
-            $request = $this->requestsModel->getUserRequestByUserIDAndID($userID, $id);
+            $response = $this->requestsModel->getUserRequestByUserIDAndID($userID, $id);
 
-            if (!$request) {
+            if ($response['status'] === 'failed') {
                 return ResponseHelper::sendSuccessResponse([], 'No Request found');
             }
 
-            return ResponseHelper::sendSuccessResponse($request, 'Request found');
+            return ResponseHelper::sendSuccessResponse($response['data'], 'Request found');
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
@@ -230,6 +230,25 @@ class RequestsController
             }
 
             return ResponseHelper::sendSuccessResponse($request, "Request updated successfully");
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function checkIfUserAlreadyRequestedPet($params)
+    {
+        try {
+
+            $userID = $params['userID'];
+            $petID = $params['petID'];
+
+            $response = $this->requestsModel->checkIfUserAlreadyRequestedPet($userID, $petID);
+
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendErrorResponse($response['message']);
+            }
+
+            return ResponseHelper::sendSuccessResponse([], $response['message']);
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }

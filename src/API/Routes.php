@@ -73,6 +73,10 @@ class Routes
 
         // Group Routes for Requests API
         $this->group('/api/requests', function () {
+            // Check if the user has already request on that pet
+            $this->add('/check/userID/petID/:userID/:petID', 'RequestsController@checkIfUserAlreadyRequestedPet')
+                ->middleware(true)
+                ->requiredRole('customer');
             $this->add('/multiple/cancel', 'RequestsController@cancelMultitpleRequests')
                 ->middleware(true)
                 ->requiredRole('admin');
