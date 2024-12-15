@@ -45,7 +45,7 @@ class Routes
             $this->add('', 'PetCareController@getAllPetCarePosts');
         });
 
-        // Group Routes for Notifications API
+        // Group Routes for Appointments API
         $this->group('/api/appointments', function () {
             $this->add('/delete', 'AppointmentsController@deleteAppointmentByID');
             $this->add('/add', 'AppointmentsController@addNewAppointment');
