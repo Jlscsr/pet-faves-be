@@ -89,8 +89,27 @@ class RequestsModel
 
         try {
             $statement->execute();
+            $requests = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-            return $statement->fetchAll(PDO::FETCH_ASSOC);
+            if (empty($requests)) {
+                return ['status' => 'failed', 'message' => 'No requests found'];
+            }
+
+            foreach ($requests as $key => $request) {
+                $query = "SELECT * FROM appointments_tb WHERE requestID = :requestID";
+
+                $statement = $this->pdo->prepare($query);
+
+                $statement->bindValue(':requestID', $request['id'], PDO::PARAM_STR);
+
+                $statement->execute();
+
+                $appointments = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+                $requests[$key]['appointmentData'] = $appointments ?? [];
+            }
+
+            return ['status' => 'success', 'message' => 'Successfully fetched all requests', 'data' => $requests];
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
@@ -229,9 +248,15 @@ class RequestsModel
             $query = "INSERT INTO " . self::ADOPTION_REQUESTS_TABLE . " (id, userID, userOwnerID, petID, status, typeOfRequest) VALUES (:id, :userID, :userOwnerID, :petID, :status, :typeOfRequest)";
 
             $statement = $this->pdo->prepare($query);
+
+            if ($userOwnerID !== null) {
+                $statement->bindValue(':userOwnerID', $userOwnerID, PDO::PARAM_STR);
+            } else {
+                $statement->bindValue(':userOwnerID', null, PDO::PARAM_NULL);
+            }
+
             $statement->bindValue(':id', $id, PDO::PARAM_STR);
             $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
-            $statement->bindValue(':userOwnerID', $userOwnerID, PDO::PARAM_NULL);
             $statement->bindValue(':petID', $petID, PDO::PARAM_STR);
             $statement->bindValue(':status', $status, PDO::PARAM_STR);
             $statement->bindValue(':typeOfRequest', $typeOfRequest, PDO::PARAM_STR);

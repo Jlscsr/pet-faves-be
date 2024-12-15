@@ -70,13 +70,13 @@ class RequestsController
             $userID = $params['userOwnerID'];
             $status = $params['status'];
 
-            $requestsLists = $this->requestsModel->getAllRequestsByUserOwnerIDAndStatus($userID, $status);
+            $response = $this->requestsModel->getAllRequestsByUserOwnerIDAndStatus($userID, $status);
 
-            if (!$requestsLists) {
+            if ($response['status'] === 'failed') {
                 return ResponseHelper::sendSuccessResponse([], 'No Requests found');
             }
 
-            return ResponseHelper::sendSuccessResponse($requestsLists, 'Requests found');
+            return ResponseHelper::sendSuccessResponse($response['data'], 'Requests found');
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
