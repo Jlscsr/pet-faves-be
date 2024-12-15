@@ -82,7 +82,7 @@ class Routes
                 ->requiredRole('customer');
             $this->add('/multiple/cancel', 'RequestsController@cancelMultitpleRequests')
                 ->middleware(true)
-                ->requiredRole('admin');
+                ->requiredRole('both');
 
             $this->add('/add', 'RequestsController@addNewUserRequest')
                 ->middleware(true)
