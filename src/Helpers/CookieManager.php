@@ -28,7 +28,7 @@ class CookieManager
     /**
      * Determine if the environment is local.
      *
-     * @return bool  
+     * @return bool
      */
     private function is_local(): bool
     {
