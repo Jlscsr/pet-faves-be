@@ -249,10 +249,10 @@ class RequestsModel
 
             $statement = $this->pdo->prepare($query);
 
-            if ($userOwnerID !== null) {
+            if ($userOwnerID) {
                 $statement->bindValue(':userOwnerID', $userOwnerID, PDO::PARAM_STR);
             } else {
-                $statement->bindValue(':userOwnerID', null, PDO::PARAM_NULL);
+                $statement->bindValue(':userOwnerID', $userOwnerID, PDO::PARAM_NULL);
             }
 
             $statement->bindValue(':id', $id, PDO::PARAM_STR);
