@@ -21,6 +21,10 @@ class Routes
     private function registerRoutes()
     {
 
+        $this->group("/api/log", function () {
+            $this->add('/error/fe/add', 'SystemLogController@logFrontendError');
+        });
+
         $this->group('/api/inquiry', function () {
             $this->add('/send', 'InquiryController@sendNewInquiry');
         });

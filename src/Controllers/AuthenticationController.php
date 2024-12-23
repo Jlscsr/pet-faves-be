@@ -228,18 +228,18 @@ class AuthenticationController
     private function setCookie($response)
     {
         // 5hrs expiry time for token
-        $expiryDate = time() + (5 * 3600);
+        $expirationDate = time() + (5 * 3600);
 
         $toBeTokenized = [
             "id" => $response['id'],
             'email' => $response['email'],
             'password' => $response['password'],
             'role' => $response['role'],
-            'expiry_date' => $expiryDate
+            'expirationDate' => $expirationDate
         ];
 
         $token = $this->jwt->encodeDataToJWT($toBeTokenized);
 
-        $this->cookieManager->setCookiHeader($token, $expiryDate);
+        $this->cookieManager->setCookiHeader($token, $expirationDate);
     }
 }

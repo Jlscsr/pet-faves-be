@@ -7,19 +7,19 @@ use Firebase\JWT\Key;
 
 use RuntimeException;
 
-// use App\Configs\EnvironmentLoader;
+use App\Configs\EnvironmentLoader;
 
 
 class JWTHelper
 {
-    private $secret_key;
-    private $hash_algorithm;
+    private $secretKey;
+    private $hashAlgorithm;
 
     public function __construct()
     {
-        // EnvironmentLoader::load();
-        $this->secret_key = getenv('JWT_SECRET_KEY') ?: $_ENV['JWT_SECRET_KEY'];
-        $this->hash_algorithm = getenv('JWT_HASH_ALGORITHM') ?: $_ENV['JWT_HASH_ALGORITHM'];
+        EnvironmentLoader::load();
+        $this->secretKey = getenv('JWT_SECRET_KEY') ?: $_ENV['JWT_SECRET_KEY'];
+        $this->hashAlgorithm = getenv('JWT_HASH_ALGORITHM') ?: $_ENV['JWT_HASH_ALGORITHM'];
     }
 
     /**
@@ -30,7 +30,7 @@ class JWTHelper
      */
     public function encodeDataToJWT($data)
     {
-        $token = JWT::encode($data, $this->secret_key, $this->hash_algorithm);
+        $token = JWT::encode($data, $this->secretKey, $this->hashAlgorithm);
         return $token;
     }
 
@@ -44,7 +44,7 @@ class JWTHelper
     public function decodeJWTData(string $token)
     {
         try {
-            $data = JWT::decode($token, new Key($this->secret_key, $this->hash_algorithm));
+            $data = JWT::decode($token, new Key($this->secretKey, $this->hashAlgorithm));
             return $data;
         } catch (\Exception $e) {
             ResponseHelper::sendUnauthorizedResponse('Invalid Token Signature');
@@ -63,9 +63,9 @@ class JWTHelper
     {
         try {
             $data = $this->decodeJWTData($token);
-            $expiry_date = $data->expiry_date;
+            $expirationDate = $data->expirationDate;
 
-            if ($expiry_date < time()) {
+            if ($expirationDate < time()) {
                 return [
                     'status' => 'failed',
                     'message' => 'Token Expired. Please Login again.'
