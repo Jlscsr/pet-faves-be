@@ -77,11 +77,10 @@ class AppointmentsModel
             return $this->updateAppointment($existingRequestID['id'], $payload);
         }
 
-        $query = "INSERT INTO " . self::APPOINTMENTS_TABLE . " (id, userOwnerID, requestID, userID, petID,  appointmentDate, appointmentTime) VALUES (:id, :userOwnerID, :requestID, :userID, :petID, :date, :time)";
+        $query = "INSERT INTO " . self::APPOINTMENTS_TABLE . " (id, requestID, userID, petID,  appointmentDate, appointmentTime) VALUES (:id, :requestID, :userID, :petID, :date, :time)";
 
         $statement = $this->pdo->prepare($query);
         $statement->bindValue(':id', $payload['id'], PDO::PARAM_INT);
-        $statement->bindValue(':userOwnerID', $payload['userOwnerID'], PDO::PARAM_INT);
         $statement->bindValue(':requestID', $payload['requestID'], PDO::PARAM_INT);
         $statement->bindValue(':userID', $payload['userID'], PDO::PARAM_INT);
         $statement->bindValue(':petID', $payload['petID'], PDO::PARAM_INT);
@@ -91,7 +90,11 @@ class AppointmentsModel
         try {
             $statement->execute();
 
-            return $statement->rowCount() > 0;
+            if ($statement->rowCount() === 0) {
+                return ['status' => 'failed', 'message' => 'Failed to add new appointment'];
+            }
+
+            return ['status' => 'success', 'message' => 'Successfully added new appointment'];
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
@@ -119,7 +122,7 @@ class AppointmentsModel
         }
     }
 
-    public function deleteRequestAppointmentByID(string $appointmentID)
+    public function deleteAppointmentByID(string $appointmentID)
     {
         $query = "DELETE FROM " . self::APPOINTMENTS_TABLE . " WHERE id = :appointmentID";
         $statement = $this->pdo->prepare($query);

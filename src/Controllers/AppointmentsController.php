@@ -81,10 +81,10 @@ class AppointmentsController
             $uuid = Uuid::uuid7()->toString();
             $payload['id'] = $uuid;
 
-            $isAppointmentAdded = $this->appointmentsModel->addNewAppointment($payload);
+            $response = $this->appointmentsModel->addNewAppointment($payload);
 
-            if (!$isAppointmentAdded) {
-                return ResponseHelper::sendErrorResponse("Failed to add new request appointment", 404);
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendErrorResponse($response['message'], 401);
             }
 
             return ResponseHelper::sendSuccessResponse([], 'Successfully added new request appointment');

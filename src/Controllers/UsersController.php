@@ -87,8 +87,6 @@ class UsersController
     public function updateUserData(array $params, array $payload)
     {
         try {
-            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
-
             $userID = $params['id'];
 
             $response = $this->usersModel->updateUserData($userID, $payload);

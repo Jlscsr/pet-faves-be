@@ -7,7 +7,6 @@ use App\Validators\BaseFieldsValidator;
 class AddNewPetsFieldValidator extends BaseFieldsValidator
 {
     protected static array $expectedPayloadKeys = [
-        'userOwnerID',
         'petName',
         'petAge',
         'petAgeCategory',
@@ -19,16 +18,9 @@ class AddNewPetsFieldValidator extends BaseFieldsValidator
         'petHistory',
         'petPhotoURL',
         'adoptionStatus',
-        'approvalStatus',
-        'postType',
     ];
 
     protected static array $payloadRules = [
-        'userOwnerID' => [
-            'format' => '', // Only numeric values
-            'message' => '',
-            'required' => false,
-        ],
         'petName' => [
             'format' => '/^[a-zA-Z\s\-\.]+$/', // Letters, spaces, and hyphens
             'message' => 'PetName: Pet Name can only contain letters, spaces, or hyphens (e.g., "Buddy" or "Buddy-Smith").',
@@ -85,16 +77,7 @@ class AddNewPetsFieldValidator extends BaseFieldsValidator
             'message' => 'AdoptionStatus: Adoption Status must be one of the following: "available", "pending", "adopted", "not available", or "return".',
             'required' => true,
         ],
-        'approvalStatus' => [
-            'format' => '/^(pending|approved)$/i', // Specific statuses
-            'message' => 'ApprovalStatus: Approval Status must be either "pending" or "approved".',
-            'required' => true,
-        ],
-        'postType' => [
-            'format' => '/^post\-adoption$/i', // Exact keyword
-            'message' => 'PostType: Post Type must be "post-adoption".',
-            'required' => true,
-        ],
+
     ];
 
     protected static function sanitizeField(string $key, $value)
@@ -123,13 +106,6 @@ class AddNewPetsFieldValidator extends BaseFieldsValidator
 
             case 'adoptionStatus':
                 return trim($value);
-
-            case 'approvalStatus':
-                return trim($value);
-
-            case 'postType':
-                return trim($value);
-
             default:
                 return parent::sanitizeField($key, $value);
         }

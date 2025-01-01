@@ -43,7 +43,7 @@ class RequestsModel
         $formattedStatusString = str_replace("+", " ", $status);
         $formattedStatusString = str_replace("%20", " ", $formattedStatusString);
 
-        $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE status = :status AND typeOfRequest = :typeOfRequest AND userOwnerID IS NULL OR userOwnerID = ''";
+        $query = "SELECT * FROM " . self::ADOPTION_REQUESTS_TABLE . " WHERE status = :status AND typeOfRequest = :typeOfRequest";
 
         $statement = $this->pdo->prepare($query);
         $statement->bindValue(':status', $formattedStatusString, PDO::PARAM_STR);
@@ -258,20 +258,13 @@ class RequestsModel
         try {
             $id = $payload['id'];
             $userID = $payload['userID'];
-            $userOwnerID = $payload['userOwnerID'] ?? null;
             $petID = $payload['petID'] ?? null;
             $status = $payload['status'];
             $typeOfRequest = $payload['typeOfRequest'] ?? null;
 
-            $query = "INSERT INTO " . self::ADOPTION_REQUESTS_TABLE . " (id, userID, userOwnerID, petID, status, typeOfRequest) VALUES (:id, :userID, :userOwnerID, :petID, :status, :typeOfRequest)";
+            $query = "INSERT INTO " . self::ADOPTION_REQUESTS_TABLE . " (id, userID, petID, status, typeOfRequest) VALUES (:id, :userID, :petID, :status, :typeOfRequest)";
 
             $statement = $this->pdo->prepare($query);
-
-            if ($userOwnerID) {
-                $statement->bindValue(':userOwnerID', $userOwnerID, PDO::PARAM_STR);
-            } else {
-                $statement->bindValue(':userOwnerID', $userOwnerID, PDO::PARAM_NULL);
-            }
 
             $statement->bindValue(':id', $id, PDO::PARAM_STR);
             $statement->bindValue(':userID', $userID, PDO::PARAM_STR);

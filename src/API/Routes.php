@@ -22,40 +22,75 @@ class Routes
     {
 
         $this->group("/api/log", function () {
-            $this->add('/error/fe/add', 'SystemLogController@logFrontendError');
+            $this->add('/error/fe/add', 'SystemLogController@logFrontendError')
+                ->middleware(false)
+                ->requiredRole('none');
         });
 
         $this->group('/api/inquiry', function () {
-            $this->add('/send', 'InquiryController@sendNewInquiry');
+            $this->add('/send', 'InquiryController@sendNewInquiry')
+                ->middleware(false)
+                ->requiredRole('none');
         });
-
 
         // Group Routes for Donations API
         $this->group('/api/donations', function () {
-            $this->add('/add', 'DonationsController@addNewDonation');
+            $this->add('/add', 'DonationsController@addNewDonation')
+                ->middleware(true)
+                ->requiredRole('admin');
         });
 
         // Group Routes for Reports API
         $this->group('/api/reports', function () {
-            $this->add('', 'ReportsController@getAllReports');
+            $this->add('', 'ReportsController@getAllReports')
+                ->middleware(false)
+                ->requiredRole('none');
         });
 
         // Group Routes for PetCare API
         $this->group('/api/petCare', function () {
-            $this->add('/add', 'PetCareController@addNewPetCarePost');
-            $this->add('/update/:id', 'PetCareController@updatePetCarePost');
-            $this->add('/delete/:id', 'PetCareController@deletePetCarePost');
-            $this->add('/status/:status', 'PetCareController@getAllPetCarePostsByStatus');
-            $this->add('', 'PetCareController@getAllPetCarePosts');
+            $this->add('/add', 'PetCareController@addNewPetCarePost')
+                ->middleware(true)
+                ->requiredRole('admin');
+
+            $this->add('/update/:id', 'PetCareController@updatePetCarePost')
+                ->middleware(true)
+                ->requiredRole('admin');
+
+            $this->add('/delete/:id', 'PetCareController@deletePetCarePost')
+                ->middleware(true)
+                ->requiredRole('admin');
+
+            $this->add('/status/:status', 'PetCareController@getAllPetCarePostsByStatus')
+                ->middleware(false)
+                ->requiredRole('none');
+
+            $this->add('', 'PetCareController@getAllPetCarePosts')
+                ->middleware(false)
+                ->requiredRole('none');
         });
 
         // Group Routes for Appointments API
         $this->group('/api/appointments', function () {
-            $this->add('/delete', 'AppointmentsController@deleteAppointmentByID');
-            $this->add('/add', 'AppointmentsController@addNewAppointment');
-            $this->add('/requestID/:requestID', 'AppointmentsController@getAppointmentByRequestID');
-            $this->add('/:id', 'AppointmentsController@getAppointmentByID');
-            $this->add('', 'AppointmentsController@getAllAppointments');
+            $this->add('/delete', 'AppointmentsController@deleteAppointmentByID')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('/add', 'AppointmentsController@addNewAppointment')
+                ->middleware(true)
+                ->requiredRole('customer');
+
+            $this->add('/requestID/:requestID', 'AppointmentsController@getAppointmentByRequestID')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('/:id', 'AppointmentsController@getAppointmentByID')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('', 'AppointmentsController@getAllAppointments')
+                ->middleware(true)
+                ->requiredRole('both');
         });
 
         // Group Routes for Posts API
@@ -63,16 +98,50 @@ class Routes
             $this->add('/delete/id/postType/:postID/:postType', 'PostsController@deletePostByIdAndPostType')
                 ->middleware(true)
                 ->requiredRole('both');
-            $this->add('/interaction/delete/:postID/:userID', 'PostsInteractionController@deletePostInteraction');
-            $this->add('/interaction/add', 'PostsInteractionController@addNewPostInteraction');
-            $this->add('/approvalStatus/update/:postType/:postID', 'PostsController@updatePostApprovalStatus');
-            $this->add('/media/update/:postID', 'PostsController@updatePostMedia');
-            $this->add('/event/add', 'PostsController@addNewEventPost');
-            $this->add('/media/add', 'PostsController@addNewPostMedia');
-            $this->add('/add', 'PostsController@addNewPost');
-            $this->add('/id/postType/:id/:typeOfPost', 'PostsController@getAllPostsByIDAndTypeOfPost');
-            $this->add('/userID/:userID/:approvalStatus', 'PostsController@getAllPostsByUserIDAndStatus');
-            $this->add('/:typeOfPost', 'PostsController@getAllPostsByTypeOfPost');
+
+            $this->add('/update/approvalStatus/postID/postType/:postID/:postType', 'PostsController@updatePostApprovalStatus')
+                ->middleware(true)
+                ->requiredRole('admin');
+
+            $this->add('/interaction/delete/:postID/:userID', 'PostsInteractionController@deletePostInteraction')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('/interaction/add', 'PostsInteractionController@addNewPostInteraction')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('/media/update/:postID', 'PostsController@updatePostMedia')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('/event/add', 'PostsController@addNewEventPost')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('/media/add', 'PostsController@addNewPostMedia')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('/add', 'PostsController@addNewPost')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('/id/postType/:id/:typeOfPost', 'PostsController@getAllPostsByIDAndTypeOfPost')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('/userID/:userID/:approvalStatus', 'PostsController@getAllPostsByUserIDAndStatus')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            /**
+             * ! THIS ROUTE IS NOT USED ANYMORE IN THE APPLICATION
+             */
+            $this->add('/:typeOfPost', 'PostsController@getAllPostsByTypeOfPost')
+                ->middleware(true)
+                ->requiredRole('both');
+
             $this->add('/approvalStatus/:approvalStatus', 'PostsController@getAllPostsPetFeeds')
                 ->middleware(true)
                 ->requiredRole('none');
@@ -80,10 +149,10 @@ class Routes
 
         // Group Routes for Requests API
         $this->group('/api/requests', function () {
-            // Check if the user has already request on that pet
             $this->add('/check/userID/petID/:userID/:petID', 'RequestsController@checkIfUserAlreadyRequestedPet')
                 ->middleware(true)
                 ->requiredRole('customer');
+
             $this->add('/multiple/cancel', 'RequestsController@cancelMultitpleRequests')
                 ->middleware(true)
                 ->requiredRole('both');
@@ -92,42 +161,97 @@ class Routes
                 ->middleware(true)
                 ->requiredRole('customer');
 
-            $this->add('/userID/id/:userID/:id', 'RequestsController@getUserRequestByUserIDAndID');
-            $this->add('/userID/typeOfRequest/:userID/:typeOfRequest', 'RequestsController@getUserRequestByUserIDAndTypeOfRequest');
+            $this->add('/userID/id/:userID/:id', 'RequestsController@getUserRequestByUserIDAndID')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('/userID/typeOfRequest/:userID/:typeOfRequest', 'RequestsController@getUserRequestByUserIDAndTypeOfRequest')
+                ->middleware(true)
+                ->requiredRole('both');
+
             $this->add('/status/typeOfRequest/:status/:typeOfRequest', 'RequestsController@getAllRequestsByStatusAndTypeOfRequest')
                 ->middleware(true)
                 ->requiredRole('admin');
-            $this->add('/userOwnerID/status/:userOwnerID/:status', 'RequestsController@getAllRequestsByUserOwnerIDAndStatus');
-            $this->add('/userID/status/:userID/:status', 'RequestsController@getUserRequestByUserIDAndStatus');
-            $this->add('/userOwnerID/id/:userOwnerID/:id', 'RequestsController@getUserRequestByUserOwnerIDAndID');
+
+            $this->add('/userOwnerID/status/:userOwnerID/:status', 'RequestsController@getAllRequestsByUserOwnerIDAndStatus')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('/userID/status/:userID/:status', 'RequestsController@getUserRequestByUserIDAndStatus')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('/userOwnerID/id/:userOwnerID/:id', 'RequestsController@getUserRequestByUserOwnerIDAndID')
+                ->middleware(true)
+                ->requiredRole('both');
+
             $this->add('/update/status/:id', 'RequestsController@updateRequestStatus')
                 ->middleware(true)
                 ->requiredRole('both');
-            $this->add('/update/typeOfRequest/:id', 'RequestsController@updateRequestTypeOfRequest');
-            $this->add('/return', 'RequestsController@getAllReturnRequests');
-            $this->add('/return/status/:status', 'RequestsController@getAllReturnRequestsByStatus');
+
+            $this->add('/update/typeOfRequest/:id', 'RequestsController@updateRequestTypeOfRequest')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('/return', 'RequestsController@getAllReturnRequests')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('/return/status/:status', 'RequestsController@getAllReturnRequestsByStatus')
+                ->middleware(true)
+                ->requiredRole('both');
         });
 
         // Group Routes for Pets API
         $this->group('/api/pets', function () {
-            $this->add('/add', 'PetsController@addNewPet');
-            $this->add('/petTypes', 'PetsController@getAllPetTypes');
-            $this->add('/userOwnerID/approvalStatus/:userID/:approvalStatus', 'PetsController@getAllPetsByUserIDAndApprovalStatus');
-            $this->add('/id/adoptionStatus/:id/:adoptionStatus', 'PetsController@getPetByIDAndAdoptionStatus');
+
+            $this->add("/colors/type/breed/:type/:breed", "PetsController@getAllPetColorsByTypeAndBreed")
+                ->middleware(true)
+                ->requiredRole("none");
+
+            $this->add('/add', 'PetsController@addNewPet')
+                ->middleware(true)
+                ->requiredRole('admin');
+
+            $this->add('/petTypes', 'PetsController@getAllPetTypes')
+                ->middleware(false)
+                ->requiredRole('none');
+
+            $this->add('/id/adoptionStatus/:id/:adoptionStatus', 'PetsController@getPetByIDAndAdoptionStatus')
+                ->middleware(false)
+                ->requiredRole('none');
+
             $this->add('/delete/id/:id', 'PetsController@deletePet')
                 ->middleware(true)
                 ->requiredRole('admin');
+
             $this->add('/update/id/:id', 'PetsController@updatePetData')
                 ->middleware(true)
                 ->requiredRole('admin');
+
             $this->add('/update/approvalStatus/:id', 'PetsController@updatePetApprovalStatus')
                 ->middleware(true)
                 ->requiredRole('admin');
-            $this->add('/update/adoptionStatus/:id', 'PetsController@updatePetAdoptionStatus');
-            $this->add('/breeds/:petType', 'PetsController@getAllPetBreedsByType');
-            $this->add('/ageCategories', 'PetsController@getAllPetsAgeCategories');
-            $this->add('/adoptionStatus/:status', 'PetsController@getAllPetsByAdoptionStatus');
-            $this->add('/id/:id', 'PetsController@getPetByID');
+
+            $this->add('/update/adoptionStatus/:id', 'PetsController@updatePetAdoptionStatus')
+                ->middleware(true)
+                ->requiredRole('both');
+
+            $this->add('/breeds/:petType', 'PetsController@getAllPetBreedsByType')
+                ->middleware(false)
+                ->requiredRole('none');
+
+            $this->add('/ageCategories', 'PetsController@getAllPetsAgeCategories')
+                ->middleware(false)
+                ->requiredRole('none');
+
+            $this->add('/adoptionStatus/:status', 'PetsController@getAllPetsByAdoptionStatus')
+                ->middleware(middleware: false)
+                ->requiredRole('none');
+
+            $this->add('/id/:id', 'PetsController@getPetByID')
+                ->middleware(false)
+                ->requiredRole('none');
 
             $this->add('/all', 'PetsController@getAllPets')
                 ->middleware(true)
@@ -140,8 +264,13 @@ class Routes
                 ->middleware(true)
                 ->requiredRole('none');
 
-            $this->add('/id/:id', 'UsersController@getUserByID');
-            $this->add('/update/:id', 'UsersController@updateUserData');
+            $this->add('/id/:id', 'UsersController@getUserByID')
+                ->middleware(true)
+                ->requiredRole('none');
+
+            $this->add('/update/:id', 'UsersController@updateUserData')
+                ->middleware(true)
+                ->requiredRole('customer');
         });
 
         // Group Routes for Tokens API

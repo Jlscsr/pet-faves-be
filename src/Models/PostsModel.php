@@ -26,68 +26,54 @@ class PostsModel
     public function getAllPostsPetFeeds(string $status)
     {
         try {
-            if ($this->cachedAllPosts === null) {
-                $allPosts = [];
+            $allPosts = [];
 
-                // Fetch posts, media, event, and pets with user data
-                $queryPosts = "
+            // Fetch posts, media, event, and pets with user data
+            $queryPosts = "
                 SELECT p.*, u.id AS userID, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
                 FROM " . self::POSTS_TABLE . " p
                 JOIN users_tb u ON p.userID = u.id
                 WHERE p.approvalStatus = :approvalStatus
                 ";
 
-                $queryMediaPosts = "
+            $queryMediaPosts = "
                 SELECT mp.*, u.id AS userID, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
                 FROM " . self::MEDIA_POSTS_TABLE . " mp
                 JOIN users_tb u ON mp.userID = u.id
                 WHERE mp.approvalStatus = :approvalStatus
                 ";
 
-                $queryEventPosts = "
+            $queryEventPosts = "
                 SELECT ep.*, u.id AS userID, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
                 FROM " . self::EVENT_POSTS_TABLE . " ep
                 JOIN users_tb u ON ep.userID = u.id
                 WHERE ep.approvalStatus = :approvalStatus
                 ";
 
-                $queryPets = "
-                SELECT p.*, u.id AS userID, u.firstName, u.lastName, u.selfieImageURL, u.validIDImageURL, u.email, u.phoneNumber, u.province, u.city 
-                FROM " . self::PETS_TABLE . " p 
-                JOIN users_tb u ON p.userOwnerID = u.id 
-                WHERE p.approvalStatus = :approvalStatus AND p.userOwnerID IS NOT NULL";
 
-                // Execute and merge all queries
-                $statementPosts = $this->pdo->prepare($queryPosts);
-                $statementPosts->bindValue(':approvalStatus', $status);
-                $statementPosts->execute();
-                $allPosts = array_merge($allPosts, $statementPosts->fetchAll(PDO::FETCH_ASSOC));
+            // Execute and merge all queries
+            $statementPosts = $this->pdo->prepare($queryPosts);
+            $statementPosts->bindValue(':approvalStatus', $status);
+            $statementPosts->execute();
+            $allPosts = array_merge($allPosts, $statementPosts->fetchAll(PDO::FETCH_ASSOC));
 
-                $statementMediaPosts = $this->pdo->prepare($queryMediaPosts);
-                $statementMediaPosts->bindValue(':approvalStatus', $status);
-                $statementMediaPosts->execute();
-                $allPosts = array_merge($allPosts, $statementMediaPosts->fetchAll(PDO::FETCH_ASSOC));
+            $statementMediaPosts = $this->pdo->prepare($queryMediaPosts);
+            $statementMediaPosts->bindValue(':approvalStatus', $status);
+            $statementMediaPosts->execute();
+            $allPosts = array_merge($allPosts, $statementMediaPosts->fetchAll(PDO::FETCH_ASSOC));
 
-                $statementEventPosts = $this->pdo->prepare($queryEventPosts);
-                $statementEventPosts->bindValue(':approvalStatus', $status);
-                $statementEventPosts->execute();
-                $allPosts = array_merge($allPosts, $statementEventPosts->fetchAll(PDO::FETCH_ASSOC));
+            $statementEventPosts = $this->pdo->prepare($queryEventPosts);
+            $statementEventPosts->bindValue(':approvalStatus', $status);
+            $statementEventPosts->execute();
+            $allPosts = array_merge($allPosts, $statementEventPosts->fetchAll(PDO::FETCH_ASSOC));
 
-                $statementPets = $this->pdo->prepare($queryPets);
-                $statementPets->bindValue(':approvalStatus', $status);
-                $statementPets->execute();
-                $allPosts = array_merge($allPosts, $statementPets->fetchAll(PDO::FETCH_ASSOC));
-
-                // Sort all posts by createdAt in descending order
-                usort($allPosts, function ($a, $b) {
-                    return strtotime($b['createdAt']) - strtotime($a['createdAt']);
-                });
-
-                $this->cachedAllPosts = $allPosts; // Store in cache for future use
-            }
+            // Sort all posts by createdAt in descending order
+            usort($allPosts, function ($a, $b) {
+                return strtotime($b['createdAt']) - strtotime($a['createdAt']);
+            });
 
             // Add likes and user data to each post
-            foreach ($this->cachedAllPosts as &$post) {
+            foreach ($allPosts as &$post) {
                 $postId = $post['id'];
                 $postType = $post['postType'];
                 $queryLikes = "
@@ -118,13 +104,23 @@ class PostsModel
                 unset($post['userID'], $post['firstName'], $post['lastName'], $post['selfieImageURL'], $post['province'], $post['city'], $post['email'], $post['phoneNumber'], $post['validIDImageURL']);
             }
 
-            return $this->cachedAllPosts;
+            if (empty($allPosts)) {
+                return ['status' => 'failed', 'message' => 'No posts found.'];
+            }
+
+            return ['status' => 'success', 'message' => 'Posts fetched successfully', 'data' => $allPosts];
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }
     }
 
 
+    /**
+     * ! THIS METHOD IS NOT USED ANYMORE IN THE APPLICATION
+     * @param string $typeOfPost
+     * @throws \RuntimeException
+     * @return array
+     */
     public function getAllPostsByTypeOfPost(string $typeOfPost)
     {
         try {

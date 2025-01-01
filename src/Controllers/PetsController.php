@@ -17,7 +17,7 @@ use RuntimeException;
 class PetsController
 {
     private $petsModel;
-    private $acceptableParamsKeys = ['id', 'userID', 'approvalStatus', 'status', 'label', 'petType', 'adoptionStatus'];
+    private $acceptableParamsKeys = ['id', 'userID', 'status', 'label', 'petType', 'adoptionStatus'];
 
     public function __construct($pdo)
     {
@@ -98,25 +98,6 @@ class PetsController
         }
     }
 
-    public function getAllPetsByUserIDAndApprovalStatus(array $params)
-    {
-        try {
-            HTTPRequestValidator::validateGETParameter($this->acceptableParamsKeys, $params);
-
-            $userID = $params['userID'];
-            $approvalStatus = $params['approvalStatus'];
-
-            $pet = $this->petsModel->getAllPetsByUserIDAndApprovalStatus($userID, $approvalStatus);
-
-            if (!$pet) {
-                return ResponseHelper::sendSuccessResponse([], 'No pet found');
-            }
-
-            return ResponseHelper::sendSuccessResponse($pet, 'Pet found');
-        } catch (RuntimeException $e) {
-            return ResponseHelper::sendErrorResponse($e->getMessage());
-        }
-    }
 
     public function getAllPetTypes()
     {
@@ -147,6 +128,25 @@ class PetsController
             }
 
             return ResponseHelper::sendSuccessResponse($breeds, 'Breeds found');
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
+
+    public function getAllPetColorsByTypeAndBreed(array $params)
+    {
+        try {
+
+            $petType = $params['type'];
+            $petBreed = $params['breed'];
+
+            $response = $this->petsModel->getAllPetColorsByTypeAndBreed($petType, $petBreed);
+
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendSuccessResponse([], $response['message']);
+            }
+
+            return ResponseHelper::sendSuccessResponse($response['data'], $response['message']);
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }

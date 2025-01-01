@@ -46,16 +46,22 @@ class PostsController
 
             $response = $this->postsModel->getAllPostsPetFeeds($approvalStatus);
 
-            if (!$response) {
-                return ResponseHelper::sendSuccessResponse([], "No posts found.");
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendSuccessResponse([], $response['message']);
             }
 
-            return ResponseHelper::sendSuccessResponse($response, 'Successfully fetched posts.');
+            return ResponseHelper::sendSuccessResponse($response['data'], $response['message']);
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
 
+    /**
+     * ! THIS METHOD IS NOT USED ANYMORE IN THE APPLICATION
+     * @param string $typeOfPost
+     * @throws \RuntimeException
+     * @return array
+     */
     public function getAllPostsByTypeOfPost(array $params)
     {
         try {

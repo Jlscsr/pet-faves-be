@@ -69,7 +69,7 @@ class PetsModel
 
             $status = self::ADOPTION_STATUS_MAP[$status];
 
-            $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE adoptionStatus = :status AND approvalStatus = 'approved'";
+            $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE adoptionStatus = :status";
 
             $statement = $this->pdo->prepare($query);
             $statement->bindValue(':status', $status, PDO::PARAM_STR);
@@ -92,32 +92,6 @@ class PetsModel
         }
     }
 
-    public function getAllPetsByUserIDAndApprovalStatus(string $userID, string $approvalStatus)
-    {
-        try {
-            $query = "SELECT * FROM " . self::PETS_TABLE . " WHERE userOwnerID = :userID AND approvalStatus = :approvalStatus";
-
-            $statement = $this->pdo->prepare($query);
-            $statement->bindValue(':userID', $userID, PDO::PARAM_STR);
-            $statement->bindValue(':approvalStatus', $approvalStatus, PDO::PARAM_STR);
-
-            $statement->execute();
-            $pets = $statement->fetchAll(PDO::FETCH_ASSOC);
-
-            if (empty($pets)) {
-                return [];
-            }
-
-            $pets = array_map(function ($pet) {
-                $pet['adoptionStatus'] = array_search($pet['adoptionStatus'], self::ADOPTION_STATUS_MAP);
-                return $pet;
-            }, $pets);
-
-            return $pets;
-        } catch (PDOException $e) {
-            throw new RuntimeException($e->getMessage());
-        }
-    }
 
     public function getPetByID(string $petID)
     {
@@ -193,6 +167,31 @@ class PetsModel
         }
     }
 
+    public function getAllPetColorsByTypeAndBreed(string $petType, string $petBreed)
+    {
+        $query = "SELECT DISTINCT petColor FROM " . self::PETS_TABLE . " WHERE petType = :petType AND petBreed = :petBreed";
+        $statement = $this->pdo->prepare($query);
+        $statement->bindValue(':petType', $petType, PDO::PARAM_STR);
+        $statement->bindValue(':petBreed', $petBreed, PDO::PARAM_STR);
+
+        try {
+            $statement->execute();
+            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            $petColors = array_map(function ($row) {
+                return $row['petColor'];
+            }, $result);
+
+            if (empty($petColors)) {
+                return ['status' => 'failed', 'message' => 'No colors found for the selected breed'];
+            }
+
+            return ['status' => 'success', 'message' => 'Colors found', 'data' => $petColors];
+        } catch (PDOException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+    }
+
     public function getAllPetsAgeCategories()
     {
         try {
@@ -215,11 +214,6 @@ class PetsModel
 
     public function addNewPet(array $payload)
     {
-        $userID = null;
-
-        if (isset($payload['userOwnerID']) && $payload['userOwnerID'] !== null) {
-            $userID = $payload['userOwnerID'];
-        }
 
         $payload['adoptionStatus'] = self::ADOPTION_STATUS_MAP[$payload['adoptionStatus']];
         $id = $payload['id'];
@@ -234,17 +228,14 @@ class PetsModel
         $petHistory = $payload['petHistory'];
         $petPhotoURL = $payload['petPhotoURL'];
         $adoptionStatus = $payload['adoptionStatus'];
-        $approvalStatus = $payload['approvalStatus'];
-        $postType = $payload['postType'];
 
 
-        $query = "INSERT INTO " . self::PETS_TABLE . " (id, userOwnerID, petName, petAge, petAgeCategory, petGender, petType, petBreed, petColor,  petVacHistory, petHistory, petPhotoURL, adoptionStatus, approvalStatus, postType) VALUES (:id, :userOwnerID, :petName, :petAge, :petAgeCategory, :petGender, :petType, :petBreed, :petColor, :petVacHistory, :petHistory, :petPhotoURL, :adoptionStatus, :approvalStatus, :postType)";
+        $query = "INSERT INTO " . self::PETS_TABLE . " (id, petName, petAge, petAgeCategory, petGender, petType, petBreed, petColor,  petVacHistory, petHistory, petPhotoURL, adoptionStatus) VALUES (:id, :petName, :petAge, :petAgeCategory, :petGender, :petType, :petBreed, :petColor, :petVacHistory, :petHistory, :petPhotoURL, :adoptionStatus)";
 
         $statement = $this->pdo->prepare($query);
 
         $bindParams = [
             ':id' => $id,
-            ':userOwnerID' => $userID,
             ':petName' => $petName,
             ':petAge' => $petAge,
             ':petAgeCategory' => $petAgeCategory,
@@ -256,8 +247,6 @@ class PetsModel
             ':petHistory' => $petHistory,
             ':petPhotoURL' => $petPhotoURL,
             ':adoptionStatus' => $adoptionStatus,
-            ':approvalStatus' => $approvalStatus,
-            ':postType' => $postType,
         ];
 
         foreach ($bindParams as $key => $value) {
