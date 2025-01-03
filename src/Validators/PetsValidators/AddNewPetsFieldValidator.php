@@ -58,8 +58,8 @@ class AddNewPetsFieldValidator extends BaseFieldsValidator
             'required' => true,
         ],
         'petVacHistory' => [
-            'format' => '/^(N\/A|\d{4}-\d{2}-\d{2})$/', // Either "N/A" or YYYY-MM-DD date format
-            'message' => 'PetVacHistory: Pet Vaccination History must be a valid date in YYYY-MM-DD format (e.g., "2023-11-01") or "N/A".',
+            'format' => '',
+            'message' => '',
             'required' => true,
         ],
         'petHistory' => [
