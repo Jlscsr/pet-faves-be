@@ -7,7 +7,7 @@ use Firebase\JWT\Key;
 
 use RuntimeException;
 
-use App\Configs\EnvironmentLoader;
+// use App\Configs\EnvironmentLoader;
 
 
 class JWTHelper
@@ -17,7 +17,7 @@ class JWTHelper
 
     public function __construct()
     {
-        EnvironmentLoader::load();
+        // EnvironmentLoader::load();
         $this->secretKey = getenv('JWT_SECRET_KEY') ?: $_ENV['JWT_SECRET_KEY'];
         $this->hashAlgorithm = getenv('JWT_HASH_ALGORITHM') ?: $_ENV['JWT_HASH_ALGORITHM'];
     }
