@@ -116,19 +116,20 @@ class ReportsModel
                 $startDate = min($oldestPetsDate, $oldestAdoptionRequestsDate, $oldestDonationsDate);
             }
 
-            $totalPetsQuery = "SELECT COUNT(*) AS totalPet FROM pets_tb WHERE createdAt BETWEEN :startDate AND :endDate";
-            $totalAvailablePetsQuery = "SELECT COUNT(*) AS totalAvailablePets FROM pets_tb WHERE adoptionStatus = '0' AND createdAt BETWEEN :startDate AND :endDate";
-            $availablePetsListsQuery = "SELECT * FROM pets_tb WHERE adoptionStatus = '0' AND createdAt BETWEEN :startDate AND :endDate";
-            $totalAdoptedPetsQuery = "SELECT COUNT(*) AS totalAdoptedPets FROM pets_tb WHERE adoptionStatus = '2' AND createdAt BETWEEN :startDate AND :endDate";
-            $adoptedPetsListsQuery = "SELECT * FROM pets_tb WHERE adoptionStatus = '2' AND createdAt BETWEEN :startDate AND :endDate";
+            $totalPetsQuery = "SELECT COUNT(*) AS totalPet FROM pets_tb WHERE DATE(createdAt) >= :startDate AND DATE(createdAt) <= :endDate";
+            $totalAvailablePetsQuery = "SELECT COUNT(*) AS totalAvailablePets FROM pets_tb WHERE adoptionStatus = '0' AND DATE(createdAt) >= :startDate AND DATE(createdAt) <= :endDate";
+            $availablePetsListsQuery = "SELECT * FROM pets_tb WHERE adoptionStatus = '0' AND DATE(createdAt) >= :startDate AND DATE(createdAt) <= :endDate";
+            $totalAdoptedPetsQuery = "SELECT COUNT(*) AS totalAdoptedPets FROM pets_tb WHERE adoptionStatus = '2' AND DATE(createdAt) >= :startDate AND DATE(createdAt) <= :endDate";
+            $adoptedPetsListsQuery = "SELECT * FROM pets_tb WHERE adoptionStatus = '2' AND DATE(createdAt) >= :startDate AND DATE(createdAt) <= :endDate";
 
-            $totalAdoptionRequestsQuery = "SELECT COUNT(*) AS totalAdoptionRequests FROM adoption_requests_tb WHERE createdAt BETWEEN :startDate AND :endDate";
-            $totalCompletedAdoptionRequestsQuery = "SELECT COUNT(*) AS totalCompletedAdoptionRequests FROM adoption_requests_tb WHERE status = 'completed' AND createdAt BETWEEN :startDate AND :endDate";
-            $completedAdoptionRequestsListsQuery = "SELECT * FROM adoption_requests_tb WHERE status = 'completed' AND createdAt BETWEEN :startDate AND :endDate";
+            $totalAdoptionRequestsQuery = "SELECT COUNT(*) AS totalAdoptionRequests FROM adoption_requests_tb WHERE DATE(createdAt) >= :startDate AND DATE(createdAt) <= :endDate";
+            $totalCompletedAdoptionRequestsQuery = "SELECT COUNT(*) AS totalCompletedAdoptionRequests FROM adoption_requests_tb WHERE status = 'completed' AND DATE(createdAt) >= :startDate AND DATE(createdAt) <= :endDate";
+            $completedAdoptionRequestsListsQuery = "SELECT * FROM adoption_requests_tb WHERE status = 'completed' AND DATE(createdAt) >= :startDate AND DATE(createdAt) <= :endDate";
 
-            $totalAmountDonationsQuery = "SELECT SUM(donationAmount) AS totalAmountDonations FROM donations_tb WHERE createdAt BETWEEN :startDate AND :endDate";
-            $totalDonatorsQuery = "SELECT COUNT(*) AS totalDonators FROM donations_tb WHERE createdAt BETWEEN :startDate AND :endDate";
-            $donatorsListsQuery = "SELECT * FROM donations_tb WHERE createdAt BETWEEN :startDate AND :endDate";
+            $totalAmountDonationsQuery = "SELECT SUM(donationAmount) AS totalAmountDonations FROM donations_tb WHERE DATE(createdAt) >= :startDate AND DATE(createdAt) <= :endDate";
+            $totalDonatorsQuery = "SELECT COUNT(*) AS totalDonators FROM donations_tb WHERE DATE(createdAt) >= :startDate AND DATE(createdAt) <= :endDate";
+            $donatorsListsQuery = "SELECT * FROM donations_tb WHERE DATE(createdAt) >= :startDate AND DATE(createdAt) <= :endDate";
+
 
             $totalPetsStatement = $this->pdo->prepare($totalPetsQuery);
             $totalAvailablePetsStatement = $this->pdo->prepare($totalAvailablePetsQuery);
@@ -210,7 +211,6 @@ class ReportsModel
 
             $donators = $donatorsListsStatement->fetchAll(PDO::FETCH_ASSOC) ?? [];
 
-            // Get the associated informations of the adoption requests and donators
 
             if (!empty($adoptionRequests)) {
                 foreach ($adoptionRequests as $key => $request) {
@@ -234,8 +234,6 @@ class ReportsModel
                     $adoptionRequests[$key]['pet'] = $pet;
                 }
             }
-
-            // Format start Date and end date to month day, year
 
             $startDate = date('M d, Y', strtotime($startDate));
             $endDate = date('M d, Y', strtotime($endDate));
@@ -289,12 +287,13 @@ class ReportsModel
     private function getOldestTableDate($table)
     {
         try {
-            $query = "SELECT MIN(createdAt) AS oldestDate FROM $table";
+            $query = "SELECT DATE(createdAt) AS createdAt FROM $table ORDER BY createdAt ASC LIMIT 1";
             $statement = $this->pdo->prepare($query);
 
             $statement->execute();
 
-            return $statement->fetch(PDO::FETCH_ASSOC)['oldestDate'];
+            $result = $statement->fetch(PDO::FETCH_ASSOC);
+            return $result ? $result['createdAt'] : null; // Return null if no records
         } catch (PDOException $e) {
             throw new RuntimeException("Error getting oldest table date: " . $e->getMessage());
         }
