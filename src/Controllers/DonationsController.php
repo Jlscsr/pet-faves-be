@@ -28,11 +28,11 @@ class DonationsController
 
             $response = $this->donationsModel->addNewDonation($payload);
 
-            if (!$response) {
-                return ResponseHelper::sendErrorResponse('Failed to add new donation', 400);
+            if ($response['failed']) {
+                return ResponseHelper::sendErrorResponse($response['message'], 400);
             }
 
-            return ResponseHelper::sendSuccessResponse([], 'Donation added successfully');
+            return ResponseHelper::sendSuccessResponse([], $response['message']);
         } catch (RuntimeException $e) {
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }

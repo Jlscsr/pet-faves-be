@@ -35,4 +35,23 @@ class ReportsController
             return ResponseHelper::sendErrorResponse($e->getMessage());
         }
     }
+
+    public function generateReports($payload)
+    {
+        try {
+
+            $startDate = $payload['startDate'];
+            $endDate = $payload['endDate'];
+
+            $response = $this->reportsModel->generateReports($startDate, $endDate);
+
+            if ($response['status'] === 'failed') {
+                return ResponseHelper::sendSuccessResponse([], 'No reports generated');
+            }
+
+            return ResponseHelper::sendSuccessResponse($response['data'], 'Reports generated');
+        } catch (RuntimeException $e) {
+            return ResponseHelper::sendErrorResponse($e->getMessage());
+        }
+    }
 }

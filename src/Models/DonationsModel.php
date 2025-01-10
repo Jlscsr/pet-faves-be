@@ -22,16 +22,21 @@ class DonationsModel
     public function addNewDonation($payload)
     {
         try {
-            $query = "INSERT INTO " . self::DONATIONS_TABLE . " (id, referenceNumber, donationAmount) VALUES (:id, :referenceNumber, :donationAmount)";
+            $query = "INSERT INTO " . self::DONATIONS_TABLE . " (id, donorName, contactDetails, donationAmount) VALUES (:id, :donorName, :contactDetails, :donationAmount)";
             $statement = $this->pdo->prepare($query);
 
             $statement->bindParam(':id', $payload['id']);
-            $statement->bindParam(':referenceNumber', $payload['referenceNumber']);
+            $statement->bindParam(':donorName', $payload['donorName']);
+            $statement->bindParam(':contactDetails', $payload['contactDetails']);
             $statement->bindParam(':donationAmount', $payload['donationAmount']);
 
             $statement->execute();
 
-            return $statement->rowCount() > 0;
+            if ($statement->rowCount() === 0) {
+                return ['status' => 'failed', 'message' => 'Failed to add new donation'];
+            }
+
+            return ['status' => 'success', 'message' => 'Donation added successfully'];
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());
         }

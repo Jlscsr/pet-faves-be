@@ -36,8 +36,8 @@ class Routes
         // Group Routes for Donations API
         $this->group('/api/donations', function () {
             $this->add('/add', 'DonationsController@addNewDonation')
-                ->middleware(true)
-                ->requiredRole('admin');
+                ->middleware(false)
+                ->requiredRole('none');
         });
 
         // Group Routes for Reports API
@@ -45,6 +45,10 @@ class Routes
             $this->add('', 'ReportsController@getAllReports')
                 ->middleware(false)
                 ->requiredRole('none');
+
+            $this->add('/generate/report', 'ReportsController@generateReports')
+                ->middleware(true)
+                ->requiredRole('admin');
         });
 
         // Group Routes for PetCare API
