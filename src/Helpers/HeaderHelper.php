@@ -5,12 +5,19 @@ namespace App\Helpers;
 class HeaderHelper
 {
 
+    private const ALLOWED_ORIGINS = [
+        'https://localhost:5173',
+        'https://pet-faves-2c3c8.web.app'
+    ];
+
 
     public static function SendPreflighthHeaders()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-            // header("Access-Control-Allow-Origin: https://localhost:5173");
-            header("Access-Control-Allow-Origin: https://pet-faves-2c3c8.web.app");
+
+            if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], self::ALLOWED_ORIGINS)) {
+                header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+            }
 
             header("Referrer-Policy: no-referrer");
             header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
@@ -25,9 +32,9 @@ class HeaderHelper
     }
     public static function setResponseHeaders()
     {
-
-        // header("Access-Control-Allow-Origin: https://localhost:5173");
-        header("Access-Control-Allow-Origin: https://pet-faves-2c3c8.web.app");
+        if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], self::ALLOWED_ORIGINS)) {
+            header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+        }
 
         header("Referrer-Policy: no-referrer");
         header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");

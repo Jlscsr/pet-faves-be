@@ -7,7 +7,7 @@ use Firebase\JWT\Key;
 
 use RuntimeException;
 
-// use App\Configs\EnvironmentLoader;
+use App\Configs\EnvironmentLoader;
 
 
 class JWTHelper

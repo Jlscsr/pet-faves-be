@@ -336,12 +336,6 @@ class UsersModel
 
             $statement->execute();
 
-            $isUpdateSuccess = $statement->rowCount() > 0;
-
-            if (!$isUpdateSuccess) {
-                return ['status' => 'failed', 'message' => 'Failed to update user data'];
-            }
-
             return  ['status' => 'success', 'message' => 'Update success'];
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage());

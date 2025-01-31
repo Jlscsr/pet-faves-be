@@ -148,7 +148,7 @@ class PetsModel
 
     public function getAllPetBreedsByType(string $petType)
     {
-        $query = "SELECT DISTINCT petBreed FROM " . self::PETS_TABLE . " WHERE petType = :petType";
+        $query = "SELECT DISTINCT petBreed FROM " . self::PETS_TABLE . " WHERE petType = :petType AND adoptionStatus = '0'";
         $statement = $this->pdo->prepare($query);
         $statement->bindValue(':petType', $petType, PDO::PARAM_STR);
 
