@@ -103,17 +103,18 @@ class ReportsModel
 
             // Fetch the oldest dates in the tables
             $oldestPetsDate = $this->getOldestTableDate(self::PETS_TABLE);
-            $oldestAdoptionRequestsDate = $this->getOldestTableDate(self::REQUESTS_TABLE);
-            $oldestDonationsDate = $this->getOldestTableDate(self::DONATIONS_TABLE);
+            $oldestAdoptionRequestsDate = $this->getOldestTableDate(self::REQUESTS_TABLE) ?: 'n/a';
+            $oldestDonationsDate = $this->getOldestTableDate(self::DONATIONS_TABLE) ?: 'n/a';
 
-            // Determine startDate and endDate
+            $validDates = array_filter([$oldestPetsDate, $oldestAdoptionRequestsDate, $oldestDonationsDate]);
+
             if ($startDate === 'n/a' && $endDate === 'n/a') {
-                $startDate = min($oldestPetsDate, $oldestAdoptionRequestsDate, $oldestDonationsDate);
+                $startDate = !empty($validDates) ? min($validDates) : $currentDate;
                 $endDate = $currentDate;
             } elseif ($endDate === 'n/a') {
                 $endDate = $currentDate;
             } elseif ($startDate === 'n/a') {
-                $startDate = min($oldestPetsDate, $oldestAdoptionRequestsDate, $oldestDonationsDate);
+                $startDate = !empty($validDates) ? min($validDates) : $currentDate;
             }
 
             $totalPetsQuery = "SELECT COUNT(*) AS totalPet FROM pets_tb WHERE DATE(createdAt) >= :startDate AND DATE(createdAt) <= :endDate";
